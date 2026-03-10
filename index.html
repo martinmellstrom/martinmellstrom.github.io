@@ -290,6 +290,8 @@ nav {
 .pack:hover::after { transform: scaleX(1); }
 .badge { position: absolute; top: 16px; right: 16px; font-family: 'Syne', sans-serif; font-size: .52rem; letter-spacing: .15em; text-transform: uppercase; background: var(--gold); color: var(--bg); padding: 5px 12px; font-weight: 700; z-index: 2; }
 .pack-num { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .3em; color: var(--golddim); margin-bottom: 14px; }
+.pack-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 0; }
+.pack-icon { width: 100px; height: 100px; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(201,168,76,.15); }
 .pack-title { font-size: 1.9rem; font-weight: 400; color: var(--cream); line-height: 1.15; margin-bottom: 8px; }
 .pack-sub { font-size: .95rem; font-style: italic; color: var(--golddim); margin-bottom: 16px; font-weight: 300; }
 .pack-desc { font-size: .98rem; color: var(--muted); line-height: 1.75; margin-bottom: 22px; font-weight: 300; }
@@ -306,14 +308,6 @@ nav {
 .sc-wrap { margin-top: 24px; border-top: 1px solid rgba(201,168,76,.1); padding-top: 20px; }
 .sc-lbl { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 10px; }
 .sc-wrap iframe { width: 100%; border: 1px solid rgba(201,168,76,.1); }
-
-/* FILM */
-.film-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; max-width: 1200px; margin: 0 auto; }
-.film-text p { font-size: 1.05rem; line-height: 1.9; color: var(--text); margin-bottom: 18px; font-weight: 300; }
-.film-meta { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(201,168,76,.12); display: flex; flex-direction: column; gap: 10px; }
-.fmrow { display: flex; gap: 12px; align-items: baseline; }
-.fmkey { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); min-width: 90px; }
-.fmval { font-size: 1rem; color: var(--cream); font-style: italic; }
 
 /* ABOUT */
 #about { background: var(--surface); position: relative; }
@@ -406,7 +400,6 @@ footer { padding: 110px 64px 60px; }
   <a href="#home" class="logo">Martin Mellstrom</a>
   <ul class="navlinks">
     <li><a href="#packs">Music Packs</a></li>
-    <li><a href="#film">Film Work</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#platforms">Stores</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -444,16 +437,16 @@ footer { padding: 110px 64px 60px; }
     </div>
 
     <h1 class="hero-title">
-      <span class="line"><span class="line-inner">Royalty-Free</span></span>
-      <span class="line"><span class="line-inner"><em>Orchestral</em></span></span>
-      <span class="line"><span class="line-inner">Game Music</span></span>
+      <span class="line"><span class="line-inner">Orchestral music</span></span>
+      <span class="line"><span class="line-inner">for the spaces</span></span>
+      <span class="line"><span class="line-inner"><em>between the battles</em></span></span>
     </h1>
 
-    <p class="hero-desc">Seamless loops, battle layers &amp; stingers for indie games and film — ready to drop into any engine</p>
+    <p class="hero-desc">Intimate, handcrafted scores for RPG, Metroidvania and adventure games — built for worlds that feel like somewhere</p>
 
     <div class="hero-cta">
       <a href="#packs" class="btn-p">Browse Music Packs</a>
-      <a href="#film" class="btn-g">Film Work</a>
+      <a href="#about" class="btn-g">About</a>
     </div>
 
   </div>
@@ -476,13 +469,17 @@ footer { padding: 110px 64px 60px; }
   <div class="packs-grid">
     <div class="pack fade">
       <div class="badge">Flagship</div>
-      <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP1%20original.png"
-           alt="Orchestral Music Pack — Atlas Companion"
-           style="width:100%;display:block;aspect-ratio:16/9;object-fit:cover;">
       <div class="pack-body">
-      <div class="pack-num">001</div>
-      <h3 class="pack-title">Orchestral Music Pack</h3>
-      <p class="pack-sub">Atlas Companion</p>
+      <div class="pack-header">
+        <div>
+          <div class="pack-num">001</div>
+          <h3 class="pack-title">Orchestral Music Pack</h3>
+          <p class="pack-sub">Atlas Companion</p>
+        </div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP1%20Icon.png"
+             alt="Orchestral Music Pack — Atlas Companion"
+             class="pack-icon">
+      </div>
       <p class="pack-desc">Over two hours of professionally composed music. Adventurous exploration themes, intense battle layers, contextual pieces and stingers. Primarily orchestral, with dreamy electronic textures, gritty percussion loops and traditional acoustic instruments.</p>
       <div class="pack-stats">
         <div><span class="stat-val">11</span><span class="stat-lbl">Full songs</span></div>
@@ -513,13 +510,17 @@ footer { padding: 110px 64px 60px; }
     </div>
 
     <div class="pack fade">
-      <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP2%20Cover%201920%201080.png"
-           alt="Orchestral Exploration Pack"
-           style="width:100%;display:block;aspect-ratio:16/9;object-fit:cover;">
       <div class="pack-body">
-      <div class="pack-num">002</div>
-      <h3 class="pack-title">Orchestral Exploration Pack</h3>
-      <p class="pack-sub">&nbsp;</p>
+      <div class="pack-header">
+        <div>
+          <div class="pack-num">002</div>
+          <h3 class="pack-title">Orchestral Exploration Pack</h3>
+          <p class="pack-sub">&nbsp;</p>
+        </div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP2%20Icon.png"
+             alt="Orchestral Exploration Pack"
+             class="pack-icon">
+      </div>
       <p class="pack-desc">Over an hour of music spanning snowy peaks, forest fields and dark caverns. Each track includes multiple tension layers you can trigger dynamically in combat, or use as standalone themes.</p>
       <div class="pack-stats">
         <div><span class="stat-val">5</span><span class="stat-lbl">Full songs</span></div>
@@ -552,35 +553,6 @@ footer { padding: 110px 64px 60px; }
 <div class="rule"></div>
 
 <!-- FILM -->
-<section class="sec" id="film">
-  <div class="film-inner">
-    <div class="fade">
-      <div style="position:relative;aspect-ratio:16/9">
-        <iframe src="https://www.youtube-nocookie.com/embed/fmyR5NVbGNE" title="Tantleken — film preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:1px solid rgba(201,168,76,.2)"></iframe>
-      </div>
-    </div>
-    <div class="film-text fade">
-      <span class="sec-label">Film Work</span>
-      <h2 class="sec-title">Tantleken<br><em>(2023)</em></h2>
-      <p>A full original score for the Swedish documentary <em>Tantleken</em> — orchestral compositions with ambient influences, written to serve both the intimacy of documentary storytelling and the broader language of cinema.</p>
-      <p>The music moves between stillness and swell, supporting the human stories at the film's heart without ever overwhelming them.</p>
-      <div class="film-meta">
-        <div class="fmrow"><span class="fmkey">Director</span><span class="fmval">Charlotte Berglin (A Scarlet Film)</span></div>
-        <div class="fmrow"><span class="fmkey">Type</span><span class="fmval">Swedish Documentary</span></div>
-        <div class="fmrow"><span class="fmkey">Year</span><span class="fmval">2023</span></div>
-      </div>
-      <div class="sc-wrap">
-        <span class="sc-lbl">&#9835; Listen — Tantleken score</span>
-        <iframe scrolling="no" frameborder="no" allow="autoplay" height="166"
-          src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/music-for-tantleken&color=%23c9a84c&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
-        </iframe>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="rule"></div>
-
 <!-- ABOUT -->
 <section class="sec" id="about">
   <div class="about-inner">
@@ -601,8 +573,10 @@ footer { padding: 110px 64px 60px; }
         <div class="wb"></div><div class="wb"></div><div class="wb"></div>
         <div class="wb"></div><div class="wb"></div><div class="wb"></div>
       </div>
-      <p>Martin Mellstrom is a Swedish composer specialising in orchestral and cinematic music for indie games and film. Every music pack is built with developers in mind — seamless loops that integrate cleanly into any engine, layered stems for dynamic audio, and stingers for key moments.</p>
-      <p>In 2023 he composed the full score for the Swedish documentary <em>Tantleken</em>, directed by Charlotte Berglin of A Scarlet Film.</p>
+      <p>I make orchestral music for games. Smaller ensembles, a lot of minor keys, and enough ambient detail that a loop stays interesting after the twentieth time through.</p>
+      <p>The goal is always that the music belongs in the scene. Not just underneath it. Wind in the right place, a texture that shifts as the tension builds, an instrument choice that fits the world. A cello. A celesta. A flute that sounds like it's trying to find something.</p>
+      <p>On the practical side: seamless loops that actually loop, multiple intensity layers you can trigger in engine, and stems for when you want to take it apart.</p>
+      <p style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(201,168,76,.12);font-size:.92rem;color:var(--muted)">Film work: Original score for <em style="color:var(--text)">Tantleken</em> (2023), dir. Charlotte Berglin &mdash; <a href="https://soundcloud.com/martinmellstrom/sets/music-for-tantleken" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:none">Listen on SoundCloud &#8599;</a></p>
     </div>
   </div>
 </section>
@@ -733,7 +707,7 @@ footer { padding: 110px 64px 60px; }
 
   <div class="foot-bot">
     <span class="foot-copy">© 2025 Martin Mellstrom — All Rights Reserved</span>
-    <span class="foot-badge">Maintained with <span>Claude AI</span></span>
+
   </div>
 </footer>
 
