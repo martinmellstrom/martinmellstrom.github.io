@@ -329,9 +329,11 @@ nav {
 .cp-scrub:hover { height: 3px; }
 .cp-scrub-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--gold); width: 0%; pointer-events: none; transition: width .3s linear; }
 .cp-times { display: flex; justify-content: space-between; font-family: 'Syne', sans-serif; font-size: .52rem; letter-spacing: .08em; color: var(--muted); }
-.cp-list { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--golddim) transparent; min-height: 0; }
-.cp-list::-webkit-scrollbar { width: 3px; }
-.cp-list::-webkit-scrollbar-thumb { background: var(--golddim); }
+.cp-list { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #7a6030 #0e1210; min-height: 0; }
+.cp-list::-webkit-scrollbar { width: 4px; }
+.cp-list::-webkit-scrollbar-track { background: #0e1210; }
+.cp-list::-webkit-scrollbar-thumb { background: #7a6030; border-radius: 0; }
+.cp-list::-webkit-scrollbar-thumb:hover { background: #c9a84c; }
 .cp-list li { display: flex; align-items: center; gap: 12px; padding: 9px 18px; cursor: pointer; border-bottom: 1px solid rgba(201,168,76,.05); transition: background .2s; }
 .cp-list li:hover { background: rgba(201,168,76,.05); }
 .cp-list li.active { background: rgba(201,168,76,.08); }
@@ -422,7 +424,7 @@ footer { padding: 110px 64px 60px; }
 .citem::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--gold); transform: scaleY(0); transform-origin: bottom; transition: transform .35s; }
 .citem:hover::before { transform: scaleY(1); }
 .citem:hover { border-color: rgba(201,168,76,.25); background: rgba(201,168,76,.03); }
-.cicon { font-size: 1.1rem; flex-shrink: 0; }
+.cicon { font-size: 1.5rem; flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 1.5rem; }
 .clabel { font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); display: block; }
 .cval { font-size: .95rem; color: var(--cream); }
 .foot-bot { display: flex; justify-content: space-between; align-items: center; margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(201,168,76,.1); }
@@ -822,9 +824,9 @@ footer { padding: 110px 64px 60px; }
       <h2 class="foot-h">Let's work<br><em>together</em></h2>
       <p>Custom compositions, licensing questions, or collaboration inquiries — fill in the form or reach out directly.</p>
       <div class="contact-direct">
-        <a href="/cdn-cgi/l/email-protection#6e060b0202012e030f1c1a0700030b02021d1a1c0103400d0103" class="citem">
+        <a id="mail-link" class="citem" style="cursor:pointer">
           <span class="cicon">✉</span>
-          <div><span class="clabel">Email</span><span class="cval"><span class="__cf_email__" data-cfemail="a0c8c5cccccfe0cdc1d2d4c9cecdc5ccccd3d4d2cfcd8ec3cfcd">[email&#160;protected]</span></span></div>
+          <div><span class="clabel">Email</span><span class="cval" id="mail-display">hello@martinmellstrom.com</span></div>
         </a>
         <a href="https://www.instagram.com/martinmellstrommusic" target="_blank" rel="noopener noreferrer" class="citem">
           <span class="cicon">📷</span>
@@ -878,7 +880,15 @@ footer { padding: 110px 64px 60px; }
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+/* ─── Mail link (JS-assembled to avoid Cloudflare obfuscation) ─── */
+(function() {
+  var u = 'hello';
+  var d = 'martinmellstrom.com';
+  var el = document.getElementById('mail-link');
+  if (el) el.href = 'mailto:' + u + '@' + d;
+})();
+
 /* ─── Intersection Observer ─── */
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => {
@@ -1048,7 +1058,7 @@ setInterval(spawnClef, 3000);
     });
   }
 
-  // Load SC Widget API, then init both players
+  // Load SC Widget API, then init all players
   const tag = document.createElement('script');
   tag.src = 'https://w.soundcloud.com/player/api.js';
   tag.onload = function() { CONFIGS.forEach(initPlayer); };
