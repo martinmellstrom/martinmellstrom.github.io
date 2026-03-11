@@ -311,6 +311,8 @@ nav {
 
 /* ── Custom Player ── */
 .cplayer { background: #0e1210; border: 1px solid rgba(201,168,76,.18); height: 360px; display: flex; flex-direction: column; }
+#cp3 { height: auto; }
+#cp3 .cp-list { overflow-y: visible; }
 .cp-now { display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-bottom: 1px solid rgba(201,168,76,.1); flex-shrink: 0; }
 .cp-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .cp-btn { background: none; border: none; color: var(--golddim); cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; transition: color .2s; border-radius: 2px; }
@@ -679,9 +681,32 @@ footer { padding: 110px 64px 60px; }
     <span class="sec-label">Film Work</span>
     <h2 class="sec-title" style="margin-bottom:16px">Tantleken <em>(2023)</em></h2>
     <p style="font-style:italic;color:var(--text);font-size:1rem;margin-bottom:28px">Original score for the Swedish documentary directed by Charlotte Berglin. Orchestral compositions written for the intimacy of documentary storytelling.</p>
-    <iframe scrolling="no" frameborder="no" allow="autoplay" height="166" style="width:100%;border:1px solid rgba(201,168,76,.15);"
-      src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/music-for-tantleken&color=%23c9a84c&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
-    </iframe>
+    <span class="sc-lbl">&#9835; Listen — original score</span>
+    <div class="cplayer" id="cp3">
+          <div class="cp-now">
+            <div class="cp-btns">
+              <button class="cp-btn cp-prev" data-p="cp3" aria-label="Previous">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+              </button>
+              <button class="cp-btn cp-play" data-p="cp3" aria-label="Play">
+                <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              <button class="cp-btn cp-next" data-p="cp3" aria-label="Next">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.5 3.9-5.5 3.9V9.86zM16 6h2v12h-2z"/></svg>
+              </button>
+            </div>
+            <div class="cp-meta">
+              <span class="cp-title" id="cp3-title">Loading…</span>
+              <div class="cp-scrub" id="cp3-scrub">
+                <div class="cp-scrub-fill" id="cp3-fill"></div>
+              </div>
+              <div class="cp-times"><span id="cp3-cur">0:00</span><span id="cp3-dur">0:00</span></div>
+            </div>
+          </div>
+          <ol class="cp-list" id="cp3-list"></ol>
+          <iframe id="sc-3" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/music-for-tantleken&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
+        </div>
   </div>
 </section>
 
@@ -881,7 +906,9 @@ setInterval(spawnClef, 3000);
     { playerId: 'cp1', iframeId: 'sc-1', listId: 'cp1-list', titleId: 'cp1-title',
       fillId: 'cp1-fill', scrubId: 'cp1-scrub', curId: 'cp1-cur', durId: 'cp1-dur' },
     { playerId: 'cp2', iframeId: 'sc-2', listId: 'cp2-list', titleId: 'cp2-title',
-      fillId: 'cp2-fill', scrubId: 'cp2-scrub', curId: 'cp2-cur', durId: 'cp2-dur' }
+      fillId: 'cp2-fill', scrubId: 'cp2-scrub', curId: 'cp2-cur', durId: 'cp2-dur' },
+    { playerId: 'cp3', iframeId: 'sc-3', listId: 'cp3-list', titleId: 'cp3-title',
+      fillId: 'cp3-fill', scrubId: 'cp3-scrub', curId: 'cp3-cur', durId: 'cp3-dur' }
   ];
 
   function fmt(ms) {
@@ -905,9 +932,15 @@ setInterval(spawnClef, 3000);
 
     const HIDDEN = cfg.playerId === 'cp1' ? ['iii siblings'] : [];
     // Fallback titles if SoundCloud doesn't return metadata (e.g. private tracks)
+    const FALLBACK_DURATIONS = {
+      'cp1': [null,null,null,null,null,'2:17','3:12','3:11','1:38','1:17','2:35','1:30'],
+      'cp2': [],
+      'cp3': []
+    };
     const FALLBACK_TITLES = {
       'cp1': ['Glittering Moss','Light Steps','Fantastic Beast','Drifter','III Siblings','Ardea','Atlas Companion','Battle Companion','The Menu','Colossus Rose','Minerals','Aerial View'],
-      'cp2': ['Forest','Snow','Graveyard','Field','Cave']
+      'cp2': ['Forest','Snow','Graveyard','Field','Cave'],
+      'cp3': []
     };
 
     widget.bind(SC.Widget.Events.READY, function() {
@@ -922,9 +955,11 @@ setInterval(spawnClef, 3000);
           li.dataset.scIdx = scIdx;
           var fallbacks = FALLBACK_TITLES[cfg.playerId] || [];
           var displayTitle = (t.title && t.title.trim()) ? t.title.trim() : (fallbacks[scIdx] || 'Track ' + visibleNum);
+          var durFallbacks = FALLBACK_DURATIONS[cfg.playerId] || [];
+          var displayDur = (t.duration && t.duration > 0) ? fmt(t.duration) : (durFallbacks[scIdx] || '');
           li.innerHTML = '<span class="cp-li-num">' + String(visibleNum).padStart(2,'0') + '</span>'
             + '<span class="cp-li-name">' + displayTitle + '</span>'
-            + '<span class="cp-li-dur">' + fmt(t.duration) + '</span>';
+            + '<span class="cp-li-dur">' + displayDur + '</span>';
           li.addEventListener('click', function() { widget.skip(scIdx); widget.play(); });
           listEl.appendChild(li);
         });
