@@ -281,7 +281,7 @@ nav {
 /* PACKS */
 #packs { background: var(--surface); position: relative; }
 #packs::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, var(--golddim), transparent); }
-.packs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 56px; align-items: start; }
+.packs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 56px; align-items: stretch; }
 .pack { background: var(--bg); padding: 0; position: relative; overflow: hidden; transition: transform .4s cubic-bezier(.16,1,.3,1); display: flex; flex-direction: column; }
 .pack-body { padding: 36px 44px 48px; display: flex; flex-direction: column; flex: 1; }
 .pack::before { content: ''; position: absolute; inset: 0; background: linear-gradient(140deg, rgba(201,168,76,.05), transparent 55%); opacity: 0; transition: opacity .4s; pointer-events: none; }
@@ -306,9 +306,38 @@ nav {
 .buyrow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .buy { font-family: 'Syne', sans-serif; font-size: .56rem; letter-spacing: .15em; text-transform: uppercase; padding: 10px 16px; background: rgba(201,168,76,.12); border: 1px solid var(--gold); color: var(--cream); text-decoration: none; transition: all .3s; white-space: nowrap; font-weight: 600; }
 .buy:hover { background: var(--gold); color: #0e140e; border-color: var(--gold); transform: translateY(-1px); }
-.sc-wrap { margin-top: 24px; border-top: 1px solid rgba(201,168,76,.1); padding-top: 20px; }
-.sc-lbl { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 10px; }
-.sc-wrap iframe { width: 100%; border: 1px solid rgba(201,168,76,.1); }
+.sc-wrap { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(201,168,76,.1); }
+.sc-lbl { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 12px; }
+
+/* ── Custom Player ── */
+.cplayer { background: #0e1210; border: 1px solid rgba(201,168,76,.18); height: 360px; display: flex; flex-direction: column; }
+.cp-now { display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-bottom: 1px solid rgba(201,168,76,.1); flex-shrink: 0; }
+.cp-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.cp-btn { background: none; border: none; color: var(--golddim); cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; transition: color .2s; border-radius: 2px; }
+.cp-btn:hover { color: var(--gold); }
+.cp-btn svg { width: 18px; height: 18px; }
+.cp-play { color: var(--gold); }
+.cp-play svg { width: 26px; height: 26px; }
+.cp-ico-pause { display: none; }
+.cplayer.playing .cp-ico-play { display: none; }
+.cplayer.playing .cp-ico-pause { display: block; }
+.cp-meta { flex: 1; min-width: 0; }
+.cp-title { display: block; font-family: 'Syne', sans-serif; font-size: .65rem; letter-spacing: .08em; text-transform: uppercase; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 10px; }
+.cp-scrub { position: relative; height: 2px; background: rgba(201,168,76,.15); cursor: pointer; margin-bottom: 7px; }
+.cp-scrub:hover { height: 3px; }
+.cp-scrub-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--gold); width: 0%; pointer-events: none; transition: width .3s linear; }
+.cp-times { display: flex; justify-content: space-between; font-family: 'Syne', sans-serif; font-size: .52rem; letter-spacing: .08em; color: var(--muted); }
+.cp-list { list-style: none; padding: 0; margin: 0; flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--golddim) transparent; min-height: 0; }
+.cp-list::-webkit-scrollbar { width: 3px; }
+.cp-list::-webkit-scrollbar-thumb { background: var(--golddim); }
+.cp-list li { display: flex; align-items: center; gap: 12px; padding: 9px 18px; cursor: pointer; border-bottom: 1px solid rgba(201,168,76,.05); transition: background .2s; }
+.cp-list li:hover { background: rgba(201,168,76,.05); }
+.cp-list li.active { background: rgba(201,168,76,.08); }
+.cp-list li.active .cp-li-num { color: var(--gold); }
+.cp-list li.active .cp-li-name { color: var(--cream); }
+.cp-li-num { font-family: 'Syne', sans-serif; font-size: .52rem; color: var(--golddim); width: 22px; flex-shrink: 0; }
+.cp-li-name { font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cp-li-dur { font-family: 'Syne', sans-serif; font-size: .52rem; color: var(--golddim); flex-shrink: 0; }
 
 /* BLOG */
 .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 56px; }
@@ -418,6 +447,7 @@ footer { padding: 110px 64px 60px; }
     <li><a href="#packs">Music Packs</a></li>
     <li><a href="#blog">Blog</a></li>
     <li><a href="#about">About</a></li>
+    <li><a href="#film">Film</a></li>
     <li><a href="#platforms">Stores</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
@@ -519,8 +549,30 @@ footer { padding: 110px 64px 60px; }
       </div>
       <div class="sc-wrap">
         <span class="sc-lbl">&#9835; Listen — full preview</span>
-        <div style="margin-top:10px;position:relative;aspect-ratio:16/9">
-          <iframe src="https://www.youtube-nocookie.com/embed/wcTK6HN99oQ" title="Atlas Companion preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:1px solid rgba(201,168,76,.2)"></iframe>
+        <div class="cplayer" id="cp1">
+          <div class="cp-now">
+            <div class="cp-btns">
+              <button class="cp-btn cp-prev" data-p="cp1" aria-label="Previous">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+              </button>
+              <button class="cp-btn cp-play" data-p="cp1" aria-label="Play">
+                <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              <button class="cp-btn cp-next" data-p="cp1" aria-label="Next">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.5 3.9-5.5 3.9V9.86zM16 6h2v12h-2z"/></svg>
+              </button>
+            </div>
+            <div class="cp-meta">
+              <span class="cp-title" id="cp1-title">Loading…</span>
+              <div class="cp-scrub" id="cp1-scrub">
+                <div class="cp-scrub-fill" id="cp1-fill"></div>
+              </div>
+              <div class="cp-times"><span id="cp1-cur">0:00</span><span id="cp1-dur">0:00</span></div>
+            </div>
+          </div>
+          <ol class="cp-list" id="cp1-list"></ol>
+          <iframe id="sc-1" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/mfvg&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
         </div>
       </div>
       </div>
@@ -558,8 +610,30 @@ footer { padding: 110px 64px 60px; }
       </div>
       <div class="sc-wrap">
         <span class="sc-lbl">&#9835; Listen — full preview</span>
-        <div style="margin-top:10px;position:relative;aspect-ratio:16/9">
-          <iframe src="https://www.youtube-nocookie.com/embed/Q4DBAgMRY5o" title="Exploration Pack preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:1px solid rgba(201,168,76,.2)"></iframe>
+        <div class="cplayer" id="cp2">
+          <div class="cp-now">
+            <div class="cp-btns">
+              <button class="cp-btn cp-prev" data-p="cp2" aria-label="Previous">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+              </button>
+              <button class="cp-btn cp-play" data-p="cp2" aria-label="Play">
+                <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              <button class="cp-btn cp-next" data-p="cp2" aria-label="Next">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.5 3.9-5.5 3.9V9.86zM16 6h2v12h-2z"/></svg>
+              </button>
+            </div>
+            <div class="cp-meta">
+              <span class="cp-title" id="cp2-title">Loading…</span>
+              <div class="cp-scrub" id="cp2-scrub">
+                <div class="cp-scrub-fill" id="cp2-fill"></div>
+              </div>
+              <div class="cp-times"><span id="cp2-cur">0:00</span><span id="cp2-dur">0:00</span></div>
+            </div>
+          </div>
+          <ol class="cp-list" id="cp2-list"></ol>
+          <iframe id="sc-2" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/orchestral-exploration-pack&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
         </div>
       </div>
       </div>
@@ -593,8 +667,21 @@ footer { padding: 110px 64px 60px; }
       <p>I make orchestral music for games. Smaller ensembles, a lot of minor keys, and enough ambient detail that a loop stays interesting after the twentieth time through.</p>
       <p>The goal is always that the music belongs in the scene. Not just underneath it. Wind in the right place, a texture that shifts as the tension builds, an instrument choice that fits the world.</p>
       <p>On the practical side: seamless loops that actually loop, multiple intensity layers you can trigger in engine, and stems for when you want to take it apart.</p>
-      <p style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(201,168,76,.12);font-size:.92rem;color:var(--muted)">Film work: Original score for <em style="color:var(--text)">Tantleken</em> (2023), dir. Charlotte Berglin &mdash; <a href="https://soundcloud.com/martinmellstrom/sets/music-for-tantleken" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:none">Listen on SoundCloud &#8599;</a></p>
     </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- FILM -->
+<section class="sec" id="film" style="max-width:860px;margin:0 auto">
+  <div class="fade">
+    <span class="sec-label">Film Work</span>
+    <h2 class="sec-title" style="margin-bottom:16px">Tantleken <em>(2023)</em></h2>
+    <p style="font-style:italic;color:var(--text);font-size:1rem;margin-bottom:28px">Original score for the Swedish documentary directed by Charlotte Berglin. Orchestral compositions written for the intimacy of documentary storytelling.</p>
+    <iframe scrolling="no" frameborder="no" allow="autoplay" height="166" style="width:100%;border:1px solid rgba(201,168,76,.15);"
+      src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/music-for-tantleken&color=%23c9a84c&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
+    </iframe>
   </div>
 </section>
 
@@ -787,6 +874,135 @@ function spawnClef() {
 }
 for (let i = 0; i < 6; i++) setTimeout(spawnClef, i * 2200);
 setInterval(spawnClef, 3000);
+
+/* ─── Custom SoundCloud Players ─── */
+(function() {
+  const CONFIGS = [
+    { playerId: 'cp1', iframeId: 'sc-1', listId: 'cp1-list', titleId: 'cp1-title',
+      fillId: 'cp1-fill', scrubId: 'cp1-scrub', curId: 'cp1-cur', durId: 'cp1-dur' },
+    { playerId: 'cp2', iframeId: 'sc-2', listId: 'cp2-list', titleId: 'cp2-title',
+      fillId: 'cp2-fill', scrubId: 'cp2-scrub', curId: 'cp2-cur', durId: 'cp2-dur' }
+  ];
+
+  function fmt(ms) {
+    if (!ms || isNaN(ms)) return '0:00';
+    const s = Math.floor(ms / 1000), m = Math.floor(s / 60), sec = s % 60;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
+  function initPlayer(cfg) {
+    const iframe = document.getElementById(cfg.iframeId);
+    if (!iframe) return;
+    const widget = SC.Widget(iframe);
+    const playerEl = document.getElementById(cfg.playerId);
+    const listEl = document.getElementById(cfg.listId);
+    const titleEl = document.getElementById(cfg.titleId);
+    const fillEl = document.getElementById(cfg.fillId);
+    const scrubEl = document.getElementById(cfg.scrubId);
+    const curEl = document.getElementById(cfg.curId);
+    const durEl = document.getElementById(cfg.durId);
+    let tracks = [], currentIdx = 0, duration = 0;
+
+    const HIDDEN = cfg.playerId === 'cp1' ? ['iii siblings'] : [];
+    // Fallback titles if SoundCloud doesn't return metadata (e.g. private tracks)
+    const FALLBACK_TITLES = {
+      'cp1': ['Glittering Moss','Light Steps','Fantastic Beast','Drifter','III Siblings','Ardea','Atlas Companion','Battle Companion','The Menu','Colossus Rose','Minerals','Aerial View'],
+      'cp2': ['Forest','Snow','Graveyard','Field','Cave']
+    };
+
+    widget.bind(SC.Widget.Events.READY, function() {
+      widget.getSounds(function(sounds) {
+        tracks = sounds;
+        listEl.innerHTML = '';
+        var visibleNum = 0;
+        sounds.forEach(function(t, scIdx) {
+          if (HIDDEN.indexOf((t.title || '').toLowerCase()) !== -1) return;
+          visibleNum++;
+          var li = document.createElement('li');
+          li.dataset.scIdx = scIdx;
+          var fallbacks = FALLBACK_TITLES[cfg.playerId] || [];
+          var displayTitle = (t.title && t.title.trim()) ? t.title.trim() : (fallbacks[scIdx] || 'Track ' + visibleNum);
+          li.innerHTML = '<span class="cp-li-num">' + String(visibleNum).padStart(2,'0') + '</span>'
+            + '<span class="cp-li-name">' + displayTitle + '</span>'
+            + '<span class="cp-li-dur">' + fmt(t.duration) + '</span>';
+          li.addEventListener('click', function() { widget.skip(scIdx); widget.play(); });
+          listEl.appendChild(li);
+        });
+        var first = listEl.querySelector('li');
+        if (first) {
+          first.classList.add('active');
+          var fIdx = parseInt(first.dataset.scIdx);
+          var fb = (FALLBACK_TITLES[cfg.playerId] || []);
+          var fTitle = (sounds[fIdx] && sounds[fIdx].title && sounds[fIdx].title.trim()) ? sounds[fIdx].title.trim() : (fb[fIdx] || 'Track 1');
+          titleEl.textContent = fTitle;
+        }
+      });
+    });
+
+    widget.bind(SC.Widget.Events.PLAY, function() {
+      playerEl.classList.add('playing');
+      widget.getCurrentSound(function(s) {
+        if (s) { var fb2 = (FALLBACK_TITLES[cfg.playerId] || []); widget.getCurrentSoundIndex(function(si){ titleEl.textContent = (s.title && s.title.trim()) ? s.title.trim() : (fb2[si] || ''); }); duration = s.duration || 0; durEl.textContent = fmt(duration); }
+      });
+      widget.getCurrentSoundIndex(function(scIdx) {
+        currentIdx = scIdx;
+        Array.from(listEl.children).forEach(function(li) {
+          li.classList.toggle('active', parseInt(li.dataset.scIdx) === scIdx);
+        });
+        var active = listEl.querySelector('li.active');
+        if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      });
+    });
+
+    widget.bind(SC.Widget.Events.PAUSE, function() {
+      playerEl.classList.remove('playing');
+    });
+
+    widget.bind(SC.Widget.Events.FINISH, function() {
+      playerEl.classList.remove('playing');
+      fillEl.style.width = '0%';
+      curEl.textContent = '0:00';
+    });
+
+    widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(e) {
+      if (e.currentPosition !== undefined && duration > 0) {
+        fillEl.style.width = (e.currentPosition / duration * 100) + '%';
+        curEl.textContent = fmt(e.currentPosition);
+      }
+    });
+
+    // Play/pause button
+    document.querySelector('#' + cfg.playerId + ' .cp-play').addEventListener('click', function() {
+      widget.isPaused(function(paused) { paused ? widget.play() : widget.pause(); });
+    });
+
+    // Prev/next
+    document.querySelector('#' + cfg.playerId + ' .cp-prev').addEventListener('click', function() {
+      widget.getCurrentSoundIndex(function(idx) {
+        if (idx > 0) { widget.skip(idx - 1); widget.play(); }
+      });
+    });
+    document.querySelector('#' + cfg.playerId + ' .cp-next').addEventListener('click', function() {
+      widget.getCurrentSoundIndex(function(idx) {
+        if (idx < tracks.length - 1) { widget.skip(idx + 1); widget.play(); }
+      });
+    });
+
+    // Scrub bar
+    scrubEl.addEventListener('click', function(e) {
+      if (!duration) return;
+      const rect = scrubEl.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      widget.seekTo(pct * duration);
+    });
+  }
+
+  // Load SC Widget API, then init both players
+  const tag = document.createElement('script');
+  tag.src = 'https://w.soundcloud.com/player/api.js';
+  tag.onload = function() { CONFIGS.forEach(initPlayer); };
+  document.head.appendChild(tag);
+})();
 
 /* ─── Contact form ─── */
 const form = document.getElementById('contactForm');
