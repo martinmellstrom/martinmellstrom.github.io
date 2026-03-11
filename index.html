@@ -37,7 +37,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.65;
   overflow-x: hidden;
 }
@@ -57,7 +57,7 @@ nav {
 }
 .navlinks { display: flex; gap: 24px; list-style: none; flex-wrap: nowrap; }
 .navlinks a {
-  font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .15em;
+  font-family: 'Syne', sans-serif; font-size: .72rem; letter-spacing: .15em;
   text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .3s; white-space: nowrap;
 }
 .navlinks a:hover { color: var(--gold); }
@@ -275,6 +275,7 @@ nav {
 }
 .sec-title { font-size: clamp(2.2rem,5vw,3.8rem); font-weight: 300; color: var(--cream); line-height: 1.05; }
 .sec-title em { font-style: italic; color: var(--gold); }
+.sec-subtitle { font-style: italic; color: var(--text); font-size: 1rem; margin-top: 16px; }
 .rule { width: 60px; height: 1px; background: var(--golddim); margin: 0 64px; }
 
 /* PACKS */
@@ -348,9 +349,9 @@ nav {
 .plat:hover { background: rgba(201,168,76,.04); border-bottom-color: var(--gold); transform: translateY(-4px); }
 .plat-icon { font-size: 2rem; transition: transform .35s; }
 .plat:hover .plat-icon { transform: scale(1.15); }
-.plat-name { font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); transition: color .3s; }
+.plat-name { font-family: 'Syne', sans-serif; font-size: .82rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); transition: color .3s; }
 .plat:hover .plat-name { color: var(--gold); }
-.plat-url { font-size: .82rem; font-style: italic; color: rgba(85,85,85,.6); transition: color .3s; }
+.plat-url { font-size: 1rem; font-style: italic; color: rgba(160,155,135,.6); transition: color .3s; }
 .plat:hover .plat-url { color: var(--text); }
 
 /* FAQ */
@@ -400,7 +401,7 @@ footer { padding: 110px 64px 60px; }
   .hero-left { padding: 120px 24px 80px; }
   .sec { padding: 80px 24px; } .rule { margin: 0 24px; }
   .packs-grid { grid-template-columns: 1fr; } .film-inner { grid-template-columns: 1fr; gap: 40px; }
-  .about-inner { grid-template-columns: 1fr; gap: 40px; } .plat-grid { grid-template-columns: repeat(2,1fr); }
+  .about-inner { grid-template-columns: 1fr; gap: 40px; } .plat-grid { grid-template-columns: 1fr; }
   footer { padding: 70px 24px 40px; }
   .contact-grid { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr; }
@@ -412,7 +413,7 @@ footer { padding: 110px 64px 60px; }
 <body>
 
 <nav id="nav">
-  <a href="#home" class="logo">Martin Mellström</a>
+  <a href="#home" class="logo">Martin Mellstrom</a>
   <ul class="navlinks">
     <li><a href="#packs">Music Packs</a></li>
     <li><a href="#blog">Blog</a></li>
@@ -480,7 +481,7 @@ footer { padding: 110px 64px 60px; }
 <section class="sec" id="packs">
   <span class="sec-label">Featured Releases</span>
   <h2 class="sec-title">Music <em>Packs</em></h2>
-  <p style="font-style:italic;color:var(--muted);font-size:1rem;margin-top:16px;margin-bottom:0">Orchestral music packs with seamless loops, adaptive layers and stingers — built for RPG, adventure, Metroidvania and platformer games.</p>
+  <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px;margin-bottom:0">Orchestral music packs with seamless loops, adaptive layers and stingers — built for RPG, adventure, Metroidvania and platformer games.</p>
 
   <div class="packs-grid">
     <div class="pack fade">
@@ -604,7 +605,7 @@ footer { padding: 110px 64px 60px; }
   <div class="fade">
     <span class="sec-label">Available on</span>
     <h2 class="sec-title">Find the <em>Music</em></h2>
-    <p style="font-style:italic;color:var(--muted);font-size:1rem;margin-top:16px">All packs available on four platforms. Follow the store profiles to be notified of new releases.</p>
+    <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px">All packs available on four platforms. Follow the store profiles to be notified of new releases.</p>
   </div>
   <div class="plat-grid fade">
     <a href="https://martinmellstrommusic.itch.io" target="_blank" rel="noopener noreferrer" class="plat">
@@ -637,7 +638,7 @@ footer { padding: 110px 64px 60px; }
   <div class="fade">
     <span class="sec-label">Notes & Thoughts</span>
     <h2 class="sec-title">From the <em>Studio</em></h2>
-    <p style="font-style:italic;color:var(--muted);font-size:1rem;margin-top:16px">On composing, game audio and the occasional tool recommendation.</p>
+    <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px">On composing, game audio and the occasional tool recommendation.</p>
   </div>
   <div class="blog-grid fade" id="blogGrid">
     <div class="blog-card">
@@ -743,7 +744,7 @@ footer { padding: 110px 64px 60px; }
   </div>
 
   <div class="foot-bot">
-    <span class="foot-copy">© 2026 Martin Mellström — All Rights Reserved</span>
+    <span class="foot-copy">© 2025 Martin Mellstrom — All Rights Reserved</span>
 
   </div>
 </footer>
