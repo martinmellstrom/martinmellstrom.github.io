@@ -484,8 +484,6 @@ footer { padding: 110px 64px 60px; }
     </div>
   </div>
 
-  <!-- Floating clefs and notes (injected by JS) -->
-
   <!-- LEFT: Title panel -->
   <div class="hero-left">
     <div class="hero-eyebrow">
@@ -525,7 +523,6 @@ footer { padding: 110px 64px 60px; }
 
   <div class="packs-grid">
     <div class="pack fade">
-      <div class="badge">Flagship</div>
       <div class="pack-body">
       <div class="pack-header">
         <div>
@@ -878,7 +875,6 @@ footer { padding: 110px 64px 60px; }
 
   <div class="foot-bot">
     <span class="foot-copy">© 2026 Martin Mellstrom — All Rights Reserved</span>
-
   </div>
 </footer>
 
@@ -1072,7 +1068,7 @@ form.addEventListener('submit', async function(e) {
   const btn = this.querySelector('button[type=submit]');
   btn.textContent = 'Sending...'; btn.disabled = true;
   try {
-    const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+    const res = await fetch('https://formspree.io/f/xaqpopok', {
       method: 'POST', body: new FormData(this), headers: { 'Accept': 'application/json' }
     });
     if (res.ok) {
