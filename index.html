@@ -390,6 +390,14 @@ nav {
 .faq-item summary { font-family: 'Syne', sans-serif; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cream); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
 .faq-item p { margin-top: 18px; color: var(--text); font-size: 1rem; line-height: 1.9; font-weight: 300; }
 
+/* FILM */
+.film-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; max-width: 860px; margin: 0 auto; }
+.film-image { position: relative; overflow: hidden; border: 1px solid rgba(201,168,76,.15); }
+.film-image img { width: 100%; height: 100%; object-fit: cover; display: block; aspect-ratio: 4/3; }
+.film-image::before { content: ''; position: absolute; inset: 0; background: linear-gradient(140deg, rgba(201,168,76,.07), transparent 55%); pointer-events: none; z-index: 1; }
+.film-frame { position: absolute; top: 12px; right: -12px; bottom: -12px; left: 12px; border: 1px solid var(--golddim); z-index: -1; }
+.film-content { display: flex; flex-direction: column; }
+
 /* FOOTER / CONTACT */
 footer { padding: 110px 64px 60px; }
 .foot-h { font-size: clamp(2.6rem,5.5vw,4.2rem); font-weight: 300; color: var(--cream); line-height: 1.05; margin-bottom: 28px; }
@@ -645,7 +653,6 @@ footer { padding: 110px 64px 60px; }
 
 <div class="rule"></div>
 
-<!-- FILM -->
 <!-- ABOUT -->
 <section class="sec" id="about">
   <div class="about-inner">
@@ -679,10 +686,20 @@ footer { padding: 110px 64px 60px; }
 <section class="sec" id="film" style="max-width:860px;margin:0 auto">
   <div class="fade">
     <span class="sec-label">Film Work</span>
-    <h2 class="sec-title" style="margin-bottom:16px">Tantleken <em>(2023)</em></h2>
-    <p style="font-style:italic;color:var(--text);font-size:1rem;margin-bottom:28px">Original score for the Swedish documentary directed by Charlotte Berglin. Orchestral compositions written for the intimacy of documentary storytelling.</p>
-    <span class="sc-lbl">&#9835; Listen — original score</span>
-    <div class="cplayer" id="cp3">
+    <h2 class="sec-title" style="margin-bottom:32px">Tantleken <em>(2023)</em></h2>
+    <div class="film-inner" style="max-width:100%;margin:0 0 40px 0">
+      <div style="position:relative">
+        <div class="film-image">
+          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/kvadratisk_poster_tantleken_indigogo.jpg"
+               alt="Tantleken — documentary film 2023"
+               onerror="this.closest('.film-image').style.display='none'">
+        </div>
+        <div class="film-frame"></div>
+      </div>
+      <div class="film-content">
+        <p style="font-style:italic;color:var(--text);font-size:1rem;margin-bottom:28px">Original score for the Swedish documentary directed by Charlotte Berglin. Orchestral compositions written for the intimacy of documentary storytelling.</p>
+        <span class="sc-lbl">&#9835; Listen — original score</span>
+        <div class="cplayer" id="cp3">
           <div class="cp-now">
             <div class="cp-btns">
               <button class="cp-btn cp-prev" data-p="cp3" aria-label="Previous">
@@ -707,6 +724,8 @@ footer { padding: 110px 64px 60px; }
           <ol class="cp-list" id="cp3-list"></ol>
           <iframe id="sc-3" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/music-for-tantleken&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
         </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -856,7 +875,7 @@ footer { padding: 110px 64px 60px; }
   </div>
 
   <div class="foot-bot">
-    <span class="foot-copy">© 2025 Martin Mellstrom — All Rights Reserved</span>
+    <span class="foot-copy">© 2026 Martin Mellstrom — All Rights Reserved</span>
 
   </div>
 </footer>
@@ -931,7 +950,6 @@ setInterval(spawnClef, 3000);
     let tracks = [], currentIdx = 0, duration = 0;
 
     const HIDDEN = cfg.playerId === 'cp1' ? ['iii siblings'] : [];
-    // Fallback titles if SoundCloud doesn't return metadata (e.g. private tracks)
     const FALLBACK_DURATIONS = {
       'cp1': [null,null,null,null,null,'2:17','3:12','3:11','1:38','1:17','2:35','1:30'],
       'cp2': [],
