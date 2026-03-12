@@ -306,6 +306,9 @@ nav {
 .buyrow { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .buy { font-family: 'Syne', sans-serif; font-size: .56rem; letter-spacing: .15em; text-transform: uppercase; padding: 10px 16px; background: rgba(201,168,76,.12); border: 1px solid var(--gold); color: var(--cream); text-decoration: none; transition: all .3s; white-space: nowrap; font-weight: 600; }
 .buy:hover { background: var(--gold); color: #0e140e; border-color: var(--gold); transform: translateY(-1px); }
+.pack-coming { opacity: .72; }
+.pack-coming:hover { opacity: .88; }
+.badge-cs { position: absolute; top: 16px; right: 16px; font-family: 'Syne', sans-serif; font-size: .52rem; letter-spacing: .15em; text-transform: uppercase; background: transparent; border: 1px solid var(--golddim); color: var(--golddim); padding: 5px 12px; font-weight: 700; z-index: 2; }
 .sc-wrap { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(201,168,76,.1); }
 .sc-lbl { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 12px; }
 
@@ -649,6 +652,41 @@ footer { padding: 110px 64px 60px; }
       </div>
       </div>
     </div>
+
+    <div class="pack pack-coming fade">
+      <div class="badge-cs">Coming Soon</div>
+      <div class="pack-body">
+      <div class="pack-header">
+        <div>
+          <div class="pack-num">003</div>
+          <h3 class="pack-title">Echoes of the Silent Woods</h3>
+          <p class="pack-sub">Melancholic forest music for Metroidvanias</p>
+        </div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/fJFGWJrKDDlc7lSYevtO--2--r9zq9.jpg"
+             alt="Echoes of the Silent Woods"
+             class="pack-icon">
+      </div>
+      <p class="pack-desc">A complete forest chapter solution — exploration, danger, safe zones and ambient in one coherent musical voice. Solo flute, pizzicato strings, celesta textures and haunting woodwinds. Designed for worlds that feel ancient and lonely.</p>
+      <div class="pack-stats">
+        <div><span class="stat-val">10</span><span class="stat-lbl">Full songs</span></div>
+        <div><span class="stat-val">6</span><span class="stat-lbl">Stingers</span></div>
+        <div><span class="stat-val">$19.99</span><span class="stat-lbl">At release</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag">Orchestral</span><span class="tag">Seamless Loops</span>
+        <span class="tag">Stingers</span><span class="tag">Metroidvania</span>
+        <span class="tag">Nordic</span><span class="tag">No AI</span>
+        <span class="tag">Royalty-free</span>
+      </div>
+      <div class="buyrow">
+        <a href="https://martinmellstrommusic.itch.io" target="_blank" rel="noopener noreferrer" class="buy">Follow on itch.io</a>
+        <a href="https://www.fab.com/sellers/MartinMellstromMusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on Fab</a>
+        <a href="https://assetstore.unity.com/publishers/110778" target="_blank" rel="noopener noreferrer" class="buy">Follow on Unity</a>
+        <a href="https://gamedevmarket.net/member/martinmellstrommusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on GameDevMarket</a>
+      </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -826,7 +864,7 @@ footer { padding: 110px 64px 60px; }
       <div class="contact-direct">
         <a id="mail-link" class="citem" style="cursor:pointer">
           <span class="cicon">✉</span>
-          <div><span class="clabel">Email</span><span class="cval" id="mail-display">hello@martinmellstrom.com</span></div>
+          <div><span class="clabel">Email</span><span class="cval" id="mail-display"><span class="__cf_email__" data-cfemail="1179747d7d7e517c706365787f7c747d7d6265637e7c3f727e7c">[email&#160;protected]</span></span></div>
         </a>
         <a href="https://www.instagram.com/martinmellstrommusic" target="_blank" rel="noopener noreferrer" class="citem">
           <span class="cicon">📷</span>
@@ -880,7 +918,7 @@ footer { padding: 110px 64px 60px; }
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ─── Mail link (JS-assembled to avoid Cloudflare obfuscation) ─── */
 (function() {
   var u = 'hello';
@@ -1086,9 +1124,15 @@ form.addEventListener('submit', async function(e) {
     if (res.ok) {
       lastSubmit = Date.now(); this.reset();
       document.getElementById('formSuccess').style.display = 'block';
-      btn.textContent = 'Send Message'; btn.disabled = false;
-    } else { btn.textContent = 'Try again'; btn.disabled = false; }
-  } catch { btn.textContent = 'Try again'; btn.disabled = false; }
+      btn.textContent = 'Sent!';
+    } else {
+      btn.textContent = 'Try again';
+      btn.disabled = false;
+    }
+  } catch(err) {
+    btn.textContent = 'Error — try again';
+    btn.disabled = false;
+  }
 });
 </script>
 </body>
