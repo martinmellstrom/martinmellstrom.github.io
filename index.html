@@ -563,14 +563,14 @@ footer { padding: 110px 64px 60px; }
           <div class="cp-now">
             <div class="cp-btns">
               <button class="cp-btn cp-prev" data-p="cp1" aria-label="Previous">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg>
               </button>
               <button class="cp-btn cp-play" data-p="cp1" aria-label="Play">
                 <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               </button>
               <button class="cp-btn cp-next" data-p="cp1" aria-label="Next">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.5 3.9-5.5 3.9V9.86zM16 6h2v12h-2z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg>
               </button>
             </div>
             <div class="cp-meta">
@@ -625,14 +625,14 @@ footer { padding: 110px 64px 60px; }
           <div class="cp-now">
             <div class="cp-btns">
               <button class="cp-btn cp-prev" data-p="cp2" aria-label="Previous">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg>
               </button>
               <button class="cp-btn cp-play" data-p="cp2" aria-label="Play">
                 <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               </button>
               <button class="cp-btn cp-next" data-p="cp2" aria-label="Next">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.5 3.9-5.5 3.9V9.86zM16 6h2v12h-2z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg>
               </button>
             </div>
             <div class="cp-meta">
@@ -704,14 +704,14 @@ footer { padding: 110px 64px 60px; }
           <div class="cp-now">
             <div class="cp-btns">
               <button class="cp-btn cp-prev" data-p="cp3" aria-label="Previous">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg>
               </button>
               <button class="cp-btn cp-play" data-p="cp3" aria-label="Play">
                 <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               </button>
               <button class="cp-btn cp-next" data-p="cp3" aria-label="Next">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.5 3.9-5.5 3.9V9.86zM16 6h2v12h-2z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg>
               </button>
             </div>
             <div class="cp-meta">
@@ -880,13 +880,15 @@ footer { padding: 110px 64px 60px; }
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 /* ─── Mail link (JS-assembled to avoid Cloudflare obfuscation) ─── */
 (function() {
   var u = 'hello';
   var d = 'martinmellstrom.com';
   var el = document.getElementById('mail-link');
   if (el) el.href = 'mailto:' + u + '@' + d;
+  var disp = document.getElementById('mail-display');
+  if (disp) disp.textContent = u + '@' + d;
 })();
 
 /* ─── Intersection Observer ─── */
