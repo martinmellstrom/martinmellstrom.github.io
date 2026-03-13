@@ -475,6 +475,7 @@ footer { padding: 110px 64px 60px; }
 .contact-info p { font-size: 1.05rem; line-height: 1.9; color: var(--text); font-weight: 300; margin-bottom: 32px; font-style: italic; }
 .contact-direct { display: flex; flex-direction: column; gap: 10px; margin-top: 40px; padding-top: 40px; border-top: 1px solid rgba(201,168,76,.12); }
 .contact-form { display: flex; flex-direction: column; gap: 18px; }
+.contact-form-col { padding-top: 34px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); }
@@ -511,6 +512,7 @@ footer { padding: 110px 64px 60px; }
   .about-inner { grid-template-columns: 1fr; gap: 40px; } .plat-grid { grid-template-columns: 1fr; }
   footer { padding: 70px 24px 40px; }
   .contact-grid { grid-template-columns: 1fr; }
+  .contact-form-col { padding-top: 0; }
   .form-row { grid-template-columns: 1fr; }
   .hero-stats { gap: 0; }
   .scroll-ind { right: 24px; }
@@ -933,7 +935,7 @@ footer { padding: 110px 64px 60px; }
         </a>
       </div>
     </div>
-    <div>
+    <div class="contact-form-col">
       <form class="contact-form" id="contactForm">
         <div class="form-row">
           <div class="form-group">
