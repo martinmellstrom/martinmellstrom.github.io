@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From the Studio — Martin Mellström</title>
+<meta name="description" content="Notes on composing, game audio and the work behind the music packs — by Martin Mellström.">
+<meta name="author" content="Martin Mellström">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.martinmellstrom.com/blog.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.martinmellstrom.com/blog.html">
+<meta property="og:title" content="From the Studio — Martin Mellström">
+<meta property="og:description" content="Notes on composing, game audio and the work behind the music packs.">
+<meta property="og:image" content="https://www.martinmellstrom.com/martin_photo.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #131714;
+  --surface: #191e1a;
+  --gold: #c9a84c;
+  --golddim: #7a6030;
+  --cream: #f0e8d4;
+  --muted: #6a7060;
+  --text: #c8c4b0;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 26px 64px;
+  background: linear-gradient(to bottom, rgba(12,18,12,.97), transparent);
+  transition: transform .4s ease;
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: .85rem; letter-spacing: .35em; text-transform: uppercase;
+  color: var(--gold); text-decoration: none;
+}
+.navlinks { display: flex; gap: 24px; list-style: none; flex-wrap: nowrap; }
+.navlinks a {
+  font-family: 'Syne', sans-serif; font-size: .72rem; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--muted); text-decoration: none;
+  transition: color .3s; white-space: nowrap;
+}
+.navlinks a:hover, .navlinks a.active { color: var(--gold); }
+
+.blog-header {
+  padding: 160px 64px 80px;
+  position: relative;
+  border-bottom: 1px solid rgba(201,168,76,.1);
+}
+.blog-header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 80% at 90% 50%, rgba(201,168,76,.05) 0%, transparent 65%),
+    linear-gradient(160deg, #131714 0%, #0e120c 60%, #131714 100%);
+  z-index: 0;
+}
+.blog-header-inner { position: relative; z-index: 1; max-width: 860px; }
+.blog-header-eyebrow { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+.eyebrow-line { width: 44px; height: 1px; background: var(--gold); }
+.eyebrow-text {
+  font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .45em;
+  text-transform: uppercase; color: var(--gold);
+}
+.blog-header h1 {
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 300; line-height: .95;
+  color: var(--cream); letter-spacing: -.02em; margin-bottom: 24px;
+}
+.blog-header h1 em { font-style: italic; color: var(--gold); }
+.blog-header p { font-size: 1.05rem; font-style: italic; color: var(--muted); max-width: 480px; line-height: 1.75; }
+.back-link {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--golddim); text-decoration: none;
+  margin-bottom: 36px; transition: color .25s;
+}
+.back-link::before { content: '←'; font-size: .85rem; }
+.back-link:hover { color: var(--gold); }
+
+.blog-main { max-width: 860px; margin: 0 auto; padding: 80px 64px 140px; }
+
+.post { padding: 64px 0; border-bottom: 1px solid rgba(201,168,76,.1); }
+.post:first-child { padding-top: 0; }
+.post:last-child { border-bottom: none; }
+
+.post-meta { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+.post-date {
+  font-family: 'Syne', sans-serif; font-size: .55rem;
+  letter-spacing: .25em; text-transform: uppercase; color: var(--golddim);
+}
+.post-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.post-tag {
+  font-family: 'Syne', sans-serif; font-size: .48rem;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--golddim); border: 1px solid var(--golddim); padding: 3px 8px;
+}
+.post-title {
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 300; color: var(--cream);
+  line-height: 1.1; margin-bottom: 32px; letter-spacing: -.01em;
+}
+.post-title em { font-style: italic; color: var(--gold); }
+.post-body { font-size: 1.05rem; line-height: 1.95; color: var(--text); font-weight: 300; }
+.post-body p { margin-bottom: 22px; }
+.post-body p:last-child { margin-bottom: 0; }
+.post-body h3 { font-size: 1.3rem; font-weight: 400; color: var(--cream); margin: 36px 0 14px; }
+.post-body em { font-style: italic; color: var(--cream); }
+.post-body strong { color: var(--cream); font-weight: 400; }
+.post-body a { color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--golddim); transition: border-color .25s; }
+.post-body a:hover { border-color: var(--gold); }
+.post-rule { width: 40px; height: 1px; background: var(--golddim); margin: 32px 0; }
+
+.blog-nav-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 64px; padding-top: 40px;
+  border-top: 1px solid rgba(201,168,76,.1);
+}
+.blog-nav-link {
+  font-family: 'Syne', sans-serif; font-size: .6rem;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--golddim); text-decoration: none; transition: color .25s;
+}
+.blog-nav-link:hover { color: var(--gold); }
+
+.blog-foot {
+  padding: 40px 64px;
+  border-top: 1px solid rgba(201,168,76,.1);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.foot-copy {
+  font-family: 'Syne', sans-serif; font-size: .58rem;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--muted);
+}
+
+.fade { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+.fade.in { opacity: 1; transform: translateY(0); }
+
+@media(max-width: 900px) {
+  nav { padding: 18px 24px; }
+  .navlinks { display: none; }
+  .blog-header { padding: 120px 24px 60px; }
+  .blog-main { padding: 60px 24px 100px; }
+  .blog-foot { padding: 32px 24px; flex-direction: column; gap: 16px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="index.html" class="logo">Martin Mellstrom</a>
+  <ul class="navlinks">
+    <li><a href="index.html#packs">Music Packs</a></li>
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="blog.html" class="active">Blog</a></li>
+    <li><a href="index.html#film">Film</a></li>
+    <li><a href="index.html#faq">FAQ</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<header class="blog-header">
+  <div class="blog-header-inner">
+    <a href="index.html#blog" class="back-link">Back to martinmellstrom.com</a>
+    <div class="blog-header-eyebrow">
+      <div class="eyebrow-line"></div>
+      <span class="eyebrow-text">Notes & Thoughts</span>
+    </div>
+    <h1>From the <em>Studio</em></h1>
+    <p>On composing, game audio and the occasional tool recommendation.</p>
+  </div>
+</header>
+
+<main class="blog-main">
+
+  <!-- ═══ POST: welcome-to-the-studio ═══ -->
+  <article class="post fade" id="welcome-to-the-studio">
+    <div class="post-meta">
+      <span class="post-date">March 10, 2026</span>
+      <div class="post-tags">
+        <span class="post-tag">Music Packs</span>
+      </div>
+    </div>
+    <h2 class="post-title">Welcome to the Studio</h2>
+    <div class="post-body">
+      <p>Notes on composing, game audio and the work behind the music packs. More posts coming soon — on workflow, instrument choices, and what actually goes into making a loop that stays interesting after the hundredth playthrough.</p>
+      <div class="post-rule"></div>
+      <p>This is where longer thoughts will live. Things that don't fit in a product description or a social post — the reasoning behind decisions, what worked and what didn't, the tools I reach for and why.</p>
+      <p>If you're a game developer looking at these packs, or just curious about how this kind of music gets made, hopefully there's something useful here.</p>
+    </div>
+  </article>
+
+  <!-- Add new posts above this line, newest first -->
+
+  <div class="blog-nav-bottom">
+    <a href="index.html" class="blog-nav-link">← martinmellstrom.com</a>
+    <a href="#" class="blog-nav-link" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Back to top ↑</a>
+  </div>
+</main>
+
+<footer class="blog-foot">
+  <span class="foot-copy">© 2026 Martin Mellstrom — All Rights Reserved</span>
+  <a href="index.html" class="blog-nav-link">martinmellstrom.com</a>
+</footer>
+
+<script>
+let lastY = 0;
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  nav.style.transform = (y > lastY && y > 80) ? 'translateY(-100%)' : 'translateY(0)';
+  lastY = y;
+}, { passive: true });
+
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade').forEach(el => io.observe(el));
+
+window.addEventListener('load', function() {
+  if (window.location.hash) {
+    const target = document.querySelector(window.location.hash);
+    if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+  }
+});
+</script>
+</body>
+</html>

@@ -15,80 +15,270 @@
 <meta property="og:description" content="Professional royalty-free orchestral music packs. Seamless loops, battle layers and stingers for RPG, adventure and Metroidvania games.">
 <meta property="og:image" content="https://www.martinmellstrom.com/martin_photo.jpg">
 <meta name="twitter:card" content="summary_large_image">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
-/* §ROOT */
 :root {
-  --bg: #131714; --surface: #191e1a; --gold: #c9a84c; --golddim: #7a6030;
-  --goldglow: rgba(201,168,76,.15); --cream: #f0e8d4; --muted: #6a7060; --text: #c8c4b0;
+  --bg: #131714;
+  --surface: #191e1a;
+  --gold: #c9a84c;
+  --golddim: #7a6030;
+  --goldglow: rgba(201,168,76,.15);
+  --cream: #f0e8d4;
+  --muted: #6a7060;
+  --text: #c8c4b0;
 }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text); font-family: 'Cormorant Garamond', Georgia, serif; font-size: 20px; line-height: 1.65; overflow-x: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
 
-/* §CSS:NAV */
-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; justify-content: space-between; align-items: center; padding: 26px 64px; background: linear-gradient(to bottom, rgba(12,18,12,.97), transparent); transition: transform .4s ease; }
-.logo { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: .85rem; letter-spacing: .35em; text-transform: uppercase; color: var(--gold); text-decoration: none; }
+/* ─── NAV ─── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 26px 64px;
+  background: linear-gradient(to bottom, rgba(12,18,12,.97), transparent);
+  transition: transform .4s ease;
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: .85rem; letter-spacing: .35em; text-transform: uppercase;
+  color: var(--gold); text-decoration: none;
+}
 .navlinks { display: flex; gap: 24px; list-style: none; flex-wrap: nowrap; }
-.navlinks a { font-family: 'Syne', sans-serif; font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .3s; white-space: nowrap; }
+.navlinks a {
+  font-family: 'Syne', sans-serif; font-size: .72rem; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .3s; white-space: nowrap;
+}
 .navlinks a:hover { color: var(--gold); }
 
-/* §CSS:HERO */
-.hero { position: relative; min-height: 100vh; display: flex; align-items: flex-end; }
-.hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 70% at 80% 50%, rgba(201,168,76,.07) 0%, transparent 65%), radial-gradient(ellipse 40% 50% at 10% 80%, rgba(201,168,76,.04) 0%, transparent 60%), radial-gradient(ellipse 30% 40% at 50% 10%, rgba(120,100,60,.06) 0%, transparent 55%), linear-gradient(160deg, #131714 0%, #0e120c 40%, #131714 100%); }
-.hero-grain { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: .45; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E"); background-size: 180px 180px; mix-blend-mode: overlay; }
-.staff { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-.staff-group { position: absolute; left: 0; right: 0; animation: staff-drift 20s ease-in-out infinite; }
+/* ═══════════════════════════════════════
+   HERO — REDESIGNED
+═══════════════════════════════════════ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+}
+
+/* Layered background */
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 70% at 80% 50%, rgba(201,168,76,.07) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 50% at 10% 80%, rgba(201,168,76,.04) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 40% at 50% 10%, rgba(120,100,60,.06) 0%, transparent 55%),
+    linear-gradient(160deg, #131714 0%, #0e120c 40%, #131714 100%);
+}
+
+/* Grain texture overlay */
+.hero-grain {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: .45;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+}
+
+/* Animated staff lines — like real sheet music, subtle */
+.staff {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+}
+.staff-group {
+  position: absolute; left: 0; right: 0;
+  animation: staff-drift 20s ease-in-out infinite;
+}
 .staff-group:nth-child(1) { top: 22%; animation-delay: 0s; }
 .staff-group:nth-child(2) { top: 58%; animation-delay: -7s; opacity: .6; }
 .staff-group:nth-child(3) { top: 76%; animation-delay: -13s; opacity: .35; }
-.staff-line { display: block; width: 100%; height: 1px; background: linear-gradient(to right, transparent 0%, rgba(201,168,76,.06) 15%, rgba(201,168,76,.14) 50%, rgba(201,168,76,.06) 85%, transparent 100%); margin-bottom: 9px; }
-@keyframes staff-drift { 0%, 100% { transform: translateX(0) scaleX(1); opacity: .7; } 50% { transform: translateX(-12px) scaleX(1.015); opacity: 1; } }
-.clef { position: absolute; z-index: 2; color: var(--gold); pointer-events: none; user-select: none; font-style: normal; animation: clef-rise linear infinite; opacity: 0; }
-@keyframes clef-rise { 0% { opacity: 0; transform: translateY(0) rotate(-5deg); } 10% { opacity: .13; } 80% { opacity: .07; } 100% { opacity: 0; transform: translateY(-140px) rotate(8deg); } }
-.hero-left { position: relative; z-index: 10; padding: 140px 80px 90px; max-width: 860px; }
-.hero-eyebrow { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; opacity: 0; animation: reveal-up .9s .2s cubic-bezier(.16,1,.3,1) forwards; }
-.eyebrow-line { width: 0; height: 1px; background: var(--gold); animation: line-grow .8s .6s ease forwards; }
+.staff-line {
+  display: block; width: 100%; height: 1px;
+  background: linear-gradient(to right, transparent 0%, rgba(201,168,76,.06) 15%, rgba(201,168,76,.14) 50%, rgba(201,168,76,.06) 85%, transparent 100%);
+  margin-bottom: 9px;
+}
+@keyframes staff-drift {
+  0%, 100% { transform: translateX(0) scaleX(1); opacity: .7; }
+  50% { transform: translateX(-12px) scaleX(1.015); opacity: 1; }
+}
+
+/* Floating clef / note symbols */
+.clef {
+  position: absolute; z-index: 2; color: var(--gold); pointer-events: none; user-select: none;
+  font-style: normal;
+  animation: clef-rise linear infinite;
+  opacity: 0;
+}
+@keyframes clef-rise {
+  0%   { opacity: 0; transform: translateY(0) rotate(-5deg); }
+  10%  { opacity: .13; }
+  80%  { opacity: .07; }
+  100% { opacity: 0; transform: translateY(-140px) rotate(8deg); }
+}
+
+/* Left panel — title */
+.hero-left {
+  position: relative; z-index: 10;
+  padding: 140px 80px 90px;
+  max-width: 860px;
+}
+
+/* Animated eyebrow line */
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 36px;
+  opacity: 0; animation: reveal-up .9s .2s cubic-bezier(.16,1,.3,1) forwards;
+}
+.eyebrow-line {
+  width: 0; height: 1px; background: var(--gold);
+  animation: line-grow .8s .6s ease forwards;
+}
 @keyframes line-grow { to { width: 44px; } }
-.eyebrow-text { font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .45em; text-transform: uppercase; color: var(--gold); }
-.hero-title { font-size: clamp(4rem, 7.5vw, 7rem); font-weight: 300; line-height: .92; color: var(--cream); letter-spacing: -.02em; margin-bottom: 0; }
-.hero-title .line { display: block; overflow: hidden; }
-.hero-title .line-inner { display: block; opacity: 0; transform: translateY(100%); animation: line-reveal .9s cubic-bezier(.16,1,.3,1) forwards; }
+.eyebrow-text {
+  font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .45em;
+  text-transform: uppercase; color: var(--gold);
+}
+
+.hero-title {
+  font-size: clamp(4rem, 7.5vw, 7rem);
+  font-weight: 300;
+  line-height: .92;
+  color: var(--cream);
+  letter-spacing: -.02em;
+  margin-bottom: 0;
+}
+.hero-title .line {
+  display: block; overflow: hidden;
+}
+.hero-title .line-inner {
+  display: block;
+  opacity: 0; transform: translateY(100%);
+  animation: line-reveal .9s cubic-bezier(.16,1,.3,1) forwards;
+}
 .hero-title .line:nth-child(1) .line-inner { animation-delay: .4s; }
 .hero-title .line:nth-child(2) .line-inner { animation-delay: .58s; }
 .hero-title .line:nth-child(3) .line-inner { animation-delay: .74s; }
 .hero-title em { font-style: italic; color: var(--gold); }
-@keyframes line-reveal { to { opacity: 1; transform: translateY(0); } }
-@keyframes reveal-up { to { opacity: 1; } }
-.hero-desc { font-size: 1.05rem; font-weight: 300; font-style: italic; color: var(--muted); letter-spacing: .03em; margin-top: 32px; max-width: 420px; opacity: 0; animation: reveal-up .9s 1s cubic-bezier(.16,1,.3,1) forwards; }
-.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 48px; opacity: 0; animation: reveal-up .9s 1.1s cubic-bezier(.16,1,.3,1) forwards; }
-.btn-p { display: inline-block; padding: 15px 40px; background: var(--gold); color: #0e140e; font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; text-decoration: none; transition: all .35s cubic-bezier(.16,1,.3,1); position: relative; overflow: hidden; }
-.btn-p::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,.15); transform: translateX(-100%); transition: transform .35s; }
+
+@keyframes line-reveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes reveal-up {
+  to { opacity: 1; }
+}
+
+.hero-desc {
+  font-size: 1.05rem; font-weight: 300; font-style: italic;
+  color: var(--muted); letter-spacing: .03em;
+  margin-top: 32px; max-width: 420px;
+  opacity: 0; animation: reveal-up .9s 1s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+.hero-cta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-top: 48px;
+  opacity: 0; animation: reveal-up .9s 1.1s cubic-bezier(.16,1,.3,1) forwards;
+}
+.btn-p {
+  display: inline-block; padding: 15px 40px;
+  background: var(--gold); color: #0e140e;
+  font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase; text-decoration: none;
+  transition: all .35s cubic-bezier(.16,1,.3,1);
+  position: relative; overflow: hidden;
+}
+.btn-p::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(255,255,255,.15);
+  transform: translateX(-100%); transition: transform .35s;
+}
 .btn-p:hover::after { transform: translateX(0); }
 .btn-p:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(201,168,76,.25); }
-.btn-g { display: inline-block; padding: 14px 40px; border: 1px solid var(--golddim); color: var(--gold); font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; text-decoration: none; transition: all .35s; }
+.btn-g {
+  display: inline-block; padding: 14px 40px;
+  border: 1px solid var(--golddim); color: var(--gold);
+  font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 500;
+  letter-spacing: .22em; text-transform: uppercase; text-decoration: none;
+  transition: all .35s;
+}
 .btn-g:hover { border-color: var(--gold); background: rgba(201,168,76,.07); transform: translateY(-2px); }
-.hero-stats { display: flex; gap: 0; margin-top: 56px; border-top: 1px solid rgba(201,168,76,.1); padding-top: 32px; opacity: 0; animation: reveal-up .9s 1.25s cubic-bezier(.16,1,.3,1) forwards; }
-.hstat { flex: 1; padding-right: 24px; }
-.hstat + .hstat { border-left: 1px solid rgba(201,168,76,.1); padding-left: 24px; padding-right: 0; }
-.hstat-val { display: block; font-size: 2rem; font-weight: 300; color: var(--gold); line-height: 1; }
-.hstat-lbl { display: block; font-family: 'Syne', sans-serif; font-size: .52rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
-.scroll-ind { position: absolute; bottom: 40px; right: 80px; z-index: 10; display: flex; align-items: center; gap: 16px; font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); opacity: 0; animation: reveal-up .9s 1.6s ease forwards; }
-.scroll-arrow { width: 32px; height: 32px; border: 1px solid rgba(201,168,76,.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: bounce-down 2s ease-in-out infinite; }
-.scroll-arrow::after { content: ''; display: block; width: 7px; height: 7px; border-right: 1px solid var(--gold); border-bottom: 1px solid var(--gold); transform: rotate(45deg) translate(-2px,-2px); }
-@keyframes bounce-down { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
-.hero-divider { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: linear-gradient(to bottom, transparent 5%, rgba(201,168,76,.08) 30%, rgba(201,168,76,.14) 50%, rgba(201,168,76,.08) 70%, transparent 95%); z-index: 5; }
 
-/* §CSS:SHARED */
+/* Stats strip below CTA */
+.hero-stats {
+  display: flex; gap: 0; margin-top: 56px;
+  border-top: 1px solid rgba(201,168,76,.1);
+  padding-top: 32px;
+  opacity: 0; animation: reveal-up .9s 1.25s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hstat {
+  flex: 1; padding-right: 24px;
+}
+.hstat + .hstat { border-left: 1px solid rgba(201,168,76,.1); padding-left: 24px; padding-right: 0; }
+.hstat-val {
+  display: block; font-size: 2rem; font-weight: 300;
+  color: var(--gold); line-height: 1;
+}
+.hstat-lbl {
+  display: block; font-family: 'Syne', sans-serif;
+  font-size: .52rem; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--muted); margin-top: 6px;
+}
+
+/* Scroll indicator */
+.scroll-ind {
+  position: absolute; bottom: 40px; right: 80px; z-index: 10;
+  display: flex; align-items: center; gap: 16px;
+  font-family: 'Syne', sans-serif; font-size: .55rem;
+  letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
+  opacity: 0; animation: reveal-up .9s 1.6s ease forwards;
+}
+.scroll-arrow {
+  width: 32px; height: 32px;
+  border: 1px solid rgba(201,168,76,.2); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  animation: bounce-down 2s ease-in-out infinite;
+}
+.scroll-arrow::after {
+  content: ''; display: block;
+  width: 7px; height: 7px;
+  border-right: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  transform: rotate(45deg) translate(-2px,-2px);
+}
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+/* Horizontal divider line that sweeps across */
+.hero-divider {
+  position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent 5%, rgba(201,168,76,.08) 30%, rgba(201,168,76,.14) 50%, rgba(201,168,76,.08) 70%, transparent 95%);
+  z-index: 5;
+}
+
+/* ─── REST OF PAGE ─── */
 .sec { padding: 120px 64px; }
-.sec-label { display: block; font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .4em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+.sec-label {
+  display: block; font-family: 'Syne', sans-serif; font-size: .6rem;
+  letter-spacing: .4em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px;
+}
 .sec-title { font-size: clamp(2.2rem,5vw,3.8rem); font-weight: 300; color: var(--cream); line-height: 1.05; }
 .sec-title em { font-style: italic; color: var(--gold); }
 .sec-subtitle { font-style: italic; color: var(--text); font-size: 1rem; margin-top: 16px; }
 .rule { width: 60px; height: 1px; background: var(--golddim); margin: 0 64px; }
 
-/* §CSS:PACKS */
+/* PACKS */
 #packs { background: var(--surface); position: relative; }
 #packs::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, var(--golddim), transparent); }
 .packs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 56px; align-items: stretch; }
@@ -122,7 +312,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; j
 .sc-wrap { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(201,168,76,.1); }
 .sc-lbl { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 12px; }
 
-/* §CSS:PLAYER */
+/* ── Custom Player ── */
 .cplayer { background: #0e1210; border: 1px solid rgba(201,168,76,.18); height: 360px; display: flex; flex-direction: column; }
 #cp3 { height: auto; }
 #cp3 .cp-list { overflow-y: visible; }
@@ -156,22 +346,85 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; j
 .cp-li-name { font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cp-li-dur { font-family: 'Syne', sans-serif; font-size: .52rem; color: var(--golddim); flex-shrink: 0; }
 
-/* §CSS:BLOG */
-.blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 56px; }
-.blog-card { background: var(--surface); position: relative; overflow: hidden; transition: transform .35s cubic-bezier(.16,1,.3,1); border-bottom: 2px solid transparent; text-decoration: none; display: block; }
+/* ── BLOG ── */
+#blog { overflow: hidden; }
+.blog-scroll-wrap {
+  position: relative;
+  margin-top: 56px;
+}
+.blog-scroll-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 80px;
+  background: linear-gradient(to right, transparent, var(--bg));
+  pointer-events: none;
+  z-index: 2;
+}
+.blog-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding-bottom: 16px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: #7a6030 transparent;
+  /* newest first — JS reverses the DOM order */
+}
+.blog-grid::-webkit-scrollbar { height: 3px; }
+.blog-grid::-webkit-scrollbar-track { background: transparent; }
+.blog-grid::-webkit-scrollbar-thumb { background: #7a6030; }
+.blog-grid::-webkit-scrollbar-thumb:hover { background: #c9a84c; }
+
+.blog-card {
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+  transition: transform .35s cubic-bezier(.16,1,.3,1);
+  border-bottom: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 340px;
+  width: 340px;
+  scroll-snap-align: start;
+}
 .blog-card:hover { transform: translateY(-3px); border-bottom-color: var(--gold); background: rgba(201,168,76,.04); }
 .blog-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(140deg, rgba(201,168,76,.04), transparent 55%); opacity: 0; transition: opacity .4s; pointer-events: none; }
 .blog-card:hover::before { opacity: 1; }
 .blog-card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-bottom: 1px solid rgba(201,168,76,.1); }
-.blog-card-body { padding: 28px 32px 36px; }
+.blog-card-body { padding: 28px 32px 36px; display: flex; flex-direction: column; flex: 1; }
 .blog-date { font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 14px; }
 .blog-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .blog-tag { font-family: 'Syne', sans-serif; font-size: .48rem; letter-spacing: .12em; text-transform: uppercase; color: var(--golddim); border: 1px solid var(--golddim); padding: 3px 8px; }
 .blog-title { font-size: 1.3rem; font-weight: 400; color: var(--cream); line-height: 1.25; margin-bottom: 12px; }
-.blog-ingress { font-size: .92rem; color: var(--text); line-height: 1.75; font-weight: 300; font-style: italic; }
-@media(max-width:900px) { .blog-grid { grid-template-columns: 1fr; } }
+.blog-ingress {
+  font-size: .92rem; color: var(--text); line-height: 1.75; font-weight: 300; font-style: italic;
+  flex: 1;
+  /* clamp to ~4 lines as fallback */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.blog-read-more {
+  display: inline-block;
+  margin-top: 18px;
+  font-family: 'Syne', sans-serif;
+  font-size: .58rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-decoration: none;
+  border-bottom: 1px solid var(--golddim);
+  padding-bottom: 2px;
+  transition: color .25s, border-color .25s;
+  align-self: flex-start;
+}
+.blog-read-more:hover { color: var(--cream); border-color: var(--cream); }
 
-/* §CSS:ABOUT */
+
 #about { background: var(--surface); position: relative; }
 #about::before, #about::after { content: ''; position: absolute; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, var(--golddim), transparent); }
 #about::before { top: 0; } #about::after { bottom: 0; }
@@ -188,7 +441,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; j
 .snum { display: block; font-size: 2.4rem; font-weight: 300; color: var(--gold); line-height: 1; }
 .slbl { display: block; font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
 
-/* §CSS:PLATFORMS */
+/* PLATFORMS */
 #platforms { text-align: center; }
 .plat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; margin-top: 64px; }
 .plat { background: var(--surface); padding: 44px 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-decoration: none; transition: all .35s cubic-bezier(.16,1,.3,1); border-bottom: 2px solid transparent; }
@@ -200,12 +453,12 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; j
 .plat-url { font-size: 1rem; font-style: italic; color: rgba(160,155,135,.6); transition: color .3s; }
 .plat:hover .plat-url { color: var(--text); }
 
-/* §CSS:FAQ */
+/* FAQ */
 .faq-item { border-top: 1px solid rgba(201,168,76,.12); padding: 28px 0; }
 .faq-item summary { font-family: 'Syne', sans-serif; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cream); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
 .faq-item p { margin-top: 18px; color: var(--text); font-size: 1rem; line-height: 1.9; font-weight: 300; }
 
-/* §CSS:FILM */
+/* FILM */
 .film-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; max-width: 860px; margin: 0 auto; }
 .film-image { position: relative; border: 1px solid rgba(201,168,76,.15); }
 .film-image img { width: 100%; height: auto; display: block; }
@@ -213,7 +466,7 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; display: flex; j
 .film-frame { position: absolute; top: 12px; right: -12px; bottom: -12px; left: 12px; border: 1px solid var(--golddim); z-index: -1; }
 .film-content { display: flex; flex-direction: column; }
 
-/* §CSS:FOOTER */
+/* FOOTER / CONTACT */
 footer { padding: 110px 64px 60px; }
 .foot-h { font-size: clamp(2.6rem,5.5vw,4.2rem); font-weight: 300; color: var(--cream); line-height: 1.05; margin-bottom: 28px; }
 .foot-h em { color: var(--gold); font-style: italic; }
@@ -225,7 +478,9 @@ footer { padding: 110px 64px 60px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); }
-.form-group input, .form-group select, .form-group textarea { background: rgba(201,168,76,.03); border: 1px solid rgba(201,168,76,.15); color: var(--cream); font-family: 'Cormorant Garamond', serif; font-size: 1rem; padding: 14px 16px; outline: none; transition: border-color .3s; resize: none; appearance: none; }
+.form-group input,
+.form-group select,
+.form-group textarea { background: rgba(201,168,76,.03); border: 1px solid rgba(201,168,76,.15); color: var(--cream); font-family: 'Cormorant Garamond', serif; font-size: 1rem; padding: 14px 16px; outline: none; transition: border-color .3s; resize: none; appearance: none; }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold); }
 .form-group input::placeholder, .form-group textarea::placeholder { color: var(--muted); font-style: italic; }
 .form-group select option { background: var(--surface); color: var(--cream); }
@@ -240,12 +495,14 @@ footer { padding: 110px 64px 60px; }
 .cval { font-size: .95rem; color: var(--cream); }
 .foot-bot { display: flex; justify-content: space-between; align-items: center; margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(201,168,76,.1); }
 .foot-copy { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.foot-badge { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .15em; text-transform: uppercase; color: rgba(85,85,85,.5); }
+.foot-badge span { color: var(--golddim); }
 
-/* §CSS:ANIMATIONS */
+/* FADE IN */
 .fade { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s ease; }
 .fade.in { opacity: 1; transform: translateY(0); }
 
-/* §CSS:RESPONSIVE */
+/* RESPONSIVE */
 @media(max-width:900px) {
   nav { padding: 18px 24px; } .navlinks { display: none; }
   .hero-left { padding: 120px 24px 80px; }
@@ -257,12 +514,12 @@ footer { padding: 110px 64px 60px; }
   .form-row { grid-template-columns: 1fr; }
   .hero-stats { gap: 0; }
   .scroll-ind { right: 24px; }
+  .blog-card { flex: 0 0 280px; width: 280px; }
 }
 </style>
 </head>
 <body>
 
-<!-- §HTML:NAV -->
 <nav id="nav">
   <a href="#home" class="logo">Martin Mellstrom</a>
   <ul class="navlinks">
@@ -274,196 +531,239 @@ footer { padding: 110px 64px 60px; }
     <li><a href="#contact">Contact</a></li>
   </ul>
 </nav>
-<!-- §END:NAV -->
 
-<!-- §HTML:HERO -->
+<!-- ═══════════════════════════════════════ HERO ═══════════════════════════════════════ -->
 <section class="hero" id="home">
   <div class="hero-bg"></div>
   <div class="hero-grain"></div>
+
+  <!-- Sheet music staff lines -->
   <div class="staff">
-    <div class="staff-group"><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span></div>
-    <div class="staff-group"><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span></div>
-    <div class="staff-group"><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span></div>
+    <div class="staff-group">
+      <span class="staff-line"></span><span class="staff-line"></span>
+      <span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span>
+    </div>
+    <div class="staff-group">
+      <span class="staff-line"></span><span class="staff-line"></span>
+      <span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span>
+    </div>
+    <div class="staff-group">
+      <span class="staff-line"></span><span class="staff-line"></span>
+      <span class="staff-line"></span><span class="staff-line"></span><span class="staff-line"></span>
+    </div>
   </div>
+
+  <!-- LEFT: Title panel -->
   <div class="hero-left">
-    <div class="hero-eyebrow"><div class="eyebrow-line"></div><span class="eyebrow-text">Composer &middot; Sweden</span></div>
+    <div class="hero-eyebrow">
+      <div class="eyebrow-line"></div>
+      <span class="eyebrow-text">Composer &middot; Sweden</span>
+    </div>
+
     <h1 class="hero-title">
       <span class="line"><span class="line-inner">Orchestral music</span></span>
       <span class="line"><span class="line-inner">for the spaces</span></span>
       <span class="line"><span class="line-inner"><em>between the battles</em></span></span>
     </h1>
+
     <p class="hero-desc">Intimate, handcrafted scores for RPG, Metroidvania and adventure games — built for worlds that feel like somewhere</p>
+
     <div class="hero-cta">
       <a href="#packs" class="btn-p">Browse Music Packs</a>
       <a href="#about" class="btn-g">About</a>
     </div>
+
   </div>
-  <div class="scroll-ind"><div class="scroll-arrow"></div>Scroll to explore</div>
+
+  <!-- Scroll indicator -->
+  <div class="scroll-ind">
+    <div class="scroll-arrow"></div>
+    Scroll to explore
+  </div>
 </section>
-<!-- §END:HERO -->
 
 <div class="rule"></div>
 
-<!-- §HTML:PACKS -->
+<!-- PACKS -->
 <section class="sec" id="packs">
   <span class="sec-label">Featured Releases</span>
   <h2 class="sec-title">Music <em>Packs</em></h2>
   <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px;margin-bottom:0">Orchestral music packs with seamless loops, adaptive layers and stingers — built for RPG, adventure, Metroidvania and platformer games.</p>
+
   <div class="packs-grid">
-
-    <!-- §HTML:PACK-001 -->
     <div class="pack fade">
       <div class="pack-body">
-        <div class="pack-header">
-          <div>
-            <div class="pack-num">001</div>
-            <h3 class="pack-title">Orchestral Music Pack</h3>
-            <p class="pack-sub">Atlas Companion</p>
-          </div>
-          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP1%20icon%20960%20960.png" alt="Orchestral Music Pack — Atlas Companion" class="pack-icon">
+      <div class="pack-header">
+        <div>
+          <div class="pack-num">001</div>
+          <h3 class="pack-title">Orchestral Music Pack</h3>
+          <p class="pack-sub">Atlas Companion</p>
         </div>
-        <p class="pack-desc">Over two hours of professionally composed music. Adventurous exploration themes, intense battle layers, contextual pieces and stingers. Primarily orchestral, with dreamy electronic textures, gritty percussion loops and traditional acoustic instruments.</p>
-        <div class="pack-stats">
-          <div><span class="stat-val">11</span><span class="stat-lbl">Full songs</span></div>
-          <div><span class="stat-val">114</span><span class="stat-lbl">Audio files</span></div>
-          <div><span class="stat-val">2h+</span><span class="stat-lbl">Of music</span></div>
-          <div><span class="stat-val">9</span><span class="stat-lbl">Stingers</span></div>
-        </div>
-        <div class="tags">
-          <span class="tag">Orchestral</span><span class="tag">Battle Layers</span><span class="tag">Seamless Loops</span><span class="tag">Stingers</span>
-          <span class="tag">RPG / JRPG</span><span class="tag">Metroidvania</span><span class="tag">44.1kHz / 16-bit</span><span class="tag">No AI</span><span class="tag">Royalty-free</span>
-        </div>
-        <p class="price">From <strong>$29.99</strong></p>
-        <div class="buyrow">
-          <a href="https://martinmellstrommusic.itch.io/orchestral-music-pack-atlas-companion" target="_blank" rel="noopener noreferrer" class="buy">itch.io</a>
-          <a href="https://www.fab.com/listings/fac7aff9-8f38-496f-a308-e98d2fb47321" target="_blank" rel="noopener noreferrer" class="buy">Fab.com</a>
-          <a href="https://assetstore.unity.com/packages/audio/music/orchestral/orchestral-music-pack-atlas-companion-307136" target="_blank" rel="noopener noreferrer" class="buy">Unity Store</a>
-          <a href="https://gamedevmarket.net/asset/orchestral-music-pack-atlas-companion-2" target="_blank" rel="noopener noreferrer" class="buy">GameDevMarket</a>
-        </div>
-        <div class="sc-wrap">
-          <span class="sc-lbl">&#9835; Listen — full preview</span>
-          <div class="cplayer" id="cp1">
-            <div class="cp-now">
-              <div class="cp-btns">
-                <button class="cp-btn cp-prev" data-p="cp1" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg></button>
-                <button class="cp-btn cp-play" data-p="cp1" aria-label="Play">
-                  <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                  <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                </button>
-                <button class="cp-btn cp-next" data-p="cp1" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg></button>
-              </div>
-              <div class="cp-meta">
-                <span class="cp-title" id="cp1-title">Loading…</span>
-                <div class="cp-scrub" id="cp1-scrub"><div class="cp-scrub-fill" id="cp1-fill"></div></div>
-                <div class="cp-times"><span id="cp1-cur">0:00</span><span id="cp1-dur">0:00</span></div>
-              </div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP1%20icon%20960%20960.png"
+             alt="Orchestral Music Pack — Atlas Companion"
+             class="pack-icon">
+      </div>
+      <p class="pack-desc">Over two hours of professionally composed music. Adventurous exploration themes, intense battle layers, contextual pieces and stingers. Primarily orchestral, with dreamy electronic textures, gritty percussion loops and traditional acoustic instruments.</p>
+      <div class="pack-stats">
+        <div><span class="stat-val">11</span><span class="stat-lbl">Full songs</span></div>
+        <div><span class="stat-val">114</span><span class="stat-lbl">Audio files</span></div>
+        <div><span class="stat-val">2h+</span><span class="stat-lbl">Of music</span></div>
+        <div><span class="stat-val">9</span><span class="stat-lbl">Stingers</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag">Orchestral</span><span class="tag">Battle Layers</span>
+        <span class="tag">Seamless Loops</span><span class="tag">Stingers</span>
+        <span class="tag">RPG / JRPG</span><span class="tag">Metroidvania</span>
+        <span class="tag">44.1kHz / 16-bit</span><span class="tag">No AI</span>
+        <span class="tag">Royalty-free</span>
+      </div>
+      <p class="price">From <strong>$29.99</strong></p>
+      <div class="buyrow">
+        <a href="https://martinmellstrommusic.itch.io/orchestral-music-pack-atlas-companion" target="_blank" rel="noopener noreferrer" class="buy">itch.io</a>
+        <a href="https://www.fab.com/listings/fac7aff9-8f38-496f-a308-e98d2fb47321" target="_blank" rel="noopener noreferrer" class="buy">Fab.com</a>
+        <a href="https://assetstore.unity.com/packages/audio/music/orchestral/orchestral-music-pack-atlas-companion-307136" target="_blank" rel="noopener noreferrer" class="buy">Unity Store</a>
+        <a href="https://gamedevmarket.net/asset/orchestral-music-pack-atlas-companion-2" target="_blank" rel="noopener noreferrer" class="buy">GameDevMarket</a>
+      </div>
+      <div class="sc-wrap">
+        <span class="sc-lbl">&#9835; Listen — full preview</span>
+        <div class="cplayer" id="cp1">
+          <div class="cp-now">
+            <div class="cp-btns">
+              <button class="cp-btn cp-prev" data-p="cp1" aria-label="Previous">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg>
+              </button>
+              <button class="cp-btn cp-play" data-p="cp1" aria-label="Play">
+                <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              <button class="cp-btn cp-next" data-p="cp1" aria-label="Next">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg>
+              </button>
             </div>
-            <ol class="cp-list" id="cp1-list"></ol>
-            <iframe id="sc-1" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/mfvg&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
+            <div class="cp-meta">
+              <span class="cp-title" id="cp1-title">Loading…</span>
+              <div class="cp-scrub" id="cp1-scrub">
+                <div class="cp-scrub-fill" id="cp1-fill"></div>
+              </div>
+              <div class="cp-times"><span id="cp1-cur">0:00</span><span id="cp1-dur">0:00</span></div>
+            </div>
           </div>
+          <ol class="cp-list" id="cp1-list"></ol>
+          <iframe id="sc-1" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/mfvg&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
         </div>
       </div>
+      </div>
     </div>
-    <!-- §END:PACK-001 -->
 
-    <!-- §HTML:PACK-002 -->
     <div class="pack fade">
       <div class="pack-body">
-        <div class="pack-header">
-          <div>
-            <div class="pack-num">002</div>
-            <h3 class="pack-title">Orchestral Exploration Pack</h3>
-            <p class="pack-sub">&nbsp;</p>
-          </div>
-          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP2%20Icon%20960%20960.png" alt="Orchestral Exploration Pack" class="pack-icon">
+      <div class="pack-header">
+        <div>
+          <div class="pack-num">002</div>
+          <h3 class="pack-title">Orchestral Exploration Pack</h3>
+          <p class="pack-sub">&nbsp;</p>
         </div>
-        <p class="pack-desc">Over an hour of music spanning snowy peaks, forest fields and dark caverns. Each track includes multiple tension layers you can trigger dynamically in combat, or use as standalone themes.</p>
-        <div class="pack-stats">
-          <div><span class="stat-val">5</span><span class="stat-lbl">Full songs</span></div>
-          <div><span class="stat-val">29</span><span class="stat-lbl">Audio files</span></div>
-          <div><span class="stat-val">1h+</span><span class="stat-lbl">Of music</span></div>
-        </div>
-        <div class="tags">
-          <span class="tag">Orchestral</span><span class="tag">Tension Layers</span><span class="tag">Seamless Loops</span><span class="tag">Adventure</span>
-          <span class="tag">JRPG</span><span class="tag">Platformer</span><span class="tag">No AI</span><span class="tag">Royalty-free</span>
-        </div>
-        <p class="price">From <strong>$9.99</strong></p>
-        <div class="buyrow">
-          <a href="https://martinmellstrommusic.itch.io/orchestral-exploration-pack" target="_blank" rel="noopener noreferrer" class="buy">itch.io</a>
-          <a href="https://www.fab.com/listings/61df8587-5bf4-4036-bf3a-c212846b96f6" target="_blank" rel="noopener noreferrer" class="buy">Fab.com</a>
-          <a href="https://assetstore.unity.com/packages/audio/music/orchestral/orchestral-exploration-pack-316496" target="_blank" rel="noopener noreferrer" class="buy">Unity Store</a>
-          <a href="https://gamedevmarket.net/asset/orchestral-exploration-music-pack" target="_blank" rel="noopener noreferrer" class="buy">GameDevMarket</a>
-        </div>
-        <div class="sc-wrap">
-          <span class="sc-lbl">&#9835; Listen — full preview</span>
-          <div class="cplayer" id="cp2">
-            <div class="cp-now">
-              <div class="cp-btns">
-                <button class="cp-btn cp-prev" data-p="cp2" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg></button>
-                <button class="cp-btn cp-play" data-p="cp2" aria-label="Play">
-                  <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                  <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                </button>
-                <button class="cp-btn cp-next" data-p="cp2" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg></button>
-              </div>
-              <div class="cp-meta">
-                <span class="cp-title" id="cp2-title">Loading…</span>
-                <div class="cp-scrub" id="cp2-scrub"><div class="cp-scrub-fill" id="cp2-fill"></div></div>
-                <div class="cp-times"><span id="cp2-cur">0:00</span><span id="cp2-dur">0:00</span></div>
-              </div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP2%20Icon%20960%20960.png"
+             alt="Orchestral Exploration Pack"
+             class="pack-icon">
+      </div>
+      <p class="pack-desc">Over an hour of music spanning snowy peaks, forest fields and dark caverns. Each track includes multiple tension layers you can trigger dynamically in combat, or use as standalone themes.</p>
+      <div class="pack-stats">
+        <div><span class="stat-val">5</span><span class="stat-lbl">Full songs</span></div>
+        <div><span class="stat-val">29</span><span class="stat-lbl">Audio files</span></div>
+        <div><span class="stat-val">1h+</span><span class="stat-lbl">Of music</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag">Orchestral</span><span class="tag">Tension Layers</span>
+        <span class="tag">Seamless Loops</span><span class="tag">Adventure</span>
+        <span class="tag">JRPG</span><span class="tag">Platformer</span><span class="tag">No AI</span>
+        <span class="tag">Royalty-free</span>
+      </div>
+      <p class="price">From <strong>$9.99</strong></p>
+      <div class="buyrow">
+        <a href="https://martinmellstrommusic.itch.io/orchestral-exploration-pack" target="_blank" rel="noopener noreferrer" class="buy">itch.io</a>
+        <a href="https://www.fab.com/listings/61df8587-5bf4-4036-bf3a-c212846b96f6" target="_blank" rel="noopener noreferrer" class="buy">Fab.com</a>
+        <a href="https://assetstore.unity.com/packages/audio/music/orchestral/orchestral-exploration-pack-316496" target="_blank" rel="noopener noreferrer" class="buy">Unity Store</a>
+        <a href="https://gamedevmarket.net/asset/orchestral-exploration-music-pack" target="_blank" rel="noopener noreferrer" class="buy">GameDevMarket</a>
+      </div>
+      <div class="sc-wrap">
+        <span class="sc-lbl">&#9835; Listen — full preview</span>
+        <div class="cplayer" id="cp2">
+          <div class="cp-now">
+            <div class="cp-btns">
+              <button class="cp-btn cp-prev" data-p="cp2" aria-label="Previous">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg>
+              </button>
+              <button class="cp-btn cp-play" data-p="cp2" aria-label="Play">
+                <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              </button>
+              <button class="cp-btn cp-next" data-p="cp2" aria-label="Next">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg>
+              </button>
             </div>
-            <ol class="cp-list" id="cp2-list"></ol>
-            <iframe id="sc-2" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/orchestral-exploration-pack&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
+            <div class="cp-meta">
+              <span class="cp-title" id="cp2-title">Loading…</span>
+              <div class="cp-scrub" id="cp2-scrub">
+                <div class="cp-scrub-fill" id="cp2-fill"></div>
+              </div>
+              <div class="cp-times"><span id="cp2-cur">0:00</span><span id="cp2-dur">0:00</span></div>
+            </div>
           </div>
+          <ol class="cp-list" id="cp2-list"></ol>
+          <iframe id="sc-2" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/orchestral-exploration-pack&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
         </div>
       </div>
+      </div>
     </div>
-    <!-- §END:PACK-002 -->
 
-    <!-- §HTML:PACK-003 -->
     <div class="pack pack-coming fade">
       <div class="badge-cs">Coming Soon</div>
       <div class="pack-body">
-        <div class="pack-header">
-          <div>
-            <div class="pack-num">003</div>
-            <h3 class="pack-title">Echoes of the Silent Woods</h3>
-            <p class="pack-sub">Melancholic forest music for Metroidvanias</p>
-          </div>
-          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/fJFGWJrKDDlc7lSYevtO--2--r9zq9.jpg" alt="Echoes of the Silent Woods" class="pack-icon">
+      <div class="pack-header">
+        <div>
+          <div class="pack-num">003</div>
+          <h3 class="pack-title">Echoes of the Silent Woods</h3>
+          <p class="pack-sub">Melancholic forest music for Metroidvanias</p>
         </div>
-        <p class="pack-desc">A complete forest chapter solution — exploration, danger, safe zones and ambient in one coherent musical voice. Solo flute, pizzicato strings, celesta textures and haunting woodwinds. Designed for worlds that feel ancient and lonely.</p>
-        <div class="pack-stats">
-          <div><span class="stat-val">10</span><span class="stat-lbl">Full songs</span></div>
-          <div><span class="stat-val">6</span><span class="stat-lbl">Stingers</span></div>
-          <div><span class="stat-val">$19.99</span><span class="stat-lbl">At release</span></div>
-        </div>
-        <div class="tags">
-          <span class="tag">Orchestral</span><span class="tag">Seamless Loops</span><span class="tag">Stingers</span>
-          <span class="tag">Metroidvania</span><span class="tag">Nordic</span><span class="tag">No AI</span><span class="tag">Royalty-free</span>
-        </div>
-        <div class="buyrow">
-          <a href="https://martinmellstrommusic.itch.io" target="_blank" rel="noopener noreferrer" class="buy">Follow on itch.io</a>
-          <a href="https://www.fab.com/sellers/MartinMellstromMusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on Fab</a>
-          <a href="https://assetstore.unity.com/publishers/110778" target="_blank" rel="noopener noreferrer" class="buy">Follow on Unity</a>
-          <a href="https://gamedevmarket.net/member/martinmellstrommusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on GameDevMarket</a>
-        </div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/fJFGWJrKDDlc7lSYevtO--2--r9zq9.jpg"
+             alt="Echoes of the Silent Woods"
+             class="pack-icon">
+      </div>
+      <p class="pack-desc">A complete forest chapter solution — exploration, danger, safe zones and ambient in one coherent musical voice. Solo flute, pizzicato strings, celesta textures and haunting woodwinds. Designed for worlds that feel ancient and lonely.</p>
+      <div class="pack-stats">
+        <div><span class="stat-val">10</span><span class="stat-lbl">Full songs</span></div>
+        <div><span class="stat-val">6</span><span class="stat-lbl">Stingers</span></div>
+        <div><span class="stat-val">$19.99</span><span class="stat-lbl">At release</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag">Orchestral</span><span class="tag">Seamless Loops</span>
+        <span class="tag">Stingers</span><span class="tag">Metroidvania</span>
+        <span class="tag">Nordic</span><span class="tag">No AI</span>
+        <span class="tag">Royalty-free</span>
+      </div>
+      <div class="buyrow">
+        <a href="https://martinmellstrommusic.itch.io" target="_blank" rel="noopener noreferrer" class="buy">Follow on itch.io</a>
+        <a href="https://www.fab.com/sellers/MartinMellstromMusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on Fab</a>
+        <a href="https://assetstore.unity.com/publishers/110778" target="_blank" rel="noopener noreferrer" class="buy">Follow on Unity</a>
+        <a href="https://gamedevmarket.net/member/martinmellstrommusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on GameDevMarket</a>
+      </div>
       </div>
     </div>
-    <!-- §END:PACK-003 -->
 
   </div>
 </section>
-<!-- §END:PACKS -->
 
 <div class="rule"></div>
 
-<!-- §HTML:ABOUT -->
+<!-- ABOUT -->
 <section class="sec" id="about">
   <div class="about-inner">
     <div class="fade" style="position:relative">
       <div class="portrait">
-        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/martin_photo.jpg" alt="Martin Mellström — composer" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/martin_photo.jpg"
+             alt="Martin Mellström — composer"
+             style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
         <div class="portrait-frame"></div>
       </div>
     </div>
@@ -471,9 +771,10 @@ footer { padding: 110px 64px 60px; }
       <span class="sec-label">The Composer</span>
       <h2 class="sec-title" style="margin-bottom:32px">Music that <em>moves</em></h2>
       <div class="waveform">
-        <div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div>
-        <div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div>
-        <div class="wb"></div><div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+        <div class="wb"></div><div class="wb"></div><div class="wb"></div>
       </div>
       <p>I make orchestral music for games. Smaller ensembles, a lot of minor keys, and enough ambient detail that a loop stays interesting after the twentieth time through.</p>
       <p>The goal is always that the music belongs in the scene. Not just underneath it. Wind in the right place, a texture that shifts as the tension builds, an instrument choice that fits the world.</p>
@@ -481,33 +782,38 @@ footer { padding: 110px 64px 60px; }
     </div>
   </div>
 </section>
-<!-- §END:ABOUT -->
 
 <div class="rule"></div>
 
-<!-- §HTML:BLOG -->
+<!-- BLOG -->
 <section class="sec" id="blog">
   <div class="fade">
     <span class="sec-label">Notes & Thoughts</span>
     <h2 class="sec-title">From the <em>Studio</em></h2>
     <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px">On composing, game audio and the occasional tool recommendation.</p>
   </div>
-  <div class="blog-grid fade" id="blogGrid">
-    <div class="blog-card">
-      <div class="blog-card-body">
-        <span class="blog-date">March 10, 2026</span>
-        <div class="blog-tags"><span class="blog-tag">Music Packs</span></div>
-        <h3 class="blog-title">Welcome to the Studio</h3>
-        <p class="blog-ingress">Notes on composing, game audio and the work behind the music packs. More posts coming.</p>
+  <div class="blog-scroll-wrap fade">
+    <div class="blog-grid" id="blogGrid">
+
+      <!-- NEWEST FIRST (left to right) -->
+
+      <div class="blog-card">
+        <div class="blog-card-body">
+          <span class="blog-date">March 10, 2026</span>
+          <div class="blog-tags"><span class="blog-tag">Music Packs</span></div>
+          <h3 class="blog-title">Welcome to the Studio</h3>
+          <p class="blog-ingress" data-full="Notes on composing, game audio and the work behind the music packs. More posts coming soon — on workflow, instrument choices, and what actually goes into making a loop that stays interesting after the hundredth playthrough."></p>
+          <a href="blog.html#welcome-to-the-studio" target="_blank" rel="noopener" class="blog-read-more">Read more →</a>
+        </div>
       </div>
+
     </div>
   </div>
 </section>
-<!-- §END:BLOG -->
 
 <div class="rule"></div>
 
-<!-- §HTML:FILM -->
+<!-- FILM -->
 <section class="sec" id="film" style="max-width:860px;margin:0 auto">
   <div class="fade">
     <span class="sec-label">Film Work</span>
@@ -515,7 +821,9 @@ footer { padding: 110px 64px 60px; }
     <div class="film-inner" style="max-width:100%;margin:0 0 40px 0">
       <div style="position:relative">
         <div class="film-image">
-          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/kvadratisk_poster_tantleken_indigogo.jpg" alt="Tantleken — documentary film 2023" onerror="this.closest('.film-image').style.display='none'">
+          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/kvadratisk_poster_tantleken_indigogo.jpg"
+               alt="Tantleken — documentary film 2023"
+               onerror="this.closest('.film-image').style.display='none'">
         </div>
         <div class="film-frame"></div>
       </div>
@@ -525,16 +833,22 @@ footer { padding: 110px 64px 60px; }
         <div class="cplayer" id="cp3">
           <div class="cp-now">
             <div class="cp-btns">
-              <button class="cp-btn cp-prev" data-p="cp3" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg></button>
+              <button class="cp-btn cp-prev" data-p="cp3" aria-label="Previous">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg>
+              </button>
               <button class="cp-btn cp-play" data-p="cp3" aria-label="Play">
                 <svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                 <svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
               </button>
-              <button class="cp-btn cp-next" data-p="cp3" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg></button>
+              <button class="cp-btn cp-next" data-p="cp3" aria-label="Next">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg>
+              </button>
             </div>
             <div class="cp-meta">
               <span class="cp-title" id="cp3-title">Loading…</span>
-              <div class="cp-scrub" id="cp3-scrub"><div class="cp-scrub-fill" id="cp3-fill"></div></div>
+              <div class="cp-scrub" id="cp3-scrub">
+                <div class="cp-scrub-fill" id="cp3-fill"></div>
+              </div>
               <div class="cp-times"><span id="cp3-cur">0:00</span><span id="cp3-dur">0:00</span></div>
             </div>
           </div>
@@ -545,11 +859,10 @@ footer { padding: 110px 64px 60px; }
     </div>
   </div>
 </section>
-<!-- §END:FILM -->
 
 <div class="rule"></div>
 
-<!-- §HTML:FAQ -->
+<!-- FAQ -->
 <section class="sec" id="faq" style="max-width:860px;margin:0 auto">
   <div class="fade">
     <span class="sec-label">Common Questions</span>
@@ -578,9 +891,8 @@ footer { padding: 110px 64px 60px; }
     </details>
   </div>
 </section>
-<!-- §END:FAQ -->
 
-<!-- §HTML:FOOTER -->
+<!-- FOOTER / CONTACT -->
 <footer id="contact">
   <div class="contact-grid fade">
     <div class="contact-info">
@@ -595,7 +907,15 @@ footer { padding: 110px 64px 60px; }
         <a href="https://www.instagram.com/martinmellstrommusic" target="_blank" rel="noopener noreferrer" class="citem">
           <span class="cicon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-              <defs><radialGradient id="ig-grad" cx="30%" cy="107%" r="130%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs>
+              <defs>
+                <radialGradient id="ig-grad" cx="30%" cy="107%" r="130%">
+                  <stop offset="0%" stop-color="#fdf497"/>
+                  <stop offset="5%" stop-color="#fdf497"/>
+                  <stop offset="45%" stop-color="#fd5949"/>
+                  <stop offset="60%" stop-color="#d6249f"/>
+                  <stop offset="90%" stop-color="#285AEB"/>
+                </radialGradient>
+              </defs>
               <rect x="2" y="2" width="20" height="20" rx="5.5" ry="5.5" fill="url(#ig-grad)"/>
               <circle cx="12" cy="12" r="4.5" fill="none" stroke="white" stroke-width="1.8"/>
               <circle cx="17.5" cy="6.5" r="1.2" fill="white"/>
@@ -616,8 +936,14 @@ footer { padding: 110px 64px 60px; }
     <div>
       <form class="contact-form" id="contactForm">
         <div class="form-row">
-          <div class="form-group"><label for="fname">Name</label><input type="text" id="fname" name="name" placeholder="Your name" required></div>
-          <div class="form-group"><label for="femail">Email</label><input type="email" id="femail" name="email" placeholder="your@email.com" required></div>
+          <div class="form-group">
+            <label for="fname">Name</label>
+            <input type="text" id="fname" name="name" placeholder="Your name" required>
+          </div>
+          <div class="form-group">
+            <label for="femail">Email</label>
+            <input type="email" id="femail" name="email" placeholder="your@email.com" required>
+          </div>
         </div>
         <div class="form-group">
           <label for="fsubject">Subject</label>
@@ -629,8 +955,13 @@ footer { padding: 110px 64px 60px; }
             <option value="other">Other</option>
           </select>
         </div>
-        <div class="form-group"><label for="fmessage">Message</label><textarea id="fmessage" name="message" rows="6" placeholder="Tell me about your project..." required></textarea></div>
-        <div style="position:absolute;left:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="fwebsite" name="website" tabindex="-1" autocomplete="off"></div>
+        <div class="form-group">
+          <label for="fmessage">Message</label>
+          <textarea id="fmessage" name="message" rows="6" placeholder="Tell me about your project..." required></textarea>
+        </div>
+        <div style="position:absolute;left:-9999px;opacity:0;pointer-events:none" aria-hidden="true">
+          <input type="text" id="fwebsite" name="website" tabindex="-1" autocomplete="off">
+        </div>
         <div class="form-submit">
           <button type="submit" class="btn-g" style="cursor:pointer;border:1px solid var(--golddim);background:transparent;color:var(--gold)">Send Message</button>
         </div>
@@ -638,31 +969,44 @@ footer { padding: 110px 64px 60px; }
       </form>
     </div>
   </div>
+
   <div class="foot-bot">
     <span class="foot-copy">© 2026 Martin Mellstrom — All Rights Reserved</span>
   </div>
 </footer>
-<!-- §END:FOOTER -->
 
-<!-- §JS:INIT -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-
-/* §JS:MAIL */
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+/* ─── Mail link (JS-assembled to avoid Cloudflare obfuscation) ─── */
 (function() {
-  var u = 'hello', d = 'martinmellstrom.com';
+  var u = 'hello';
+  var d = 'martinmellstrom.com';
   var el = document.getElementById('mail-link');
   if (el) el.href = 'mailto:' + u + '@' + d;
   var disp = document.getElementById('mail-display');
   if (disp) disp.textContent = u + '@' + d;
 })();
 
-/* §JS:SCROLL-FADE */
+/* ─── Blog ingress truncation (200 chars) ─── */
+(function() {
+  document.querySelectorAll('.blog-ingress[data-full]').forEach(function(el) {
+    var full = el.getAttribute('data-full');
+    if (full.length > 200) {
+      el.textContent = full.slice(0, 200).trimEnd() + '…';
+    } else {
+      el.textContent = full;
+    }
+  });
+})();
+
+/* ─── Intersection Observer ─── */
 const io = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
 }, { threshold: 0.08 });
 document.querySelectorAll('.fade').forEach(el => io.observe(el));
 
-/* §JS:NAV-HIDE */
+/* ─── Nav hide on scroll down ─── */
 let lastY = 0;
 const nav = document.getElementById('nav');
 window.addEventListener('scroll', () => {
@@ -671,7 +1015,7 @@ window.addEventListener('scroll', () => {
   lastY = y;
 }, { passive: true });
 
-/* §JS:FLOATING-SYMBOLS */
+/* ─── Floating musical symbols ─── */
 const symbols = ['𝄞', '♩', '♪', '♫', '♭', '♯', '𝄢'];
 const hero = document.querySelector('.hero');
 function spawnClef() {
@@ -679,88 +1023,186 @@ function spawnClef() {
   el.className = 'clef';
   el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
   const size = .7 + Math.random() * 1.8;
-  el.style.cssText = `left:${Math.random()*90+5}%;bottom:${Math.random()*30}%;font-size:${size}rem;animation-duration:${8+Math.random()*10}s;animation-delay:${Math.random()*3}s;`;
+  el.style.cssText = `
+    left: ${Math.random() * 90 + 5}%;
+    bottom: ${Math.random() * 30}%;
+    font-size: ${size}rem;
+    animation-duration: ${8 + Math.random() * 10}s;
+    animation-delay: ${Math.random() * 3}s;
+  `;
   hero.appendChild(el);
   setTimeout(() => el.remove(), 22000);
 }
 for (let i = 0; i < 6; i++) setTimeout(spawnClef, i * 2200);
 setInterval(spawnClef, 3000);
 
-/* §JS:SOUNDCLOUD-PLAYERS */
+/* ─── Custom SoundCloud Players ─── */
 (function() {
   const CONFIGS = [
-    { playerId:'cp1', iframeId:'sc-1', listId:'cp1-list', titleId:'cp1-title', fillId:'cp1-fill', scrubId:'cp1-scrub', curId:'cp1-cur', durId:'cp1-dur' },
-    { playerId:'cp2', iframeId:'sc-2', listId:'cp2-list', titleId:'cp2-title', fillId:'cp2-fill', scrubId:'cp2-scrub', curId:'cp2-cur', durId:'cp2-dur' },
-    { playerId:'cp3', iframeId:'sc-3', listId:'cp3-list', titleId:'cp3-title', fillId:'cp3-fill', scrubId:'cp3-scrub', curId:'cp3-cur', durId:'cp3-dur' }
+    { playerId: 'cp1', iframeId: 'sc-1', listId: 'cp1-list', titleId: 'cp1-title',
+      fillId: 'cp1-fill', scrubId: 'cp1-scrub', curId: 'cp1-cur', durId: 'cp1-dur' },
+    { playerId: 'cp2', iframeId: 'sc-2', listId: 'cp2-list', titleId: 'cp2-title',
+      fillId: 'cp2-fill', scrubId: 'cp2-scrub', curId: 'cp2-cur', durId: 'cp2-dur' },
+    { playerId: 'cp3', iframeId: 'sc-3', listId: 'cp3-list', titleId: 'cp3-title',
+      fillId: 'cp3-fill', scrubId: 'cp3-scrub', curId: 'cp3-cur', durId: 'cp3-dur' }
   ];
-  function fmt(ms) { if (!ms||isNaN(ms)) return '0:00'; const s=Math.floor(ms/1000),m=Math.floor(s/60),sec=s%60; return m+':'+(sec<10?'0':'')+sec; }
+
+  function fmt(ms) {
+    if (!ms || isNaN(ms)) return '0:00';
+    const s = Math.floor(ms / 1000), m = Math.floor(s / 60), sec = s % 60;
+    return m + ':' + (sec < 10 ? '0' : '') + sec;
+  }
+
   function initPlayer(cfg) {
-    const iframe=document.getElementById(cfg.iframeId); if (!iframe) return;
-    const widget=SC.Widget(iframe), playerEl=document.getElementById(cfg.playerId), listEl=document.getElementById(cfg.listId),
-          titleEl=document.getElementById(cfg.titleId), fillEl=document.getElementById(cfg.fillId),
-          scrubEl=document.getElementById(cfg.scrubId), curEl=document.getElementById(cfg.curId), durEl=document.getElementById(cfg.durId);
-    let tracks=[], currentIdx=0, duration=0;
-    const HIDDEN = cfg.playerId==='cp1' ? ['iii siblings'] : [];
-    const FALLBACK_DURATIONS = { 'cp1':[null,null,null,null,null,'2:17','3:12','3:11','1:38','1:17','2:35','1:30'], 'cp2':[], 'cp3':[] };
-    const FALLBACK_TITLES = { 'cp1':['Glittering Moss','Light Steps','Fantastic Beast','Drifter','III Siblings','Ardea','Atlas Companion','Battle Companion','The Menu','Colossus Rose','Minerals','Aerial View'], 'cp2':['Forest','Snow','Graveyard','Field','Cave'], 'cp3':[] };
+    const iframe = document.getElementById(cfg.iframeId);
+    if (!iframe) return;
+    const widget = SC.Widget(iframe);
+    const playerEl = document.getElementById(cfg.playerId);
+    const listEl = document.getElementById(cfg.listId);
+    const titleEl = document.getElementById(cfg.titleId);
+    const fillEl = document.getElementById(cfg.fillId);
+    const scrubEl = document.getElementById(cfg.scrubId);
+    const curEl = document.getElementById(cfg.curId);
+    const durEl = document.getElementById(cfg.durId);
+    let tracks = [], currentIdx = 0, duration = 0;
+
+    const HIDDEN = cfg.playerId === 'cp1' ? ['iii siblings'] : [];
+    const FALLBACK_DURATIONS = {
+      'cp1': [null,null,null,null,null,'2:17','3:12','3:11','1:38','1:17','2:35','1:30'],
+      'cp2': [],
+      'cp3': []
+    };
+    const FALLBACK_TITLES = {
+      'cp1': ['Glittering Moss','Light Steps','Fantastic Beast','Drifter','III Siblings','Ardea','Atlas Companion','Battle Companion','The Menu','Colossus Rose','Minerals','Aerial View'],
+      'cp2': ['Forest','Snow','Graveyard','Field','Cave'],
+      'cp3': []
+    };
+
     widget.bind(SC.Widget.Events.READY, function() {
       widget.getSounds(function(sounds) {
-        tracks=sounds; listEl.innerHTML=''; var visibleNum=0;
-        sounds.forEach(function(t,scIdx) {
-          if (HIDDEN.indexOf((t.title||'').toLowerCase())!==-1) return;
+        tracks = sounds;
+        listEl.innerHTML = '';
+        var visibleNum = 0;
+        sounds.forEach(function(t, scIdx) {
+          if (HIDDEN.indexOf((t.title || '').toLowerCase()) !== -1) return;
           visibleNum++;
-          var li=document.createElement('li'); li.dataset.scIdx=scIdx;
-          var fb=FALLBACK_TITLES[cfg.playerId]||[], displayTitle=(t.title&&t.title.trim())?t.title.trim():(fb[scIdx]||'Track '+visibleNum);
-          var dfb=FALLBACK_DURATIONS[cfg.playerId]||[], displayDur=(t.duration&&t.duration>0)?fmt(t.duration):(dfb[scIdx]||'');
-          li.innerHTML='<span class="cp-li-num">'+String(visibleNum).padStart(2,'0')+'</span><span class="cp-li-name">'+displayTitle+'</span><span class="cp-li-dur">'+displayDur+'</span>';
-          li.addEventListener('click',function(){widget.skip(scIdx);widget.play();});
+          var li = document.createElement('li');
+          li.dataset.scIdx = scIdx;
+          var fallbacks = FALLBACK_TITLES[cfg.playerId] || [];
+          var displayTitle = (t.title && t.title.trim()) ? t.title.trim() : (fallbacks[scIdx] || 'Track ' + visibleNum);
+          var durFallbacks = FALLBACK_DURATIONS[cfg.playerId] || [];
+          var displayDur = (t.duration && t.duration > 0) ? fmt(t.duration) : (durFallbacks[scIdx] || '');
+          li.innerHTML = '<span class="cp-li-num">' + String(visibleNum).padStart(2,'0') + '</span>'
+            + '<span class="cp-li-name">' + displayTitle + '</span>'
+            + '<span class="cp-li-dur">' + displayDur + '</span>';
+          li.addEventListener('click', function() { widget.skip(scIdx); widget.play(); });
           listEl.appendChild(li);
         });
-        var first=listEl.querySelector('li');
-        if (first) { first.classList.add('active'); var fIdx=parseInt(first.dataset.scIdx),fb2=FALLBACK_TITLES[cfg.playerId]||[]; titleEl.textContent=(sounds[fIdx]&&sounds[fIdx].title&&sounds[fIdx].title.trim())?sounds[fIdx].title.trim():(fb2[fIdx]||'Track 1'); }
+        var first = listEl.querySelector('li');
+        if (first) {
+          first.classList.add('active');
+          var fIdx = parseInt(first.dataset.scIdx);
+          var fb = (FALLBACK_TITLES[cfg.playerId] || []);
+          var fTitle = (sounds[fIdx] && sounds[fIdx].title && sounds[fIdx].title.trim()) ? sounds[fIdx].title.trim() : (fb[fIdx] || 'Track 1');
+          titleEl.textContent = fTitle;
+        }
       });
     });
+
     widget.bind(SC.Widget.Events.PLAY, function() {
       playerEl.classList.add('playing');
-      widget.getCurrentSound(function(s) { if (s) { var fb2=FALLBACK_TITLES[cfg.playerId]||[]; widget.getCurrentSoundIndex(function(si){titleEl.textContent=(s.title&&s.title.trim())?s.title.trim():(fb2[si]||'');}); duration=s.duration||0; durEl.textContent=fmt(duration); } });
+      widget.getCurrentSound(function(s) {
+        if (s) { var fb2 = (FALLBACK_TITLES[cfg.playerId] || []); widget.getCurrentSoundIndex(function(si){ titleEl.textContent = (s.title && s.title.trim()) ? s.title.trim() : (fb2[si] || ''); }); duration = s.duration || 0; durEl.textContent = fmt(duration); }
+      });
       widget.getCurrentSoundIndex(function(scIdx) {
-        currentIdx=scIdx;
-        Array.from(listEl.children).forEach(function(li){li.classList.toggle('active',parseInt(li.dataset.scIdx)===scIdx);});
-        var active=listEl.querySelector('li.active'); if (active) active.scrollIntoView({block:'nearest',behavior:'smooth'});
+        currentIdx = scIdx;
+        Array.from(listEl.children).forEach(function(li) {
+          li.classList.toggle('active', parseInt(li.dataset.scIdx) === scIdx);
+        });
+        var active = listEl.querySelector('li.active');
+        if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       });
     });
-    widget.bind(SC.Widget.Events.PAUSE, function() { playerEl.classList.remove('playing'); });
-    widget.bind(SC.Widget.Events.FINISH, function() { playerEl.classList.remove('playing'); fillEl.style.width='0%'; curEl.textContent='0:00'; });
-    widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(e) { if (e.currentPosition!==undefined&&duration>0) { fillEl.style.width=(e.currentPosition/duration*100)+'%'; curEl.textContent=fmt(e.currentPosition); } });
-    document.querySelector('#'+cfg.playerId+' .cp-play').addEventListener('click',function(){widget.isPaused(function(paused){paused?widget.play():widget.pause();});});
-    document.querySelector('#'+cfg.playerId+' .cp-prev').addEventListener('click',function(){widget.getCurrentSoundIndex(function(idx){if(idx>0){widget.skip(idx-1);widget.play();}});});
-    document.querySelector('#'+cfg.playerId+' .cp-next').addEventListener('click',function(){widget.getCurrentSoundIndex(function(idx){if(idx<tracks.length-1){widget.skip(idx+1);widget.play();}});});
-    scrubEl.addEventListener('click',function(e){if(!duration)return;const rect=scrubEl.getBoundingClientRect(),pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));widget.seekTo(pct*duration);});
+
+    widget.bind(SC.Widget.Events.PAUSE, function() {
+      playerEl.classList.remove('playing');
+    });
+
+    widget.bind(SC.Widget.Events.FINISH, function() {
+      playerEl.classList.remove('playing');
+      fillEl.style.width = '0%';
+      curEl.textContent = '0:00';
+    });
+
+    widget.bind(SC.Widget.Events.PLAY_PROGRESS, function(e) {
+      if (e.currentPosition !== undefined && duration > 0) {
+        fillEl.style.width = (e.currentPosition / duration * 100) + '%';
+        curEl.textContent = fmt(e.currentPosition);
+      }
+    });
+
+    // Play/pause button
+    document.querySelector('#' + cfg.playerId + ' .cp-play').addEventListener('click', function() {
+      widget.isPaused(function(paused) { paused ? widget.play() : widget.pause(); });
+    });
+
+    // Prev/next
+    document.querySelector('#' + cfg.playerId + ' .cp-prev').addEventListener('click', function() {
+      widget.getCurrentSoundIndex(function(idx) {
+        if (idx > 0) { widget.skip(idx - 1); widget.play(); }
+      });
+    });
+    document.querySelector('#' + cfg.playerId + ' .cp-next').addEventListener('click', function() {
+      widget.getCurrentSoundIndex(function(idx) {
+        if (idx < tracks.length - 1) { widget.skip(idx + 1); widget.play(); }
+      });
+    });
+
+    // Scrub bar
+    scrubEl.addEventListener('click', function(e) {
+      if (!duration) return;
+      const rect = scrubEl.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      widget.seekTo(pct * duration);
+    });
   }
-  const tag=document.createElement('script'); tag.src='https://w.soundcloud.com/player/api.js';
-  tag.onload=function(){CONFIGS.forEach(initPlayer);}; document.head.appendChild(tag);
+
+  // Load SC Widget API, then init all players
+  const tag = document.createElement('script');
+  tag.src = 'https://w.soundcloud.com/player/api.js';
+  tag.onload = function() { CONFIGS.forEach(initPlayer); };
+  document.head.appendChild(tag);
 })();
 
-/* §JS:CONTACT-FORM */
-const form=document.getElementById('contactForm');
-let lastSubmit=0;
-form.addEventListener('submit',async function(e){
+/* ─── Contact form ─── */
+const form = document.getElementById('contactForm');
+let lastSubmit = 0;
+form.addEventListener('submit', async function(e) {
   e.preventDefault();
-  if(this.elements['website'].value)return;
-  const now=Date.now();
-  if(now-lastSubmit<30000){alert('Please wait a moment before sending again.');return;}
-  const email=this.elements['email'].value.trim();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert('Please enter a valid email address.');return;}
-  const btn=this.querySelector('button[type=submit]');
-  btn.textContent='Sending...';btn.disabled=true;
+  if (this.elements['website'].value) return;
+  const now = Date.now();
+  if (now - lastSubmit < 30000) { alert('Please wait a moment before sending again.'); return; }
+  const email = this.elements['email'].value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email address.'); return; }
+  const btn = this.querySelector('button[type=submit]');
+  btn.textContent = 'Sending...'; btn.disabled = true;
   try {
-    const res=await fetch('https://formspree.io/f/xaqpopok',{method:'POST',body:new FormData(this),headers:{'Accept':'application/json'}});
-    if(res.ok){lastSubmit=Date.now();this.reset();document.getElementById('formSuccess').style.display='block';btn.textContent='Sent!';}
-    else{btn.textContent='Try again';btn.disabled=false;}
-  } catch(err){btn.textContent='Error — try again';btn.disabled=false;}
+    const res = await fetch('https://formspree.io/f/xaqpopok', {
+      method: 'POST', body: new FormData(this), headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      lastSubmit = Date.now(); this.reset();
+      document.getElementById('formSuccess').style.display = 'block';
+      btn.textContent = 'Sent!';
+    } else {
+      btn.textContent = 'Try again';
+      btn.disabled = false;
+    }
+  } catch(err) {
+    btn.textContent = 'Error — try again';
+    btn.disabled = false;
+  }
 });
 </script>
-<!-- §END:JS -->
-
 </body>
 </html>
