@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Martin Mellström — Music Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0d0b;
+    --surface:   #111510;
+    --card:      #161c14;
+    --border:    #2a3328;
+    --gold:      #c9a84c;
+    --gold-dim:  #7a5e28;
+    --gold-glow: rgba(201,168,76,0.15);
+    --text:      #e8e0d0;
+    --text-dim:  #7a7468;
+    --text-mid:  #a09880;
+    --green:     #4a7c59;
+    --red:       #7c4a4a;
+    --radius:    12px;
+    --player-h:  88px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* ── LOCK SCREEN ── */
+  #lock-screen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  #lock-screen::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; opacity: 0.4;
+  }
+
+  .lock-inner {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    padding: 40px 24px;
+    width: 100%; max-width: 320px;
+  }
+
+  .lock-logo {
+    text-align: center;
+  }
+  .lock-logo-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .lock-logo-sub {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--text-mid);
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .lock-divider {
+    width: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  .lock-form {
+    width: 100%;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .lock-input-wrap {
+    position: relative;
+  }
+
+  .lock-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    text-align: center;
+    letter-spacing: 0.15em;
+  }
+  .lock-input:focus {
+    border-color: var(--gold-dim);
+    box-shadow: 0 0 0 3px var(--gold-glow);
+  }
+  .lock-input::placeholder {
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    font-size: 12px;
+  }
+  .lock-input.shake {
+    animation: shake 0.4s ease;
+    border-color: var(--red);
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-8px); }
+    40%      { transform: translateX(8px); }
+    60%      { transform: translateX(-5px); }
+    80%      { transform: translateX(5px); }
+  }
+
+  .lock-btn {
+    width: 100%;
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .lock-btn:hover { background: #e0bb5c; }
+  .lock-btn:active { transform: scale(0.98); }
+
+  .lock-error {
+    font-size: 10px;
+    color: var(--red);
+    text-align: center;
+    letter-spacing: 0.08em;
+    height: 14px;
+    transition: opacity 0.2s;
+    opacity: 0;
+  }
+  .lock-error.visible { opacity: 1; }
+
+  #lock-screen.unlocking {
+    animation: fadeOut 0.4s ease forwards;
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; pointer-events: none; }
+  }
+
+  /* ── APP (hidden until unlocked) ── */
+  #app { display: none; flex-direction: column; min-height: 100dvh; }
+  #app.visible { display: flex; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 20px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .logo span {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--text-mid);
+    font-size: 18px;
+  }
+
+  .header-controls {
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }
+
+  /* ── CONFIG PANEL ── */
+  #config-panel {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    position: relative; z-index: 9;
+    animation: slideDown 0.25s ease;
+  }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (min-width: 500px) { .config-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+  .config-field label {
+    display: block;
+    color: var(--text-dim);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .config-field input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .config-field input:focus { border-color: var(--gold-dim); }
+  .config-field input::placeholder { color: var(--text-dim); }
+
+  .config-actions {
+    display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+    background: var(--card);
+    color: var(--text-mid);
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--bg);
+    border-color: var(--gold);
+    font-weight: 700;
+  }
+  .btn-primary:hover { background: #e0bb5c; border-color: #e0bb5c; color: var(--bg); }
+
+  .btn-icon {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  /* ── STATUS BAR ── */
+  #status-bar {
+    padding: 8px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex; align-items: center; gap: 8px;
+    position: relative; z-index: 8;
+    min-height: 34px;
+  }
+  #status-bar .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  #status-bar.loading .dot { background: var(--gold); animation: pulse 1s infinite; }
+  #status-bar.ok .dot { background: var(--green); }
+  #status-bar.error .dot { background: var(--red); }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+  /* ── PACKAGE FILTER TABS ── */
+  #package-tabs {
+    padding: 12px 20px 0;
+    display: flex; gap: 6px; flex-wrap: wrap;
+    position: relative; z-index: 7;
+    border-bottom: 1px solid var(--border);
+  }
+  .pkg-tab {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 12px 8px;
+    border: none; border-bottom: 2px solid transparent;
+    background: none; color: var(--text-dim);
+    cursor: pointer; transition: all 0.15s;
+    margin-bottom: -1px;
+  }
+  .pkg-tab:hover { color: var(--text-mid); }
+  .pkg-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* ── TRACK LIST ── */
+  #track-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 12px calc(var(--player-h) + 20px);
+    position: relative; z-index: 6;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  #track-list::-webkit-scrollbar { width: 4px; }
+  #track-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .pkg-section { margin-bottom: 20px; }
+  .pkg-header {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    padding: 6px 8px 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pkg-header::after {
+    content: '';
+    flex: 1; height: 1px; background: var(--border);
+  }
+
+  .track-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+    border: 1px solid transparent;
+  }
+  .track-item:hover { background: var(--card); }
+  .track-item.active {
+    background: var(--card);
+    border-color: var(--border);
+  }
+  .track-item.active::before {
+    content: '';
+    position: absolute; left: 0; top: 10%; bottom: 10%;
+    width: 2px; background: var(--gold);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .track-num {
+    font-size: 10px;
+    color: var(--text-dim);
+    width: 20px;
+    text-align: right;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .track-item.active .track-num { color: var(--gold); }
+
+  .track-bars {
+    display: none;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+    width: 20px;
+    flex-shrink: 0;
+  }
+  .track-item.active.playing .track-num { display: none; }
+  .track-item.active.playing .track-bars { display: flex; }
+  .track-bars span {
+    width: 3px; background: var(--gold); border-radius: 1px;
+    animation: bar 0.8s ease-in-out infinite alternate;
+  }
+  .track-bars span:nth-child(1) { animation-delay: 0s; }
+  .track-bars span:nth-child(2) { animation-delay: 0.2s; }
+  .track-bars span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bar {
+    from { height: 3px; }
+    to   { height: 14px; }
+  }
+
+  .track-info { flex: 1; min-width: 0; }
+  .track-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+  .track-item.active .track-name { color: var(--gold); }
+  .track-meta {
+    font-size: 10px; color: var(--text-dim);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+
+  .track-duration {
+    font-size: 11px; color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+
+  .offline-badge {
+    font-size: 9px; padding: 2px 5px;
+    background: var(--green); color: #fff;
+    border-radius: 3px; flex-shrink: 0;
+    letter-spacing: 0.05em;
+    opacity: 0.85;
+  }
+
+  /* ── EMPTY STATE ── */
+  #empty-state {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    gap: 12px;
+  }
+  #empty-state.visible { display: flex; }
+  .empty-icon { font-size: 40px; opacity: 0.3; }
+  .empty-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 300; color: var(--text-mid);
+  }
+  .empty-sub { font-size: 11px; color: var(--text-dim); line-height: 1.7; max-width: 280px; }
+
+  /* ── BOTTOM PLAYER ── */
+  #player {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: var(--player-h);
+    background: rgba(10,13,11,0.92);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    display: flex; flex-direction: column;
+    padding: 0 16px;
+  }
+
+  #progress-wrap {
+    position: relative; height: 3px;
+    background: var(--border);
+    cursor: pointer;
+    flex-shrink: 0;
+    margin: 0 -16px;
+  }
+  #progress-fill {
+    height: 100%; background: var(--gold);
+    width: 0%; transition: width 0.25s linear;
+    pointer-events: none;
+  }
+  #progress-wrap:hover #progress-fill { background: #e0bb5c; }
+
+  .player-inner {
+    flex: 1;
+    display: flex; align-items: center; gap: 12px;
+    overflow: hidden;
+  }
+
+  .now-playing { flex: 1; min-width: 0; }
+  .np-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 400;
+    color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    line-height: 1;
+  }
+  .np-sub {
+    font-size: 10px; color: var(--text-dim);
+    margin-top: 3px; letter-spacing: 0.05em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .player-controls {
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+  }
+
+  .ctrl {
+    background: none; border: none;
+    color: var(--text-dim); font-size: 16px;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .ctrl:hover { color: var(--text); background: var(--card); }
+  .ctrl:active { transform: scale(0.9); }
+  .ctrl.active { color: var(--gold); }
+
+  #play-btn {
+    width: 44px; height: 44px;
+    background: var(--gold); color: var(--bg);
+    font-size: 18px; border-radius: 50%;
+  }
+  #play-btn:hover { background: #e0bb5c; color: var(--bg); }
+
+  .time-display {
+    font-size: 10px; color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    display: none;
+  }
+  @media (min-width: 360px) { .time-display { display: block; } }
+
+  /* ── MODAL ── */
+  .modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius) var(--radius) 0 0;
+    width: 100%; max-width: 500px;
+    padding: 20px;
+    animation: slideUp 0.25s ease;
+    max-height: 80dvh;
+    overflow-y: auto;
+  }
+  @keyframes slideUp { from { transform:translateY(40px); opacity:0; } to { transform:none; opacity:1; } }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 400; color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .modal p { font-size: 12px; color: var(--text-mid); line-height: 1.7; margin-bottom: 10px; }
+  .modal code {
+    font-family: 'Space Mono', monospace;
+    background: var(--card); padding: 2px 6px; border-radius: 4px;
+    font-size: 11px; color: var(--gold-dim);
+  }
+  .modal-close {
+    float: right; background: none; border: none;
+    color: var(--text-dim); font-size: 20px; cursor: pointer; line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  audio { display: none; }
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  LOCK SCREEN                                -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="lock-screen">
+  <div class="lock-inner">
+    <div class="lock-logo">
+      <div class="lock-logo-title">Martin Mellström</div>
+      <div class="lock-logo-sub">/ player</div>
+    </div>
+    <div class="lock-divider"></div>
+    <div class="lock-form">
+      <input
+        class="lock-input"
+        id="lock-input"
+        type="password"
+        placeholder="lösenord"
+        autocomplete="current-password"
+        autocorrect="off"
+        autocapitalize="none"
+        spellcheck="false"
+      >
+      <div class="lock-error" id="lock-error">Fel lösenord</div>
+      <button class="lock-btn" id="lock-btn">Öppna spelare</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  APP                                        -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="app">
+
+<header>
+  <div class="logo">Martin Mellström <span>/ player</span></div>
+  <div class="header-controls">
+    <button class="btn btn-icon" id="refresh-btn" title="Hämta låtar från Dropbox">↻</button>
+    <button class="btn btn-icon" id="settings-btn" title="Inställningar">⚙</button>
+    <button class="btn btn-icon" id="help-btn" title="Hjälp">?</button>
+  </div>
+</header>
+
+<div id="config-panel" style="display:none">
+  <div class="config-grid">
+    <div class="config-field" style="grid-column: 1/-1">
+      <label>Dropbox Access Token</label>
+      <input type="password" id="cfg-token" placeholder="sl.xxxxxxxxxxxxxxxx…" autocomplete="off">
+    </div>
+    <div class="config-field">
+      <label>Mapp i Dropbox</label>
+      <input type="text" id="cfg-folder" placeholder="/Music" value="/Music">
+    </div>
+    <div class="config-field">
+      <label>Filformat (kommasep.)</label>
+      <input type="text" id="cfg-exts" placeholder="mp3,wav,flac,aiff" value="mp3,wav,flac,aiff,m4a">
+    </div>
+  </div>
+  <div class="config-actions">
+    <button class="btn btn-primary" id="save-config-btn">Spara &amp; hämta låtar</button>
+    <button class="btn" id="cancel-config-btn">Avbryt</button>
+  </div>
+</div>
+
+<div id="status-bar">
+  <div class="dot"></div>
+  <span id="status-text">Ange ditt Dropbox-token för att komma igång</span>
+</div>
+
+<div id="package-tabs">
+  <button class="pkg-tab active" data-pkg="all">Alla</button>
+</div>
+
+<div id="track-list">
+  <div id="empty-state" class="visible">
+    <div class="empty-icon">♩</div>
+    <div class="empty-title">Inga låtar laddade</div>
+    <div class="empty-sub">Öppna inställningar (⚙), klistra in ditt Dropbox-token och välj vilken mapp spelaren ska hämta låtar ifrån.</div>
+    <button class="btn btn-primary" onclick="openSettings()">Öppna inställningar</button>
+  </div>
+</div>
+
+<div id="player">
+  <div id="progress-wrap">
+    <div id="progress-fill"></div>
+  </div>
+  <div class="player-inner">
+    <div class="now-playing">
+      <div class="np-name" id="np-name">Ingen låt vald</div>
+      <div class="np-sub" id="np-sub">—</div>
+    </div>
+    <div class="time-display" id="time-display">0:00 / 0:00</div>
+    <div class="player-controls">
+      <button class="ctrl" id="prev-btn" title="Föregående">⏮</button>
+      <button class="ctrl" id="play-btn" title="Spela/pausa">▶</button>
+      <button class="ctrl" id="next-btn" title="Nästa">⏭</button>
+      <button class="ctrl" id="repeat-btn" title="Upprepa">⟳</button>
+      <button class="ctrl" id="shuffle-btn" title="Blanda">⇄</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="help-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+    <div class="modal-title">Kom igång</div>
+    <p><strong>1. Skapa ett Dropbox App-token</strong><br>
+    Gå till <code>dropbox.com/developers</code> → App Console → Create app. Välj Scoped access och Full Dropbox (eller en specifik mapp). Under <em>Permissions</em>, aktivera <code>files.content.read</code> och <code>files.metadata.read</code>. Klicka sedan <em>Generate access token</em>.</p>
+    <p><strong>2. Klistra in token i inställningar</strong><br>
+    Öppna ⚙ och klistra in token + ange din musikmapp (t.ex. <code>/Music</code>).</p>
+    <p><strong>3. Automatisk uppdatering</strong><br>
+    Tryck på ↻ för att hämta nya filer. Spelaren minns din spellista lokalt — tryck ↻ varje gång du laddat upp ny musik till Dropbox.</p>
+    <p><strong>4. Musikpaket</strong><br>
+    Spelaren grupperar låtar per undermapp. Lägg t.ex. alla Atlas Companion-låtar i <code>/Music/Atlas Companion</code> så skapar spelaren automatiskt en flik per paket.</p>
+    <p><strong>5. Offline</strong><br>
+    Tryck på en låt och vänta — den laddas ner och cachelagras lokalt. Ladda ner låtar när du har WiFi för smidig pendling utan att äta mobildata.</p>
+    <div class="config-actions">
+      <button class="btn btn-primary" onclick="closeModal('help-modal'); openSettings()">Öppna inställningar</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /#app -->
+
+<audio id="audio-el"></audio>
+
+<script>
+// ═══════════════════════════════════════════════
+//  LOCK — generera nytt hash: https://emn178.github.io/online-tools/sha256.html
+//  Byt ut strängen nedan mot SHA-256-hashen av ditt lösenord
+// ═══════════════════════════════════════════════
+const PASSWORD_HASH = '5adbee7e0dcdcdcaaa48a5b7401301b554359f0219943181af6fde8f41b1a681';
+const SESSION_KEY   = 'mm_unlocked';
+
+async function hashString(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function checkLock() {
+  if (sessionStorage.getItem(SESSION_KEY) === '1') unlock(true);
+}
+
+function unlock(instant) {
+  const lockEl = document.getElementById('lock-screen');
+  const appEl  = document.getElementById('app');
+  sessionStorage.setItem(SESSION_KEY, '1');
+  if (instant) {
+    lockEl.style.display = 'none';
+  } else {
+    lockEl.classList.add('unlocking');
+    lockEl.addEventListener('animationend', () => lockEl.style.display = 'none', { once: true });
+  }
+  appEl.classList.add('visible');
+}
+
+document.getElementById('lock-btn').addEventListener('click', tryUnlock);
+document.getElementById('lock-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') tryUnlock();
+  document.getElementById('lock-error').classList.remove('visible');
+  document.getElementById('lock-input').classList.remove('shake');
+});
+
+async function tryUnlock() {
+  const val  = document.getElementById('lock-input').value;
+  const hash = await hashString(val);
+  if (hash === PASSWORD_HASH) {
+    unlock(false);
+  } else {
+    const inp = document.getElementById('lock-input');
+    const err = document.getElementById('lock-error');
+    inp.classList.remove('shake');
+    void inp.offsetWidth;
+    inp.classList.add('shake');
+    err.classList.add('visible');
+    inp.value = '';
+    inp.focus();
+  }
+}
+
+checkLock();
+
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+const DB_KEY   = 'mm_player_v1';
+let config     = { token: '', folder: '/Music', exts: 'mp3,wav,flac,aiff,m4a' };
+let tracks     = [];
+let filtered   = [];
+let currentIdx = -1;
+let isPlaying  = false;
+let repeatMode = 'none';
+let shuffle    = false;
+let shuffleQueue = [];
+let activePkg  = 'all';
+let audioCache = {};
+let linkCache  = {};
+
+const audio    = document.getElementById('audio-el');
+const npName   = document.getElementById('np-name');
+const npSub    = document.getElementById('np-sub');
+const progFill = document.getElementById('progress-fill');
+const timeDisp = document.getElementById('time-display');
+const playBtn  = document.getElementById('play-btn');
+const repeatBtn= document.getElementById('repeat-btn');
+const shuffleBtn = document.getElementById('shuffle-btn');
+
+// ═══════════════════════════════════════════════
+//  PERSISTENCE
+// ═══════════════════════════════════════════════
+function saveState() {
+  try {
+    const data = {
+      config,
+      tracks: tracks.map(t => ({ id:t.id, name:t.name, path:t.path, package:t.package, ext:t.ext, duration:t.duration })),
+      currentIdx, repeatMode, shuffle
+    };
+    localStorage.setItem(DB_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    config = { ...config, ...data.config };
+    tracks = data.tracks || [];
+    currentIdx = data.currentIdx ?? -1;
+    repeatMode = data.repeatMode || 'none';
+    shuffle = data.shuffle || false;
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════
+//  DROPBOX API
+// ═══════════════════════════════════════════════
+async function dbxCall(endpoint, body) {
+  const res = await fetch(`https://api.dropboxapi.com/2/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${config.token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error_summary || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+async function listAllFiles(path) {
+  const exts = config.exts.split(',').map(e => '.' + e.trim().toLowerCase());
+  let files = [];
+  const process = (entries) => {
+    for (const e of entries) {
+      if (e['.tag'] === 'file') {
+        const lower = e.name.toLowerCase();
+        if (exts.some(ext => lower.endsWith(ext))) files.push(e);
+      }
+    }
+  };
+  let result = await dbxCall('files/list_folder', {
+    path: path === '/' ? '' : path,
+    recursive: true,
+    limit: 2000
+  });
+  process(result.entries);
+  while (result.has_more) {
+    result = await dbxCall('files/list_folder/continue', { cursor: result.cursor });
+    process(result.entries);
+  }
+  return files;
+}
+
+async function getTemporaryLink(path) {
+  const cached = linkCache[path];
+  if (cached && cached.exp > Date.now()) return cached.url;
+  const data = await dbxCall('files/get_temporary_link', { path });
+  linkCache[path] = { url: data.link, exp: Date.now() + 3.5 * 60 * 60 * 1000 };
+  return data.link;
+}
+
+async function downloadFile(path) {
+  if (audioCache[path]) return audioCache[path];
+  setStatus('loading', `Laddar ner: ${path.split('/').pop()}…`);
+  const url = await getTemporaryLink(path);
+  const res = await fetch(url);
+  const blob = await res.blob();
+  const objUrl = URL.createObjectURL(blob);
+  audioCache[path] = objUrl;
+  const t = tracks.find(t => t.path === path);
+  if (t) { t.cachedUrl = objUrl; saveState(); renderList(); }
+  return objUrl;
+}
+
+// ═══════════════════════════════════════════════
+//  FETCH TRACKS
+// ═══════════════════════════════════════════════
+async function fetchTracks() {
+  if (!config.token) {
+    setStatus('error', 'Token saknas — öppna inställningar');
+    openSettings();
+    return;
+  }
+  setStatus('loading', 'Hämtar låtar från Dropbox…');
+  try {
+    const files = await listAllFiles(config.folder);
+    tracks = files.map(f => {
+      const rel = f.path_lower.replace(config.folder.toLowerCase(), '');
+      const parts = rel.split('/').filter(Boolean);
+      const pkg = parts.length > 1 ? parts[0] : null;
+      const name = f.name.replace(/\.[^.]+$/, '');
+      return {
+        id: f.id || f.path_lower,
+        name,
+        path: f.path_lower,
+        package: pkg,
+        ext: f.name.split('.').pop().toUpperCase(),
+        duration: null,
+        cachedUrl: audioCache[f.path_lower] || null
+      };
+    });
+    tracks.sort((a, b) => {
+      if (a.package && !b.package) return -1;
+      if (!a.package && b.package) return 1;
+      if (a.package !== b.package) return (a.package || '').localeCompare(b.package || '');
+      return a.name.localeCompare(b.name);
+    });
+    if (currentIdx >= tracks.length) currentIdx = -1;
+    saveState();
+    renderPackageTabs();
+    renderList();
+    setStatus('ok', `${tracks.length} låtar hämtade`);
+  } catch(e) {
+    setStatus('error', `Fel: ${e.message}`);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════
+function renderPackageTabs() {
+  const tabs = document.getElementById('package-tabs');
+  const pkgs = [...new Set(tracks.map(t => t.package).filter(Boolean))].sort();
+  tabs.innerHTML = '<button class="pkg-tab active" data-pkg="all">Alla</button>';
+  for (const p of pkgs) {
+    const btn = document.createElement('button');
+    btn.className = 'pkg-tab';
+    btn.dataset.pkg = p;
+    btn.textContent = formatPkgName(p);
+    tabs.appendChild(btn);
+  }
+  tabs.querySelectorAll('.pkg-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.pkg === activePkg);
+    t.addEventListener('click', () => {
+      activePkg = t.dataset.pkg;
+      tabs.querySelectorAll('.pkg-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      renderList();
+    });
+  });
+}
+
+function formatPkgName(s) {
+  return s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function renderList() {
+  const list = document.getElementById('track-list');
+  const empty = document.getElementById('empty-state');
+  filtered = activePkg === 'all' ? [...tracks] : tracks.filter(t => t.package === activePkg);
+  if (filtered.length === 0 && tracks.length === 0) {
+    empty.classList.add('visible');
+    list.innerHTML = '';
+    list.appendChild(empty);
+    return;
+  }
+  empty.classList.remove('visible');
+  const groups = {};
+  for (const t of filtered) {
+    const g = t.package || '__root__';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(t);
+  }
+  let html = '';
+  const showHeaders = Object.keys(groups).length > 1 || (Object.keys(groups)[0] !== '__root__');
+  for (const [g, items] of Object.entries(groups)) {
+    if (showHeaders) {
+      const label = g === '__root__' ? 'Övrigt' : formatPkgName(g);
+      html += `<div class="pkg-section"><div class="pkg-header">${label}</div>`;
+    } else {
+      html += `<div class="pkg-section">`;
+    }
+    items.forEach((t, i) => {
+      const globalIdx = tracks.indexOf(t);
+      const isActive = globalIdx === currentIdx;
+      const isPlay   = isActive && isPlaying;
+      const dur      = t.duration ? fmtTime(t.duration) : '—';
+      html += `
+      <div class="track-item${isActive ? ' active' : ''}${isPlay ? ' playing' : ''}"
+           data-idx="${globalIdx}" onclick="playTrack(${globalIdx})">
+        <div class="track-num">${i + 1}</div>
+        <div class="track-bars"><span></span><span></span><span></span></div>
+        <div class="track-info">
+          <div class="track-name">${escHtml(t.name)}</div>
+          <div class="track-meta">${t.ext}${t.package ? ' · ' + formatPkgName(t.package) : ''}</div>
+        </div>
+        ${t.cachedUrl ? '<span class="offline-badge">offline</span>' : ''}
+        <div class="track-duration">${dur}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+  list.innerHTML = html;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════════
+//  PLAYBACK
+// ═══════════════════════════════════════════════
+async function playTrack(idx) {
+  if (idx < 0 || idx >= tracks.length) return;
+  currentIdx = idx;
+  const t = tracks[idx];
+  npName.textContent = t.name;
+  npSub.textContent  = t.package ? formatPkgName(t.package) : (config.folder || '');
+  renderList();
+  scrollToActive();
+  try {
+    let src;
+    if (t.cachedUrl) {
+      src = t.cachedUrl;
+    } else {
+      src = await downloadFile(t.path);
+    }
+    audio.src = src;
+    await audio.play();
+    isPlaying = true;
+    playBtn.textContent = '⏸';
+    renderList();
+    saveState();
+  } catch(e) {
+    setStatus('error', `Kan inte spela: ${e.message}`);
+  }
+}
+
+function scrollToActive() {
+  setTimeout(() => {
+    const el = document.querySelector('.track-item.active');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function togglePlay() {
+  if (currentIdx < 0 && tracks.length) { playTrack(0); return; }
+  if (audio.paused) { audio.play(); isPlaying = true; playBtn.textContent = '⏸'; }
+  else              { audio.pause(); isPlaying = false; playBtn.textContent = '▶'; }
+  renderList();
+}
+
+function prevTrack() {
+  if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+  const pool = activePkg === 'all' ? tracks : filtered;
+  const ci = pool.indexOf(tracks[currentIdx]);
+  const ni = (ci - 1 + pool.length) % pool.length;
+  playTrack(tracks.indexOf(pool[ni]));
+}
+
+function nextTrack(fromEnded = false) {
+  if (repeatMode === 'one' && fromEnded) { audio.currentTime = 0; audio.play(); return; }
+  const pool = activePkg === 'all' ? tracks : filtered;
+  if (shuffle && fromEnded) {
+    if (!shuffleQueue.length) {
+      shuffleQueue = [...pool.map((_, i) => i)].sort(() => Math.random() - 0.5);
+    }
+    const ni = shuffleQueue.shift();
+    playTrack(tracks.indexOf(pool[ni]));
+    return;
+  }
+  const ci = pool.indexOf(tracks[currentIdx]);
+  const ni = (ci + 1) % pool.length;
+  if (ni === 0 && fromEnded && repeatMode === 'none') {
+    isPlaying = false; playBtn.textContent = '▶'; renderList(); return;
+  }
+  playTrack(tracks.indexOf(pool[ni]));
+}
+
+function cycleRepeat() {
+  if (repeatMode === 'none') repeatMode = 'all';
+  else if (repeatMode === 'all') repeatMode = 'one';
+  else repeatMode = 'none';
+  updateRepeatUI();
+  saveState();
+}
+
+function updateRepeatUI() {
+  repeatBtn.classList.toggle('active', repeatMode !== 'none');
+  repeatBtn.title  = repeatMode === 'one' ? 'Upprepa: Denna låt' : repeatMode === 'all' ? 'Upprepa: Alla' : 'Upprepa: Av';
+  repeatBtn.textContent = repeatMode === 'one' ? '①' : '⟳';
+}
+
+function toggleShuffle() {
+  shuffle = !shuffle;
+  shuffleQueue = [];
+  shuffleBtn.classList.toggle('active', shuffle);
+  saveState();
+}
+
+// ═══════════════════════════════════════════════
+//  AUDIO EVENTS
+// ═══════════════════════════════════════════════
+audio.addEventListener('timeupdate', () => {
+  if (!audio.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  progFill.style.width = pct + '%';
+  timeDisp.textContent = `${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`;
+  const t = tracks[currentIdx];
+  if (t && !t.duration && audio.duration) {
+    t.duration = audio.duration;
+    const el = document.querySelector(`.track-item[data-idx="${currentIdx}"] .track-duration`);
+    if (el) el.textContent = fmtTime(audio.duration);
+  }
+});
+
+audio.addEventListener('ended', () => nextTrack(true));
+audio.addEventListener('play',  () => { isPlaying = true;  playBtn.textContent = '⏸'; renderList(); });
+audio.addEventListener('pause', () => { isPlaying = false; playBtn.textContent = '▶'; renderList(); });
+
+document.getElementById('progress-wrap').addEventListener('click', e => {
+  if (!audio.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct  = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = pct * audio.duration;
+});
+
+// ═══════════════════════════════════════════════
+//  STATUS
+// ═══════════════════════════════════════════════
+function setStatus(type, msg) {
+  const bar = document.getElementById('status-bar');
+  bar.className = type;
+  document.getElementById('status-text').textContent = msg;
+}
+
+// ═══════════════════════════════════════════════
+//  CONFIG / SETTINGS
+// ═══════════════════════════════════════════════
+function openSettings() {
+  document.getElementById('cfg-token').value  = config.token || '';
+  document.getElementById('cfg-folder').value = config.folder || '/Music';
+  document.getElementById('cfg-exts').value   = config.exts || 'mp3,wav,flac,aiff,m4a';
+  document.getElementById('config-panel').style.display = 'block';
+}
+
+function closeSettings() {
+  document.getElementById('config-panel').style.display = 'none';
+}
+
+document.getElementById('settings-btn').addEventListener('click', () => {
+  const p = document.getElementById('config-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  if (p.style.display === 'block') openSettings();
+});
+
+document.getElementById('save-config-btn').addEventListener('click', () => {
+  config.token  = document.getElementById('cfg-token').value.trim();
+  config.folder = document.getElementById('cfg-folder').value.trim() || '/Music';
+  config.exts   = document.getElementById('cfg-exts').value.trim() || 'mp3,wav,flac,aiff,m4a';
+  saveState();
+  closeSettings();
+  fetchTracks();
+});
+
+document.getElementById('cancel-config-btn').addEventListener('click', closeSettings);
+document.getElementById('refresh-btn').addEventListener('click', fetchTracks);
+document.getElementById('help-btn').addEventListener('click', () => document.getElementById('help-modal').classList.add('open'));
+
+// ═══════════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════════
+playBtn.addEventListener('click', togglePlay);
+document.getElementById('prev-btn').addEventListener('click', prevTrack);
+document.getElementById('next-btn').addEventListener('click', () => nextTrack(false));
+repeatBtn.addEventListener('click', cycleRepeat);
+shuffleBtn.addEventListener('click', toggleShuffle);
+
+// ═══════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════
+//  KEYBOARD
+// ═══════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
+  if (e.code === 'ArrowRight') nextTrack(false);
+  if (e.code === 'ArrowLeft')  prevTrack();
+  if (e.code === 'KeyR')       cycleRepeat();
+  if (e.code === 'KeyS')       toggleShuffle();
+});
+
+// ═══════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════
+function fmtTime(s) {
+  if (!s || isNaN(s)) return '—';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+loadState();
+updateRepeatUI();
+shuffleBtn.classList.toggle('active', shuffle);
+
+if (tracks.length) {
+  renderPackageTabs();
+  renderList();
+  setStatus('ok', `${tracks.length} låtar från cache — tryck ↻ för att uppdatera`);
+  if (currentIdx >= 0) {
+    const t = tracks[currentIdx];
+    npName.textContent = t.name;
+    npSub.textContent  = t.package ? formatPkgName(t.package) : '';
+  }
+} else {
+  setStatus('', 'Ange ditt Dropbox-token för att komma igång');
+}
+</script>
+</body>
+</html>
