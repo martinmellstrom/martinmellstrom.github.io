@@ -39,45 +39,8 @@
     pointer-events: none; z-index: 0; opacity: 0.4;
   }
 
-  /* ── LOCK ── */
-  #lock-screen {
-    position: fixed; inset: 0; background: var(--bg); z-index: 999;
-    display: flex; align-items: center; justify-content: center;
-  }
-  #lock-screen::before {
-    content: ''; position: absolute; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; opacity: 0.4;
-  }
-  .lock-inner {
-    position: relative; z-index: 1; display: flex; flex-direction: column;
-    align-items: center; gap: 32px; padding: 40px 24px; width: 100%; max-width: 320px;
-  }
-  .lock-logo { text-align: center; }
-  .lock-logo-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; letter-spacing: 0.12em; color: var(--gold); line-height: 1; }
-  .lock-logo-sub { font-style: italic; font-family: 'Cormorant Garamond', serif; font-weight: 300; color: var(--text-mid); font-size: 18px; letter-spacing: 0.08em; margin-top: 4px; }
-  .lock-divider { width: 40px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim), transparent); }
-  .lock-form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-  .lock-input {
-    width: 100%; background: var(--card); border: 1px solid var(--border);
-    color: var(--text); font-family: 'Space Mono', monospace; font-size: 14px;
-    padding: 12px 16px; border-radius: 8px; outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s; text-align: center; letter-spacing: 0.15em;
-  }
-  .lock-input:focus { border-color: var(--gold-dim); box-shadow: 0 0 0 3px var(--gold-glow); }
-  .lock-input::placeholder { color: var(--text-dim); letter-spacing: 0.05em; font-size: 12px; }
-  .lock-input.shake { animation: shake 0.4s ease; border-color: var(--red); }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
-  .lock-btn { width: 100%; background: var(--gold); color: var(--bg); border: none; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; padding: 12px 20px; border-radius: 8px; cursor: pointer; }
-  .lock-btn:active { transform: scale(0.98); }
-  .lock-error { font-size: 10px; color: var(--red); text-align: center; letter-spacing: 0.08em; height: 14px; opacity: 0; transition: opacity 0.2s; }
-  .lock-error.visible { opacity: 1; }
-  #lock-screen.unlocking { animation: fadeOut 0.4s ease forwards; }
-  @keyframes fadeOut { from{opacity:1} to{opacity:0;pointer-events:none} }
-
   /* ── APP ── */
-  #app { display: none; flex-direction: column; min-height: 100dvh; }
-  #app.visible { display: flex; }
+  #app { display: flex; flex-direction: column; min-height: 100dvh; }
 
   /* ── HEADER ── */
   header {
@@ -235,22 +198,6 @@
 </head>
 <body>
 
-<!-- LOCK -->
-<div id="lock-screen">
-  <div class="lock-inner">
-    <div class="lock-logo">
-      <div class="lock-logo-title">Martin Mellström</div>
-      <div class="lock-logo-sub">/ player</div>
-    </div>
-    <div class="lock-divider"></div>
-    <div class="lock-form">
-      <input class="lock-input" id="lock-input" type="password" placeholder="lösenord" autocomplete="current-password" autocorrect="off" autocapitalize="none" spellcheck="false">
-      <div class="lock-error" id="lock-error">Fel lösenord</div>
-      <button class="lock-btn" id="lock-btn">Öppna spelare</button>
-    </div>
-  </div>
-</div>
-
 <!-- APP -->
 <div id="app">
 
@@ -386,42 +333,6 @@
 
 <script>
 // ═══════════════════════════════════════════════
-//  LOCK — byt ut hash nedan mot din SHA-256-hash
-// ═══════════════════════════════════════════════
-const PASSWORD_HASH = '5adbee7e0dcdcdcaaa48a5b7401301b554359f0219943181af6fde8f41b1a681';
-const SESSION_KEY   = 'mm_unlocked';
-
-async function hashString(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-function checkLock() { if (sessionStorage.getItem(SESSION_KEY)==='1') unlock(true); }
-function unlock(instant) {
-  const el = document.getElementById('lock-screen');
-  sessionStorage.setItem(SESSION_KEY,'1');
-  if (instant) { el.style.display='none'; }
-  else { el.classList.add('unlocking'); el.addEventListener('animationend',()=>el.style.display='none',{once:true}); }
-  document.getElementById('app').classList.add('visible');
-}
-document.getElementById('lock-btn').addEventListener('click', tryUnlock);
-document.getElementById('lock-input').addEventListener('keydown', e => {
-  if (e.key==='Enter') tryUnlock();
-  document.getElementById('lock-error').classList.remove('visible');
-  document.getElementById('lock-input').classList.remove('shake');
-});
-async function tryUnlock() {
-  const hash = await hashString(document.getElementById('lock-input').value);
-  if (hash===PASSWORD_HASH) { unlock(false); }
-  else {
-    const inp = document.getElementById('lock-input');
-    inp.classList.remove('shake'); void inp.offsetWidth; inp.classList.add('shake');
-    document.getElementById('lock-error').classList.add('visible');
-    inp.value=''; inp.focus();
-  }
-}
-checkLock();
-
-// ═══════════════════════════════════════════════
 //  INDEXED DB
 // ═══════════════════════════════════════════════
 let idb = null;
@@ -433,7 +344,7 @@ function openIDB() {
       if (!db.objectStoreNames.contains('audio')) {
         db.createObjectStore('audio',{keyPath:'path'});
       }
-      // v2: store now holds {path, blob, rev}
+      // v2: audio store holds {path, blob, rev}
       // v3: covers store — {path, blob, rev}
       if (!db.objectStoreNames.contains('covers')) {
         db.createObjectStore('covers',{keyPath:'path'});
@@ -506,7 +417,7 @@ let shuffle     = false;
 let shuffleQueue= [];
 let activePkg   = null; // null = library, 'all' or pkg name = playlist
 let syncedPaths = new Map();
-let coverPathMap= {}; // pkg → dropbox path
+let coverPathMap= {}; // pkg → { path, rev }
 let coverUrlMap = {}; // dropbox path → objectURL
 let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
 const ALL_SONGS_COVER_PATH = '/all_songs_cover.heic';
@@ -532,7 +443,8 @@ function saveState() {
     localStorage.setItem(LS_KEY, JSON.stringify({
       config,
       tracks: tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null})),
-      currentIdx, repeatMode, shuffle, activePkg
+      currentIdx, repeatMode, shuffle, activePkg,
+      coverPathMap
     }));
   } catch(e){}
 }
@@ -546,6 +458,7 @@ function loadState() {
     repeatMode=d.repeatMode||'none';
     shuffle=d.shuffle||false;
     activePkg=d.activePkg??null;
+    coverPathMap=d.coverPathMap||{};
   } catch(e){}
 }
 
@@ -757,7 +670,7 @@ async function fetchTracks() {
     const {audio:aFiles,covers} = await listAllFiles(config.folder);
     const folderLower = (config.folder||'').toLowerCase();
 
-    // Build cover map — { pkg: { path, rev } }
+    // Build cover map — pkg → { path, rev }
     coverPathMap={};
     for (const c of covers) {
       const rel   = c.path_lower.replace(folderLower,'');
@@ -781,7 +694,8 @@ async function fetchTracks() {
 
     if (currentIdx>=tracks.length) currentIdx=-1;
     await refreshSynced();
-    // Hämta "Alla låtar"-omslaget asynkront — tvinga refresh från Dropbox vid ↻
+    // Vid ↻ tvingar vi nedladdning av alla omslag (rev kan ha ändrats)
+    coverUrlMap = {};
     _allSongsCoverNeedsRefresh = true;
     fetchAllSongsCover();
     saveState();
@@ -813,10 +727,10 @@ async function getCoverUrl(pkg) {
   if (!entry) return null;
   const { path, rev } = entry;
 
-  // Return in-memory URL if still valid
+  // Returnera redan skapad object URL direkt
   if (coverUrlMap[path]) return coverUrlMap[path];
 
-  // Check IDB cache — use it if rev matches (or no rev info)
+  // Kolla IDB-cache — använd om rev matchar (eller ingen rev-info finns)
   const cached = await idbCoverGet(path);
   if (cached?.blob) {
     const revOk = !rev || !cached.rev || cached.rev === rev;
@@ -827,27 +741,31 @@ async function getCoverUrl(pkg) {
     }
   }
 
-  // Download fresh, save to IDB
+  // Ladda ner färsk, spara i IDB
   try {
     const link = await getTmpLink(path);
     const blob = await (await fetch(link)).blob();
     await idbCoverPut(path, blob, rev);
-    const url  = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     coverUrlMap[path] = url;
     return url;
   } catch(e) { return null; }
 }
 
+let _allSongsCoverNeedsRefresh = false;
+
 async function fetchAllSongsCover() {
-  // Try IDB cache first — no rev available for this hardcoded path,
-  // so we use it as long as it exists. Force-refresh happens on ↻.
-  const cached = await idbCoverGet(ALL_SONGS_COVER_PATH);
-  if (cached?.blob && !_allSongsCoverNeedsRefresh) {
-    allSongsCoverUrl = URL.createObjectURL(cached.blob);
-    _applyAllSongsCoverToDOM();
-    return;
+  // Kolla IDB-cache vid uppstart (ingen rev för denna hårdkodade fil)
+  if (!_allSongsCoverNeedsRefresh) {
+    const cached = await idbCoverGet(ALL_SONGS_COVER_PATH);
+    if (cached?.blob) {
+      allSongsCoverUrl = URL.createObjectURL(cached.blob);
+      _applyAllSongsCoverToDOM();
+      return;
+    }
   }
-  // Download fresh
+  _allSongsCoverNeedsRefresh = false;
+  // Ladda ner färsk
   try {
     const link = await getTmpLink(ALL_SONGS_COVER_PATH);
     const blob = await (await fetch(link)).blob();
@@ -857,8 +775,6 @@ async function fetchAllSongsCover() {
   } catch(e) { /* filen saknas eller fel — visa placeholder */ }
 }
 
-let _allSongsCoverNeedsRefresh = false; // sätts true av fetchTracks vid ↻
-
 function _applyAllSongsCoverToDOM() {
   const el = document.getElementById('card-cover-all');
   if (el) {
@@ -866,7 +782,6 @@ function _applyAllSongsCoverToDOM() {
     el.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
     if (badge) el.appendChild(badge);
   }
-  // Uppdatera playlist-headern om den är öppen
   if (activePkg === 'all') {
     const coverEl = document.getElementById('playlist-cover');
     if (coverEl) coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
@@ -955,7 +870,8 @@ async function renderLibrary() {
   }
   grid.innerHTML = html;
 
-  // Load covers async
+  // Ladda alla omslag asynkront från IDB (eller Dropbox om ej cachade)
+  if (!allSongsCoverUrl) fetchAllSongsCover();
   for (const p of pkgs) {
     if (!coverPathMap[p]) continue;
     getCoverUrl(p).then(url => {
