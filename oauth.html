@@ -3,8 +3,8 @@
 <head><meta charset="UTF-8"><title>Dropbox Auth</title>
 <style>
   body { font-family: monospace; background: #0a0d0b; color: #e8e0d0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-size: 14px; }
-  .msg { text-align: center; padding: 32px; }
-  .ok  { color: #4a7c59; }
+  .msg { text-align: center; padding: 32px; line-height: 2; }
+  .ok  { color: #4a7c59; font-size: 18px; }
   .err { color: #7c4a4a; }
 </style>
 </head>
@@ -13,7 +13,7 @@
 <script>
   const params = new URLSearchParams(window.location.search);
 
-  // Dropbox challenge-verifiering (körs vid registrering av redirect URI)
+  // Dropbox challenge-verifiering
   const challenge = params.get('challenge');
   if (challenge) {
     document.open();
@@ -24,18 +24,37 @@
   // OAuth callback med authorization code
   else if (params.get('code')) {
     const code = params.get('code');
-    // Skicka koden till player.html via BroadcastChannel
+
+    // Försök skicka via BroadcastChannel (popup-flöde, desktop)
     const ch = new BroadcastChannel('mm_dbx_oauth');
+    let received = false;
+
+    // Ge player.html 300ms att svara — om ingen lyssnar är vi i same-tab-läge
+    setTimeout(() => {
+      ch.close();
+      if (!received) {
+        // Same-tab fallback: skicka koden direkt till player.html via URL
+        window.location.href = 'https://martinmellstrom.github.io/player.html?code=' + encodeURIComponent(code);
+      }
+    }, 300);
+
     ch.postMessage({ type: 'auth_code', code });
-    ch.close();
-    document.getElementById('msg').innerHTML =
-      '<span class="ok">✓ Ansluten!</span><br>Du kan stänga det här fönstret.';
+
+    // Om player.html svarar bekräftar vi att det gick bra
+    ch.onmessage = (e) => {
+      if (e.data?.type === 'ack') {
+        received = true;
+        ch.close();
+        document.getElementById('msg').innerHTML =
+          '<span class="ok">✓ Ansluten!</span><br>Du kan stänga det här fönstret.';
+      }
+    };
   }
 
   // Fel från Dropbox
   else if (params.get('error')) {
     document.getElementById('msg').innerHTML =
-      `<span class="err">Fel: ${params.get('error_description') || params.get('error')}</span><br><br>Stäng och försök igen.`;
+      `<span class="err">Fel: ${params.get('error_description') || params.get('error')}</span><br>Stäng och försök igen.`;
   }
 
   else {

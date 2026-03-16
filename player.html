@@ -599,6 +599,9 @@ async function generatePKCE() {
 }
 
 async function startOAuthFlow() {
+  // Öppna popup INNAN await — annars blockerar Safari/mobil det som ej user-initiated
+  const popup = window.open('about:blank', '_blank', 'width=520,height=640');
+
   const { verifier, challenge } = await generatePKCE();
   localStorage.setItem(LS_PKCE_KEY, verifier);
 
@@ -610,12 +613,21 @@ async function startOAuthFlow() {
     code_challenge:        challenge,
     code_challenge_method: 'S256',
   });
-  window.open(`${DBX_AUTH_URL}?${params}`, '_blank', 'width=520,height=640');
+
+  if (popup && !popup.closed) {
+    popup.location.href = `${DBX_AUTH_URL}?${params}`;
+  } else {
+    // Popup blockerades — fallback: navigera i samma flik
+    localStorage.setItem('mm_dbx_oauth_redirect_back', window.location.href);
+    window.location.href = `${DBX_AUTH_URL}?${params}`;
+  }
 
   const ch = new BroadcastChannel('mm_dbx_oauth');
   ch.onmessage = async (e) => {
-    ch.close();
     if (e.data?.type !== 'auth_code' || !e.data.code) return;
+    // Bekräfta till oauth.html att vi tog emot koden (stoppar same-tab fallback)
+    e.target.postMessage({ type: 'ack' });
+    ch.close();
     await handleAuthCode(e.data.code);
   };
 }
@@ -1111,8 +1123,12 @@ function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Mat
 openIDB().then(async()=>{
   loadState();
   loadOAuth();
-  // Om vi kom tillbaka från OAuth-flödet
-  if (new URLSearchParams(window.location.search).get('oauth')==='success') {
+  // Fallback: same-tab OAuth — oauth.html skickade oss hit med ?code= i URL
+  const _urlParams = new URLSearchParams(window.location.search);
+  if (_urlParams.get('code')) {
+    history.replaceState(null,'',window.location.pathname);
+    await handleAuthCode(_urlParams.get('code'));
+  } else if (_urlParams.get('oauth')==='success') {
     history.replaceState(null,'',window.location.pathname);
   }
   updateRepeatUI();
