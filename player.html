@@ -62,16 +62,16 @@
   .btn:active { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
   .btn-primary { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 700; }
   .btn-primary:active { background: #e0bb5c; }
-  .btn-icon { padding: 8px 10px; font-size: 14px; line-height: 1; height: 36px; min-width: 36px; justify-content: center; }
+  .btn-icon { padding: 8px 10px; font-size: 14px; height: 36px; min-width: 36px; display: inline-flex; align-items: center; justify-content: center; }
   .btn-success { border-color: var(--green); color: var(--green); background: none; }
   .btn-success:active { background: rgba(74,124,89,0.15); }
   .btn-danger { border-color: var(--red); color: var(--red); background: none; }
   .btn-danger:active { background: rgba(124,74,74,0.15); }
 
   /* ── CONFIG ── */
-  #config-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 14px; position: relative; z-index: 9; animation: slideDown 0.25s ease; max-width: 540px; }
+  #config-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 14px; position: relative; z-index: 9; animation: slideDown 0.25s ease; }
   @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
-  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 600px; }
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   @media(min-width:500px){.config-grid{grid-template-columns:1fr 1fr 1fr}}
   .config-field label { display: block; color: var(--text-dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
   .config-field input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: 'Space Mono', monospace; font-size: 12px; padding: 7px 10px; border-radius: 6px; outline: none; transition: border-color 0.2s; }
@@ -291,17 +291,16 @@
 </div>
 
 <div id="search-panel" style="display:none">
-  <div style="padding: 10px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); background: var(--surface); position: relative; z-index: 9; animation: slideDown 0.2s ease;">
+  <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--surface);position:relative;z-index:9;animation:slideDown 0.2s ease;">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--text-dim)" style="flex-shrink:0"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-    <input type="text" id="search-input" placeholder="Sök låtar eller paket…" autocomplete="off" autocorrect="off" spellcheck="false"
-      style="flex:1; background:none; border:none; outline:none; color:var(--text); font-family:'Space Mono',monospace; font-size:13px; padding:4px 0;">
+    <input type="text" id="search-input" placeholder="Sök låtar eller paket…" autocomplete="off" autocorrect="off" spellcheck="false" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:4px 0;">
     <button id="search-clear-btn" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px;display:none;align-items:center;-webkit-tap-highlight-color:transparent;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
   </div>
 </div>
 
-
+<div id="status-bar">
   <div class="dot"></div>
   <span id="status-text">Anslut Dropbox via ⚙ för att komma igång</span>
 </div>
@@ -521,6 +520,8 @@ let shuffle     = false;
 let shuffleQueue= [];
 let activePkg   = null; // null = library, 'all' or pkg name = playlist
 let syncedPaths = new Map();
+let restoredPosition = 0;
+let lastSavedPosition = 0;
 let coverPathMap= {}; // pkg → { path, rev }
 let coverUrlMap = {}; // dropbox path → objectURL
 let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
@@ -559,7 +560,8 @@ function saveState() {
       config,
       tracks: tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null})),
       currentIdx, repeatMode, shuffle, activePkg,
-      coverPathMap
+      coverPathMap,
+      lastPosition: (audio && audio.currentTime > 0 && isFinite(audio.currentTime)) ? audio.currentTime : undefined
     }));
   } catch(e){}
 }
@@ -574,6 +576,7 @@ function loadState() {
     shuffle=d.shuffle||false;
     activePkg=d.activePkg??null;
     coverPathMap=d.coverPathMap||{};
+    restoredPosition=d.lastPosition||0;
   } catch(e){}
 }
 
@@ -1011,13 +1014,6 @@ async function renderLibrary() {
     return;
   }
 
-  // Filtrera på sökfråga
-  const q = searchQuery;
-  if (q) {
-    pkgs = pkgs.filter(p => formatPkgName(p).toLowerCase().includes(q));
-  }
-  const showAllSongs = !q || 'alla låtar'.includes(q);
-
   const syncBadge = (n,total) => {
     if (total===0) return '';
     if (n===total) return `<div class="pkg-sync-badge synced"><svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>`;
@@ -1025,25 +1021,28 @@ async function renderLibrary() {
     return '';
   };
 
-  const allSynced = tracks.filter(t=>isSynced(t)).length;
-  const allCoverHtml = allSongsCoverUrl
-    ? `<img src="${allSongsCoverUrl}" alt="Alla låtar">`
-    : `<span class="cover-placeholder">♬</span>`;
-  let html = '';
-  if (showAllSongs) {
-    html += `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
-    <div class="pkg-card-cover" id="card-cover-all">${allCoverHtml}${syncBadge(allSynced,tracks.length)}</div>
-    <div class="pkg-card-info">
-      <div class="pkg-card-name">Alla låtar</div>
-      <div class="pkg-card-meta">${tracks.length} låtar · ${pkgs.length} paket</div>
-    </div>
-  </div>`;
-  }
+  // Filtrera på sökfråga
+  const q = searchQuery;
+  if (q) pkgs = pkgs.filter(p => formatPkgName(p).toLowerCase().includes(q));
+  const showAllSongs = !q || 'alla låtar'.includes(q);
 
   if (pkgs.length === 0 && !showAllSongs) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-dim);font-size:12px;">Inga träffar för "${searchQuery}"</div>`;
     return;
   }
+
+  const allSynced = tracks.filter(t=>isSynced(t)).length;
+  const allCoverHtml = allSongsCoverUrl
+    ? `<img src="${allSongsCoverUrl}" alt="Alla låtar">`
+    : `<span class="cover-placeholder">♬</span>`;
+  let html = '';
+  if (showAllSongs) { html += `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
+    <div class="pkg-card-cover" id="card-cover-all">${allCoverHtml}${syncBadge(allSynced,tracks.length)}</div>
+    <div class="pkg-card-info">
+      <div class="pkg-card-name">Alla låtar</div>
+      <div class="pkg-card-meta">${tracks.length} låtar · ${pkgs.length} paket</div>
+    </div>
+  </div>`; }
 
   for (const p of pkgs) {
     const pt = tracks.filter(t=>t.package===p);
@@ -1079,11 +1078,8 @@ async function renderLibrary() {
 function renderTrackList(pkgTracks) {
   const list = document.getElementById('track-list');
   if (!list) return;
-
-  // Filtrera på sökfråga
   const q = searchQuery;
   const filtered = q ? pkgTracks.filter(t => t.name.toLowerCase().includes(q)) : pkgTracks;
-
   if (filtered.length===0) {
     list.innerHTML = q
       ? `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga träffar för "${searchQuery}"</div>`
@@ -1100,21 +1096,11 @@ function renderTrackList(pkgTracks) {
     const isActive= gi===currentIdx;
     const isPlay  = isActive&&isPlaying;
     const synced  = isSynced(t);
-    // Markera söktermen i låtnamnet
-    let displayName = escHtml(t.name);
-    if (q) {
-      const idx = t.name.toLowerCase().indexOf(q);
-      if (idx >= 0) {
-        displayName = escHtml(t.name.slice(0, idx))
-          + `<mark style="background:var(--gold-glow);color:var(--gold);border-radius:2px;">${escHtml(t.name.slice(idx, idx+q.length))}</mark>`
-          + escHtml(t.name.slice(idx+q.length));
-      }
-    }
     html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrack(${gi})">
       <div class="track-num">${i+1}</div>
       <div class="track-bars"><span></span><span></span><span></span></div>
       <div class="track-info">
-        <div class="track-name">${displayName}</div>
+        <div class="track-name">${q ? (() => { const ix = t.name.toLowerCase().indexOf(q); return ix>=0 ? escHtml(t.name.slice(0,ix))+'<mark style="background:var(--gold-glow);color:var(--gold);border-radius:2px;">'+escHtml(t.name.slice(ix,ix+q.length))+'</mark>'+escHtml(t.name.slice(ix+q.length)) : escHtml(t.name); })() : escHtml(t.name)}</div>
         <div class="track-meta">${t.ext}</div>
       </div>
       <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
@@ -1136,6 +1122,15 @@ function formatPkgName(s){if(!s)return'';return s.split(/[-_ ]/).map(w=>w.charAt
 // ═══════════════════════════════════════════════
 //  OFFLINE SYNC
 // ═══════════════════════════════════════════════
+function setTrackSyncState(globalIdx, state) {
+  const el = document.querySelector(`.track-item[data-idx="${globalIdx}"] .track-sync`);
+  if (!el) return;
+  const checkSvg = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+  const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
+  el.className = `track-sync ${state}`;
+  el.innerHTML = state === 'synced' ? checkSvg : cloudSvg;
+}
+
 async function syncPackage(pkg) {
   const pt     = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
   const toSync = pt.filter(t=>!isSynced(t)); // includes new + rev-mismatched
@@ -1144,14 +1139,19 @@ async function syncPackage(pkg) {
   setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} 0/${toSync.length}…`);
   let done=0;
   for (const t of toSync) {
+    const gi = tracks.indexOf(t);
+    setTrackSyncState(gi, 'syncing');
     try {
       const link = await getTmpLink(t.path);
       const blob = await (await fetch(link)).blob();
       await idbPut(t.path, blob, t.rev);
       syncedPaths.set(t.path, t.rev||null);
+      setTrackSyncState(gi, 'synced');
       setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} ${++done}/${toSync.length}…`);
-      refreshView();
-    } catch(e){console.warn('sync fail',t.path,e);}
+    } catch(e){
+      setTrackSyncState(gi, 'unsynced');
+      console.warn('sync fail',t.path,e);
+    }
   }
   setStatus('ok',`${done} låtar ${hasStale?'uppdaterade':'sparade'}`);
   renderLibrary();
@@ -1169,6 +1169,8 @@ async function deletePackageLocal(pkg) {
 // ═══════════════════════════════════════════════
 async function playTrack(idx) {
   if (idx<0||idx>=tracks.length) return;
+  lastSavedPosition = audio.currentTime || 0;
+  saveState();
   currentIdx=idx;
   const t=tracks[idx];
   npName.textContent=t.name;
@@ -1261,6 +1263,10 @@ audio.addEventListener('timeupdate',()=>{
   if (expOpen) drawWaveform();
   const t=tracks[currentIdx];
   if (t&&!t.duration&&audio.duration){t.duration=audio.duration;saveDurationToCache(t.rev,audio.duration);expTimeTot.textContent=fmtTime(audio.duration);const el=document.querySelector(`.track-item[data-idx="${currentIdx}"] .track-duration`);if(el)el.textContent=fmtTime(audio.duration);}
+  if (Math.abs(audio.currentTime - lastSavedPosition) >= 5) {
+    lastSavedPosition = audio.currentTime;
+    saveState();
+  }
 });
 audio.addEventListener('ended',()=>nextTrack(true));
 audio.addEventListener('play', ()=>{isPlaying=true; setPlayIcon(true);});
@@ -1452,48 +1458,40 @@ document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
 let searchQuery = '';
 
 function openSearch() {
-  const panel = document.getElementById('search-panel');
-  const input = document.getElementById('search-input');
-  const btn   = document.getElementById('search-btn');
-  panel.style.display = 'block';
-  btn.style.color = 'var(--gold)';
-  input.focus();
+  document.getElementById('search-panel').style.display = 'block';
+  document.getElementById('search-btn').style.color = 'var(--gold)';
+  document.getElementById('search-input').focus();
 }
 function closeSearch() {
-  const panel = document.getElementById('search-panel');
-  const input = document.getElementById('search-input');
-  const btn   = document.getElementById('search-btn');
-  panel.style.display = 'none';
-  btn.style.color = '';
-  input.value = '';
+  document.getElementById('search-panel').style.display = 'none';
+  document.getElementById('search-btn').style.color = '';
+  document.getElementById('search-input').value = '';
   searchQuery = '';
   document.getElementById('search-clear-btn').style.display = 'none';
-  // Återställ vyn
   if (activePkg === null) renderLibrary();
   else renderTrackList(activePkg === 'all' ? tracks : tracks.filter(t => t.package === activePkg));
 }
 function toggleSearch() {
   const panel = document.getElementById('search-panel');
-  if (panel.style.display === 'none') openSearch();
-  else closeSearch();
+  if (panel.style.display === 'none') openSearch(); else closeSearch();
 }
 
-document.getElementById('search-btn').addEventListener('click', toggleSearch);
-document.getElementById('search-clear-btn').addEventListener('click', () => {
-  const input = document.getElementById('search-input');
-  input.value = '';
-  searchQuery = '';
-  document.getElementById('search-clear-btn').style.display = 'none';
-  if (activePkg === null) renderLibrary();
-  else renderTrackList(activePkg === 'all' ? tracks : tracks.filter(t => t.package === activePkg));
-  input.focus();
-});
-
-document.getElementById('search-input').addEventListener('input', e => {
-  searchQuery = e.target.value.trim().toLowerCase();
-  document.getElementById('search-clear-btn').style.display = searchQuery ? 'flex' : 'none';
-  if (activePkg === null) renderLibrary();
-  else renderTrackList(activePkg === 'all' ? tracks : tracks.filter(t => t.package === activePkg));
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('search-btn').addEventListener('click', toggleSearch);
+  document.getElementById('search-clear-btn').addEventListener('click', () => {
+    document.getElementById('search-input').value = '';
+    searchQuery = '';
+    document.getElementById('search-clear-btn').style.display = 'none';
+    if (activePkg === null) renderLibrary();
+    else renderTrackList(activePkg === 'all' ? tracks : tracks.filter(t => t.package === activePkg));
+    document.getElementById('search-input').focus();
+  });
+  document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value.trim().toLowerCase();
+    document.getElementById('search-clear-btn').style.display = searchQuery ? 'flex' : 'none';
+    if (activePkg === null) renderLibrary();
+    else renderTrackList(activePkg === 'all' ? tracks : tracks.filter(t => t.package === activePkg));
+  });
 });
 
 function setStatus(type,msg){
@@ -1501,7 +1499,6 @@ function setStatus(type,msg){
   bar.className = type;
   document.getElementById('status-text').textContent = msg;
   bar.classList.remove('hidden');
-  // Auto-hide efter 10 sek om det inte är loading
   clearTimeout(bar._hideTimer);
   if (type !== 'loading') {
     bar._hideTimer = setTimeout(() => bar.classList.add('hidden'), 10000);
@@ -1582,6 +1579,25 @@ openIDB().then(async()=>{
       const t=tracks[currentIdx];
       npName.textContent=t.name;
       npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
+      if (restoredPosition > 0) {
+        (async () => {
+          try {
+            const stored = await idbGet(t.path);
+            const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+            if (stored && revMatch) {
+              if (activeObjUrl) URL.revokeObjectURL(activeObjUrl);
+              activeObjUrl = URL.createObjectURL(stored.blob);
+              audio.src = activeObjUrl;
+              audio.addEventListener('loadedmetadata', () => {
+                audio.currentTime = restoredPosition;
+                const pct = (restoredPosition / audio.duration * 100) + '%';
+                progFill.style.width = pct;
+                timeDisp.textContent = fmtTime(restoredPosition) + ' / ' + fmtTime(audio.duration);
+              }, { once: true });
+            }
+          } catch(e) {}
+        })();
+      }
     }
   } else {
     renderLibrary();
