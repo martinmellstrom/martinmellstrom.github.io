@@ -488,6 +488,8 @@ let activePkg   = null; // null = library, 'all' or pkg name = playlist
 let syncedPaths = new Map();
 let coverPathMap= {}; // pkg → dropbox path
 let coverUrlMap = {}; // dropbox path → objectURL
+let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
+const ALL_SONGS_COVER_PATH = '/all_songs_cover.heic';
 let linkCache   = {};
 let activeObjUrl= null;
 
@@ -747,6 +749,8 @@ async function fetchTracks() {
 
     if (currentIdx>=tracks.length) currentIdx=-1;
     await refreshSynced();
+    // Hämta "Alla låtar"-omslaget asynkront
+    fetchAllSongsCover();
     saveState();
     renderLibrary();
     setStatus('ok',`${tracks.length} låtar hämtade`);
@@ -784,6 +788,21 @@ async function getCoverUrl(pkg) {
   } catch(e){return null;}
 }
 
+async function fetchAllSongsCover() {
+  try {
+    const link = await getTmpLink(ALL_SONGS_COVER_PATH);
+    const blob = await (await fetch(link)).blob();
+    allSongsCoverUrl = URL.createObjectURL(blob);
+    // Uppdatera kortet om biblioteket redan är renderat
+    const el = document.getElementById('card-cover-all');
+    if (el) {
+      const badge = el.querySelector('.pkg-sync-badge');
+      el.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+      if (badge) el.appendChild(badge);
+    }
+  } catch(e) { /* filen saknas eller fel — visa placeholder */ }
+}
+
 // ═══════════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════════
@@ -808,7 +827,9 @@ async function showPlaylist(pkg) {
   document.getElementById('playlist-count').textContent = `${pkgTracks.length} låtar`;
 
   const coverEl = document.getElementById('playlist-cover');
-  if (pkg!=='all'&&coverPathMap[pkg]) {
+  if (pkg==='all' && allSongsCoverUrl) {
+    coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+  } else if (pkg!=='all'&&coverPathMap[pkg]) {
     const url = await getCoverUrl(pkg);
     coverEl.innerHTML = url ? `<img src="${url}" alt="${name}">` : `<span class="cover-placeholder">♩</span>`;
   } else {
@@ -840,8 +861,11 @@ async function renderLibrary() {
   };
 
   const allSynced = tracks.filter(t=>isSynced(t)).length;
+  const allCoverHtml = allSongsCoverUrl
+    ? `<img src="${allSongsCoverUrl}" alt="Alla låtar">`
+    : `<span class="cover-placeholder">♬</span>`;
   let html = `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
-    <div class="pkg-card-cover"><span class="cover-placeholder">♬</span>${syncBadge(allSynced,tracks.length)}</div>
+    <div class="pkg-card-cover" id="card-cover-all">${allCoverHtml}${syncBadge(allSynced,tracks.length)}</div>
     <div class="pkg-card-info">
       <div class="pkg-card-name">Alla låtar</div>
       <div class="pkg-card-meta">${tracks.length} låtar · ${pkgs.length} paket</div>
