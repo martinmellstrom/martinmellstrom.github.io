@@ -165,8 +165,11 @@
 
   /* ── PLAYER ── */
   #player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-h); background: rgba(10,13,11,0.95); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); border-top: 1px solid var(--border); z-index: 100; display: flex; flex-direction: column; }
-  #progress-wrap { position: relative; height: 3px; background: var(--border); cursor: pointer; flex-shrink: 0; }
-  #progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.25s linear; pointer-events: none; }
+  #progress-wrap { position: relative; height: 6px; background: var(--border); cursor: pointer; flex-shrink: 0; transition: height 0.15s; }
+  #progress-wrap:hover { height: 10px; }
+  #progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.25s linear; pointer-events: none; position: relative; border-radius: 0 2px 2px 0; }
+  #progress-fill::after { content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; background: var(--gold); border-radius: 50%; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+  #progress-wrap:hover #progress-fill::after { opacity: 1; }
   .player-info-row { display: flex; align-items: center; padding: 8px 14px 2px; gap: 10px; overflow: hidden; flex-shrink: 0; }
   .now-playing { flex: 1; min-width: 0; }
   .np-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 400; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
@@ -181,6 +184,51 @@
   #play-btn svg { width: 16px; height: 16px; }
   #play-btn:active { background: #e0bb5c; }
   .repeat-one-badge { position: absolute; top: 4px; right: 6px; font-size: 8px; font-family: 'Space Mono', monospace; color: var(--gold); line-height: 1; pointer-events: none; }
+
+  /* ── EXPANDED PLAYER ── */
+  #expanded-player {
+    position: fixed; inset: 0; z-index: 150;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+    overflow: hidden;
+  }
+  #expanded-player.open { transform: translateY(0); }
+
+  .exp-handle-bar { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
+
+  .exp-cover-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 16px 32px 8px; }
+  .exp-cover { width: 100%; max-width: 280px; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); flex-shrink: 0; }
+  .exp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .exp-cover .cover-placeholder { font-size: 72px; color: var(--gold-dim); opacity: 0.35; }
+
+  .exp-meta { padding: 12px 24px 4px; text-align: center; flex-shrink: 0; }
+  .exp-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: var(--text); line-height: 1.1; }
+  .exp-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.06em; }
+
+  /* Waveform */
+  .exp-waveform-wrap { padding: 8px 20px 4px; flex-shrink: 0; position: relative; cursor: pointer; }
+  #waveform-canvas { width: 100%; height: 56px; display: block; border-radius: 4px; }
+  .exp-time-row { display: flex; justify-content: space-between; padding: 0 20px; font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; letter-spacing: 0.03em; flex-shrink: 0; }
+
+  /* Seek bar inside expanded */
+  .exp-seek-wrap { position: relative; height: 6px; background: var(--border); cursor: pointer; margin: 6px 20px 0; border-radius: 3px; flex-shrink: 0; }
+  .exp-seek-wrap:hover { height: 10px; margin-top: 2px; }
+  .exp-seek-fill { height: 100%; background: var(--gold); width: 0%; border-radius: 3px; pointer-events: none; position: relative; transition: width 0.25s linear; }
+  .exp-seek-fill::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: var(--gold); border-radius: 50%; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+  .exp-seek-wrap:hover .exp-seek-fill::after { opacity: 1; }
+
+  .exp-controls { display: flex; align-items: center; justify-content: center; padding: 10px 8px 8px; flex-shrink: 0; }
+  .exp-controls .ctrl { width: 56px; height: 48px; }
+  .exp-controls #play-btn-exp { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0 4px; -webkit-tap-highlight-color: transparent; }
+  .exp-controls #play-btn-exp svg { width: 20px; height: 20px; fill: currentColor; }
+  .exp-controls #play-btn-exp:active { background: #e0bb5c; }
+
+  /* Make info row in mini player look clickable */
+  .player-info-row { cursor: pointer; }
+  .player-info-row:active { opacity: 0.7; }
 
   /* ── MODAL ── */
   .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: flex-end; justify-content: center; }
@@ -306,6 +354,48 @@
       <svg viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
     </button>
     <button class="ctrl" id="next-btn">
+      <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- EXPANDED PLAYER -->
+<div id="expanded-player">
+  <div class="exp-handle-bar"></div>
+  <div class="exp-cover-wrap">
+    <div class="exp-cover" id="exp-cover">
+      <span class="cover-placeholder">♬</span>
+    </div>
+  </div>
+  <div class="exp-meta">
+    <div class="exp-name" id="exp-name">Ingen låt vald</div>
+    <div class="exp-sub" id="exp-sub">—</div>
+  </div>
+  <div class="exp-waveform-wrap" id="exp-waveform-wrap">
+    <canvas id="waveform-canvas"></canvas>
+  </div>
+  <div class="exp-time-row">
+    <span id="exp-time-cur">0:00</span>
+    <span id="exp-time-tot">—</span>
+  </div>
+  <div class="exp-seek-wrap" id="exp-seek-wrap">
+    <div class="exp-seek-fill" id="exp-seek-fill"></div>
+  </div>
+  <div class="exp-controls">
+    <button class="ctrl" id="prev-btn-exp">
+      <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+    </button>
+    <button class="ctrl" id="repeat-btn-exp">
+      <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+    </button>
+    <button id="play-btn-exp">
+      <svg id="icon-play-exp" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="icon-pause-exp" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <button class="ctrl" id="shuffle-btn-exp">
+      <svg viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+    </button>
+    <button class="ctrl" id="next-btn-exp">
       <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>
     </button>
   </div>
@@ -447,6 +537,7 @@ const shuffleBtn= document.getElementById('shuffle-btn');
 function setPlayIcon(p) {
   document.getElementById('icon-play').style.display  = p?'none':'block';
   document.getElementById('icon-pause').style.display = p?'block':'none';
+  setExpandedPlayIcon(p);
 }
 
 function saveState() {
@@ -1059,6 +1150,10 @@ async function playTrack(idx) {
     await audio.play();
     isPlaying=true; setPlayIcon(true);
     renderTrackList(pool); saveState();
+    // Build waveform and sync expanded player
+    if (expOpen) syncExpandedMeta();
+    waveformData = null; waveformPath = null;
+    buildWaveform(activeObjUrl, t.path);
   } catch(e){setStatus('error',`Kan inte spela: ${e.message}`);}
 }
 
@@ -1088,24 +1183,36 @@ function nextTrack(fromEnded=false){
   playTrack(tracks.indexOf(pool[ni]));
 }
 
-function cycleRepeat(){repeatMode=repeatMode==='none'?'all':repeatMode==='all'?'one':'none';updateRepeatUI();saveState();}
+function cycleRepeat(){repeatMode=repeatMode==='none'?'all':repeatMode==='all'?'one':'none';updateRepeatUI();document.getElementById('repeat-btn-exp').classList.toggle('active',repeatMode!=='none');saveState();}
 function updateRepeatUI(){
   repeatBtn.classList.toggle('active',repeatMode!=='none');
+  document.getElementById('repeat-btn-exp').classList.toggle('active',repeatMode!=='none');
   const ex=repeatBtn.querySelector('.repeat-one-badge');
-  if (repeatMode==='one'){if(!ex){const b=document.createElement('span');b.className='repeat-one-badge';b.textContent='1';repeatBtn.appendChild(b);}}
-  else if(ex) ex.remove();
+  const exExp=document.getElementById('repeat-btn-exp').querySelector('.repeat-one-badge');
+  if (repeatMode==='one'){
+    if(!ex){const b=document.createElement('span');b.className='repeat-one-badge';b.textContent='1';repeatBtn.appendChild(b);}
+    if(!exExp){const b=document.createElement('span');b.className='repeat-one-badge';b.textContent='1';document.getElementById('repeat-btn-exp').appendChild(b);}
+  } else {
+    if(ex) ex.remove();
+    if(exExp) exExp.remove();
+  }
 }
-function toggleShuffle(){shuffle=!shuffle;shuffleQueue=[];shuffleBtn.classList.toggle('active',shuffle);saveState();}
+function toggleShuffle(){shuffle=!shuffle;shuffleQueue=[];shuffleBtn.classList.toggle('active',shuffle);document.getElementById('shuffle-btn-exp').classList.toggle('active',shuffle);saveState();}
 
 // ═══════════════════════════════════════════════
 //  AUDIO EVENTS
 // ═══════════════════════════════════════════════
 audio.addEventListener('timeupdate',()=>{
   if (!audio.duration) return;
-  progFill.style.width=(audio.currentTime/audio.duration*100)+'%';
-  timeDisp.textContent=`${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`;
+  const pct = (audio.currentTime/audio.duration*100)+'%';
+  progFill.style.width = pct;
+  timeDisp.textContent = `${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`;
+  // Sync expanded
+  expSeekFill.style.width = pct;
+  expTimeCur.textContent  = fmtTime(audio.currentTime);
+  if (expOpen) drawWaveform();
   const t=tracks[currentIdx];
-  if (t&&!t.duration&&audio.duration){t.duration=audio.duration;saveDurationToCache(t.rev,audio.duration);const el=document.querySelector(`.track-item[data-idx="${currentIdx}"] .track-duration`);if(el)el.textContent=fmtTime(audio.duration);}
+  if (t&&!t.duration&&audio.duration){t.duration=audio.duration;saveDurationToCache(t.rev,audio.duration);expTimeTot.textContent=fmtTime(audio.duration);const el=document.querySelector(`.track-item[data-idx="${currentIdx}"] .track-duration`);if(el)el.textContent=fmtTime(audio.duration);}
 });
 audio.addEventListener('ended',()=>nextTrack(true));
 audio.addEventListener('play', ()=>{isPlaying=true; setPlayIcon(true);});
@@ -1117,8 +1224,180 @@ document.getElementById('progress-wrap').addEventListener('click',e=>{
 });
 
 // ═══════════════════════════════════════════════
-//  STATUS / SETTINGS
+//  EXPANDED PLAYER
 // ═══════════════════════════════════════════════
+const expPanel    = document.getElementById('expanded-player');
+const expName     = document.getElementById('exp-name');
+const expSub      = document.getElementById('exp-sub');
+const expCover    = document.getElementById('exp-cover');
+const expSeekFill = document.getElementById('exp-seek-fill');
+const expTimeCur  = document.getElementById('exp-time-cur');
+const expTimeTot  = document.getElementById('exp-time-tot');
+let expOpen = false;
+
+function openExpandedPlayer() {
+  expPanel.classList.add('open');
+  expOpen = true;
+  syncExpandedMeta();
+  drawWaveform();
+}
+function closeExpandedPlayer() {
+  expPanel.classList.remove('open');
+  expOpen = false;
+}
+
+function syncExpandedMeta() {
+  if (!expOpen) return;
+  const t = tracks[currentIdx];
+  expName.textContent = t ? t.name : 'Ingen låt vald';
+  expSub.textContent  = t ? (t.package ? formatPkgName(t.package) : 'Alla låtar') : '—';
+  expTimeTot.textContent = t?.duration ? fmtTime(t.duration) : '—';
+  // Cover
+  expCover.innerHTML = '<span class="cover-placeholder">♬</span>';
+  if (t) {
+    if (t.package === null || t.package === undefined) {
+      if (allSongsCoverUrl) expCover.innerHTML = `<img src="${allSongsCoverUrl}" alt="">`;
+    } else if (coverPathMap[t.package]) {
+      getCoverUrl(t.package).then(url => {
+        if (url) expCover.innerHTML = `<img src="${url}" alt="">`;
+      });
+    }
+  }
+  // Sync play icon
+  setExpandedPlayIcon(isPlaying);
+  // Sync repeat/shuffle
+  document.getElementById('repeat-btn-exp').classList.toggle('active', repeatMode !== 'none');
+  document.getElementById('shuffle-btn-exp').classList.toggle('active', shuffle);
+}
+
+function setExpandedPlayIcon(p) {
+  document.getElementById('icon-play-exp').style.display  = p ? 'none' : 'block';
+  document.getElementById('icon-pause-exp').style.display = p ? 'block' : 'none';
+}
+
+// Open on click of mini player info area (not controls)
+document.querySelector('.player-info-row').addEventListener('click', () => {
+  if (currentIdx >= 0) openExpandedPlayer();
+});
+// Swipe down to close
+let touchStartY = 0;
+expPanel.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+expPanel.addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - touchStartY > 60) closeExpandedPlayer();
+}, { passive: true });
+// Handle bar click also closes
+document.querySelector('.exp-handle-bar').addEventListener('click', closeExpandedPlayer);
+
+// Expanded play button
+document.getElementById('play-btn-exp').addEventListener('click', togglePlay);
+document.getElementById('prev-btn-exp').addEventListener('click', prevTrack);
+document.getElementById('next-btn-exp').addEventListener('click', () => nextTrack(false));
+document.getElementById('repeat-btn-exp').addEventListener('click', cycleRepeat);
+document.getElementById('shuffle-btn-exp').addEventListener('click', toggleShuffle);
+
+// Expanded seek
+document.getElementById('exp-seek-wrap').addEventListener('click', e => {
+  if (!audio.duration) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+});
+
+// Sync expanded state from main audio events
+
+// ═══════════════════════════════════════════════
+//  WAVEFORM (Web Audio API)
+// ═══════════════════════════════════════════════
+let waveformData = null;   // Float32Array of normalised peak values
+let waveformPath = null;   // path we decoded for
+
+async function buildWaveform(objUrl, trackPath) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Fetch the audio blob again (it's already loaded as activeObjUrl so should be fast from memory)
+    const resp = await fetch(objUrl);
+    const buf  = await resp.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(buf);
+    ctx.close();
+    const ch   = decoded.getChannelData(0);
+    const bins = 200;
+    const step = Math.floor(ch.length / bins);
+    const peaks = new Float32Array(bins);
+    for (let i = 0; i < bins; i++) {
+      let max = 0;
+      for (let j = 0; j < step; j++) {
+        const v = Math.abs(ch[i * step + j] || 0);
+        if (v > max) max = v;
+      }
+      peaks[i] = max;
+    }
+    // Normalise
+    const maxPeak = Math.max(...peaks, 0.001);
+    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
+    waveformData = peaks;
+    waveformPath = trackPath;
+    if (expOpen) drawWaveform();
+  } catch(e) {
+    waveformData = null;
+  }
+}
+
+function drawWaveform() {
+  const canvas = document.getElementById('waveform-canvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight || 56;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const bins = waveformData ? waveformData.length : 200;
+  const barW = Math.max(1, (W / bins) - 0.5);
+  const gap  = (W / bins) - barW;
+  const prog = audio.duration ? (audio.currentTime / audio.duration) : 0;
+  const progX = prog * W;
+
+  const gold     = '#c9a84c';
+  const goldDim  = 'rgba(201,168,76,0.25)';
+  const midLine  = H / 2;
+
+  for (let i = 0; i < bins; i++) {
+    const x   = i * (barW + gap);
+    const amp = waveformData ? waveformData[i] : 0.3;
+    const barH = Math.max(2, amp * midLine * 0.95);
+    const played = (x + barW / 2) < progX;
+    ctx.fillStyle = played ? gold : goldDim;
+    // Draw symmetric bar around midLine
+    ctx.beginPath();
+    ctx.roundRect
+      ? ctx.roundRect(x, midLine - barH, barW, barH * 2, 1)
+      : ctx.rect(x, midLine - barH, barW, barH * 2);
+    ctx.fill();
+  }
+
+  // Playhead line
+  if (audio.duration) {
+    ctx.strokeStyle = gold;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(progX, 0);
+    ctx.lineTo(progX, H);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// Click on waveform to seek
+document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
+  if (!audio.duration) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+});
+
+
 function setStatus(type,msg){document.getElementById('status-bar').className=type;document.getElementById('status-text').textContent=msg;}
 function openSettings(){document.getElementById('cfg-folder').value=config.folder||'';document.getElementById('cfg-exts').value=config.exts||'mp3,wav,flac,aiff,m4a';updateOAuthUI();document.getElementById('config-panel').style.display='block';}
 function closeSettings(){document.getElementById('config-panel').style.display='none';}
@@ -1151,6 +1430,7 @@ document.querySelectorAll('.modal-backdrop').forEach(el=>el.addEventListener('cl
 
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT')return;
+  if(e.code==='Escape'&&expOpen){closeExpandedPlayer();return;}
   if(e.code==='Space'){e.preventDefault();togglePlay();}
   if(e.code==='ArrowRight')nextTrack(false);
   if(e.code==='ArrowLeft')prevTrack();
