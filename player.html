@@ -427,13 +427,17 @@ checkLock();
 let idb = null;
 function openIDB() {
   return new Promise((res,rej) => {
-    const req = indexedDB.open('mm_player',2);
+    const req = indexedDB.open('mm_player',3);
     req.onupgradeneeded = e => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains('audio')) {
         db.createObjectStore('audio',{keyPath:'path'});
       }
       // v2: store now holds {path, blob, rev}
+      // v3: covers store — {path, blob, rev}
+      if (!db.objectStoreNames.contains('covers')) {
+        db.createObjectStore('covers',{keyPath:'path'});
+      }
     };
     req.onsuccess = e => { idb=e.target.result; res(idb); };
     req.onerror   = () => rej(req.error);
@@ -470,6 +474,22 @@ function idbGetAllKeys() {
   return new Promise(res => {
     const req = idb.transaction('audio','readonly').objectStore('audio').getAllKeys();
     req.onsuccess = ()=>res(req.result||[]); req.onerror=()=>res([]);
+  });
+}
+
+// ── Covers IDB helpers ──
+function idbCoverGet(path) {
+  return new Promise(res => {
+    const req = idb.transaction('covers','readonly').objectStore('covers').get(path);
+    req.onsuccess = () => res(req.result||null);
+    req.onerror   = () => res(null);
+  });
+}
+function idbCoverPut(path, blob, rev) {
+  return new Promise((res,rej) => {
+    const tx = idb.transaction('covers','readwrite');
+    tx.objectStore('covers').put({path, blob, rev: rev||null});
+    tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error);
   });
 }
 
@@ -737,12 +757,12 @@ async function fetchTracks() {
     const {audio:aFiles,covers} = await listAllFiles(config.folder);
     const folderLower = (config.folder||'').toLowerCase();
 
-    // Build cover map
+    // Build cover map — { pkg: { path, rev } }
     coverPathMap={};
     for (const c of covers) {
       const rel   = c.path_lower.replace(folderLower,'');
       const parts = rel.split('/').filter(Boolean);
-      if (parts.length>=2) coverPathMap[parts[0]] = c.path_lower;
+      if (parts.length>=2) coverPathMap[parts[0]] = { path: c.path_lower, rev: c.rev||null };
     }
 
     tracks = aFiles.map(f => {
@@ -761,7 +781,8 @@ async function fetchTracks() {
 
     if (currentIdx>=tracks.length) currentIdx=-1;
     await refreshSynced();
-    // Hämta "Alla låtar"-omslaget asynkront
+    // Hämta "Alla låtar"-omslaget asynkront — tvinga refresh från Dropbox vid ↻
+    _allSongsCoverNeedsRefresh = true;
     fetchAllSongsCover();
     saveState();
     renderLibrary();
@@ -788,31 +809,68 @@ function isSynced(track) {
 //  COVERS
 // ═══════════════════════════════════════════════
 async function getCoverUrl(pkg) {
-  const path = coverPathMap[pkg];
-  if (!path) return null;
+  const entry = coverPathMap[pkg];
+  if (!entry) return null;
+  const { path, rev } = entry;
+
+  // Return in-memory URL if still valid
   if (coverUrlMap[path]) return coverUrlMap[path];
+
+  // Check IDB cache — use it if rev matches (or no rev info)
+  const cached = await idbCoverGet(path);
+  if (cached?.blob) {
+    const revOk = !rev || !cached.rev || cached.rev === rev;
+    if (revOk) {
+      const url = URL.createObjectURL(cached.blob);
+      coverUrlMap[path] = url;
+      return url;
+    }
+  }
+
+  // Download fresh, save to IDB
   try {
     const link = await getTmpLink(path);
     const blob = await (await fetch(link)).blob();
+    await idbCoverPut(path, blob, rev);
     const url  = URL.createObjectURL(blob);
-    coverUrlMap[path]=url;
+    coverUrlMap[path] = url;
     return url;
-  } catch(e){return null;}
+  } catch(e) { return null; }
 }
 
 async function fetchAllSongsCover() {
+  // Try IDB cache first — no rev available for this hardcoded path,
+  // so we use it as long as it exists. Force-refresh happens on ↻.
+  const cached = await idbCoverGet(ALL_SONGS_COVER_PATH);
+  if (cached?.blob && !_allSongsCoverNeedsRefresh) {
+    allSongsCoverUrl = URL.createObjectURL(cached.blob);
+    _applyAllSongsCoverToDOM();
+    return;
+  }
+  // Download fresh
   try {
     const link = await getTmpLink(ALL_SONGS_COVER_PATH);
     const blob = await (await fetch(link)).blob();
+    await idbCoverPut(ALL_SONGS_COVER_PATH, blob, null);
     allSongsCoverUrl = URL.createObjectURL(blob);
-    // Uppdatera kortet om biblioteket redan är renderat
-    const el = document.getElementById('card-cover-all');
-    if (el) {
-      const badge = el.querySelector('.pkg-sync-badge');
-      el.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
-      if (badge) el.appendChild(badge);
-    }
+    _applyAllSongsCoverToDOM();
   } catch(e) { /* filen saknas eller fel — visa placeholder */ }
+}
+
+let _allSongsCoverNeedsRefresh = false; // sätts true av fetchTracks vid ↻
+
+function _applyAllSongsCoverToDOM() {
+  const el = document.getElementById('card-cover-all');
+  if (el) {
+    const badge = el.querySelector('.pkg-sync-badge');
+    el.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+    if (badge) el.appendChild(badge);
+  }
+  // Uppdatera playlist-headern om den är öppen
+  if (activePkg === 'all') {
+    const coverEl = document.getElementById('playlist-cover');
+    if (coverEl) coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+  }
 }
 
 // ═══════════════════════════════════════════════
