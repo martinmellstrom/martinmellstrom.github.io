@@ -384,7 +384,7 @@
 // ═══════════════════════════════════════════════
 //  LOCK — byt ut hash nedan mot din SHA-256-hash
 // ═══════════════════════════════════════════════
-const PASSWORD_HASH = 'DITT_HASH_HÄR';
+const PASSWORD_HASH = '5adbee7e0dcdcdcaaa48a5b7401301b554359f0219943181af6fde8f41b1a681';
 const SESSION_KEY   = 'mm_unlocked';
 
 async function hashString(str) {
@@ -423,8 +423,14 @@ checkLock();
 let idb = null;
 function openIDB() {
   return new Promise((res,rej) => {
-    const req = indexedDB.open('mm_player',1);
-    req.onupgradeneeded = e => e.target.result.createObjectStore('audio',{keyPath:'path'});
+    const req = indexedDB.open('mm_player',2);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('audio')) {
+        db.createObjectStore('audio',{keyPath:'path'});
+      }
+      // v2: store now holds {path, blob, rev}
+    };
     req.onsuccess = e => { idb=e.target.result; res(idb); };
     req.onerror   = () => rej(req.error);
   });
@@ -436,10 +442,10 @@ function idbGet(path) {
     req.onerror   = () => res(null);
   });
 }
-function idbPut(path, blob) {
+function idbPut(path, blob, rev) {
   return new Promise((res,rej) => {
     const tx = idb.transaction('audio','readwrite');
-    tx.objectStore('audio').put({path,blob});
+    tx.objectStore('audio').put({path, blob, rev: rev||null});
     tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error);
   });
 }
@@ -448,6 +454,12 @@ function idbDelete(path) {
     const tx = idb.transaction('audio','readwrite');
     tx.objectStore('audio').delete(path);
     tx.oncomplete = ()=>res();
+  });
+}
+function idbGetAll() {
+  return new Promise(res => {
+    const req = idb.transaction('audio','readonly').objectStore('audio').getAll();
+    req.onsuccess = ()=>res(req.result||[]); req.onerror=()=>res([]);
   });
 }
 function idbGetAllKeys() {
@@ -469,7 +481,7 @@ let repeatMode  = 'none';
 let shuffle     = false;
 let shuffleQueue= [];
 let activePkg   = null; // null = library, 'all' or pkg name = playlist
-let syncedPaths = new Set();
+let syncedPaths = new Map();
 let coverPathMap= {}; // pkg → dropbox path
 let coverUrlMap = {}; // dropbox path → objectURL
 let linkCache   = {};
@@ -493,7 +505,7 @@ function saveState() {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
       config,
-      tracks: tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration})),
+      tracks: tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null})),
       currentIdx, repeatMode, shuffle, activePkg
     }));
   } catch(e){}
@@ -571,7 +583,7 @@ async function fetchTracks() {
       const rel   = f.path_lower.replace(folderLower,'');
       const parts = rel.split('/').filter(Boolean);
       const pkg   = parts.length>1?parts[0]:null;
-      return { id:f.id||f.path_lower, name:f.name.replace(/\.[^.]+$/,''), path:f.path_lower, package:pkg, ext:f.name.split('.').pop().toUpperCase(), duration:null };
+      return { id:f.id||f.path_lower, name:f.name.replace(/\.[^.]+$/,''), path:f.path_lower, package:pkg, ext:f.name.split('.').pop().toUpperCase(), duration:null, rev:f.rev||null };
     });
 
     tracks.sort((a,b)=>{
@@ -590,7 +602,18 @@ async function fetchTracks() {
 }
 
 async function refreshSynced() {
-  syncedPaths = new Set(await idbGetAllKeys());
+  const all = await idbGetAll();
+  // syncedPaths: path → stored rev (or true if no rev stored)
+  syncedPaths = new Map(all.map(r => [r.path, r.rev||null]));
+}
+
+function isSynced(track) {
+  if (!syncedPaths.has(track.path)) return false;
+  const storedRev = syncedPaths.get(track.path);
+  // If we have rev info on both sides, compare them
+  if (storedRev && track.rev) return storedRev === track.rev;
+  // Fallback: file exists in IDB, assume ok
+  return true;
 }
 
 // ═══════════════════════════════════════════════
@@ -664,7 +687,7 @@ async function renderLibrary() {
     return '';
   };
 
-  const allSynced = tracks.filter(t=>syncedPaths.has(t.path)).length;
+  const allSynced = tracks.filter(t=>isSynced(t)).length;
   let html = `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
     <div class="pkg-card-cover"><span class="cover-placeholder">♬</span>${syncBadge(allSynced,tracks.length)}</div>
     <div class="pkg-card-info">
@@ -675,7 +698,7 @@ async function renderLibrary() {
 
   for (const p of pkgs) {
     const pt = tracks.filter(t=>t.package===p);
-    const ns = pt.filter(t=>syncedPaths.has(t.path)).length;
+    const ns = pt.filter(t=>isSynced(t)).length;
     html += `<div class="pkg-card" data-pkg="${p}" onclick="showPlaylist('${p}')">
       <div class="pkg-card-cover" id="card-cover-${p}"><span class="cover-placeholder">♩</span>${syncBadge(ns,pt.length)}</div>
       <div class="pkg-card-info">
@@ -716,7 +739,7 @@ function renderTrackList(pkgTracks) {
     const gi      = tracks.indexOf(t);
     const isActive= gi===currentIdx;
     const isPlay  = isActive&&isPlaying;
-    const synced  = syncedPaths.has(t.path);
+    const synced  = isSynced(t);
     html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrack(${gi})">
       <div class="track-num">${i+1}</div>
       <div class="track-bars"><span></span><span></span><span></span></div>
@@ -744,22 +767,23 @@ function formatPkgName(s){if(!s)return'';return s.split(/[-_ ]/).map(w=>w.charAt
 //  OFFLINE SYNC
 // ═══════════════════════════════════════════════
 async function syncPackage(pkg) {
-  const pt    = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
-  const toSync= pt.filter(t=>!syncedPaths.has(t.path));
-  if (!toSync.length){setStatus('ok','Redan synkat');return;}
+  const pt     = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
+  const toSync = pt.filter(t=>!isSynced(t)); // includes new + rev-mismatched
+  if (!toSync.length){setStatus('ok','Redan synkat och uppdaterat');return;}
+  const hasStale = toSync.some(t=>syncedPaths.has(t.path)); // has old version
+  setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} 0/${toSync.length}…`);
   let done=0;
-  setStatus('loading',`Synkar 0/${toSync.length}…`);
   for (const t of toSync) {
     try {
       const link = await getTmpLink(t.path);
       const blob = await (await fetch(link)).blob();
-      await idbPut(t.path, blob);
-      syncedPaths.add(t.path);
-      setStatus('loading',`Synkar ${++done}/${toSync.length}…`);
+      await idbPut(t.path, blob, t.rev);
+      syncedPaths.set(t.path, t.rev||null);
+      setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} ${++done}/${toSync.length}…`);
       refreshView();
     } catch(e){console.warn('sync fail',t.path,e);}
   }
-  setStatus('ok',`${done} låtar sparade`);
+  setStatus('ok',`${done} låtar ${hasStale?'uppdaterade':'sparade'}`);
   renderLibrary();
 }
 
@@ -785,11 +809,18 @@ async function playTrack(idx) {
     if (activeObjUrl){URL.revokeObjectURL(activeObjUrl);activeObjUrl=null;}
     const stored = await idbGet(t.path);
     let blob;
-    if (stored){blob=stored.blob;}
-    else {
-      setStatus('loading',`Laddar: ${t.name}…`);
+    // Use stored blob only if rev matches (or no rev info to compare)
+    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+    if (stored && revMatch) {
+      blob = stored.blob;
+    } else {
+      if (stored && !revMatch) setStatus('loading',`Uppdaterar: ${t.name}…`);
+      else setStatus('loading',`Laddar: ${t.name}…`);
       const link=await getTmpLink(t.path);
       blob=await (await fetch(link)).blob();
+      // Save to IDB with current rev (overwrites stale version)
+      await idbPut(t.path, blob, t.rev);
+      syncedPaths.set(t.path, t.rev||null);
       setStatus('ok','');
     }
     activeObjUrl=URL.createObjectURL(blob);
