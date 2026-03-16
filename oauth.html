@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Dropbox Auth</title></head>
+<body>
+<script>
+  // Svara på Dropbox challenge-verifiering
+  const params = new URLSearchParams(window.location.search);
+  const challenge = params.get('challenge');
+  if (challenge) {
+    document.open();
+    document.write(challenge);
+    document.close();
+  } else {
+    // OAuth callback — skicka token till player.html
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const token = hash.get('access_token');
+    if (token) {
+      localStorage.setItem('dropbox_access_token', token);
+      window.location.href = '/player.html?oauth=success';
+    } else {
+      document.body.textContent = 'Något gick fel. Stäng och försök igen.';
+    }
+  }
+</script>
+</body>
+</html>
