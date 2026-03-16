@@ -528,13 +528,14 @@ function loadState() {
 }
 
 // ═══════════════════════════════════════════════
-//  DROPBOX OAUTH
+//  DROPBOX OAUTH (PKCE)
 // ═══════════════════════════════════════════════
 const DBX_APP_KEY    = 's7z6n7hg25ipk7n'; // ← byt ut mot din App Key
 const DBX_REDIRECT   = 'https://martinmellstrom.github.io/oauth.html';
 const DBX_TOKEN_URL  = 'https://api.dropbox.com/oauth2/token';
 const DBX_AUTH_URL   = 'https://www.dropbox.com/oauth2/authorize';
 const LS_OAUTH_KEY   = 'mm_dbx_oauth';
+const LS_PKCE_KEY    = 'mm_dbx_pkce_verifier';
 
 let oauthData = null; // { access_token, refresh_token, expires_at }
 
@@ -544,12 +545,12 @@ function loadOAuth() {
 function saveOAuth(data) {
   oauthData = data;
   localStorage.setItem(LS_OAUTH_KEY, JSON.stringify(data));
-  // Keep config.token in sync so legacy code paths that might read it still work
   config.token = data?.access_token || '';
 }
 function clearOAuth() {
   oauthData = null;
   localStorage.removeItem(LS_OAUTH_KEY);
+  localStorage.removeItem(LS_PKCE_KEY);
   config.token = '';
   saveState();
 }
@@ -558,11 +559,11 @@ function isOAuthConnected() { return !!(oauthData?.refresh_token); }
 
 async function ensureAccessToken() {
   if (!oauthData?.refresh_token) throw new Error('Inte ansluten till Dropbox');
-  const margin = 5 * 60 * 1000; // förnya 5 min innan utgång
+  const margin = 5 * 60 * 1000;
   if (oauthData.access_token && oauthData.expires_at && Date.now() < oauthData.expires_at - margin) {
     return oauthData.access_token;
   }
-  // Token utgånget eller saknas — förnya med refresh token
+  // Förnya med refresh token (PKCE refresh behöver inte code_verifier)
   const res = await fetch(DBX_TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -573,9 +574,7 @@ async function ensureAccessToken() {
     })
   });
   if (!res.ok) {
-    const e = await res.json().catch(()=>({}));
-    clearOAuth();
-    updateOAuthUI();
+    clearOAuth(); updateOAuthUI();
     throw new Error('Token-förnyelse misslyckades — anslut Dropbox igen');
   }
   const d = await res.json();
@@ -587,15 +586,30 @@ async function ensureAccessToken() {
   return d.access_token;
 }
 
-function startOAuthFlow() {
+// PKCE-hjälpfunktioner
+async function generatePKCE() {
+  const verifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(48))))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'').slice(0,128);
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const challenge = btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  return { verifier, challenge };
+}
+
+async function startOAuthFlow() {
+  const { verifier, challenge } = await generatePKCE();
+  localStorage.setItem(LS_PKCE_KEY, verifier);
+
   const params = new URLSearchParams({
-    client_id:         DBX_APP_KEY,
-    redirect_uri:      DBX_REDIRECT,
-    response_type:     'code',
-    token_access_type: 'offline',
+    client_id:             DBX_APP_KEY,
+    redirect_uri:          DBX_REDIRECT,
+    response_type:         'code',
+    token_access_type:     'offline',
+    code_challenge:        challenge,
+    code_challenge_method: 'S256',
   });
   window.open(`${DBX_AUTH_URL}?${params}`, '_blank', 'width=520,height=640');
-  // Lyssna på BroadcastChannel — oauth.html skickar auth_code direkt
+
   const ch = new BroadcastChannel('mm_dbx_oauth');
   ch.onmessage = async (e) => {
     ch.close();
@@ -605,6 +619,9 @@ function startOAuthFlow() {
 }
 
 async function handleAuthCode(code) {
+  const verifier = localStorage.getItem(LS_PKCE_KEY);
+  if (!verifier) { setStatus('error', 'PKCE-verifier saknas — försök igen'); return; }
+  localStorage.removeItem(LS_PKCE_KEY);
   setStatus('loading', 'Ansluter till Dropbox…');
   try {
     const res = await fetch(DBX_TOKEN_URL, {
@@ -612,14 +629,15 @@ async function handleAuthCode(code) {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        grant_type:   'authorization_code',
-        client_id:    DBX_APP_KEY,
-        redirect_uri: DBX_REDIRECT,
+        grant_type:    'authorization_code',
+        client_id:     DBX_APP_KEY,
+        redirect_uri:  DBX_REDIRECT,
+        code_verifier: verifier,
       })
     });
     if (!res.ok) {
       const e = await res.json().catch(()=>({}));
-      throw new Error(e?.error_description || 'Kunde inte hämta token');
+      throw new Error(e?.error_description || e?.error || 'Kunde inte hämta token');
     }
     const d = await res.json();
     saveOAuth({
