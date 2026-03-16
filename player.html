@@ -408,6 +408,7 @@ function idbCoverPut(path, blob, rev) {
 //  STATE
 // ═══════════════════════════════════════════════
 const LS_KEY    = 'mm_player_v2';
+const LS_DUR_KEY = 'mm_player_durations'; // { "<rev>": seconds } — cache av låtlängder
 let config      = { token:'', folder:'', exts:'mp3,wav,flac,aiff,m4a' };
 let tracks      = [];
 let currentIdx  = -1;
@@ -423,6 +424,16 @@ let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
 const ALL_SONGS_COVER_PATH = '/all_songs_cover.heic';
 let linkCache   = {};
 let activeObjUrl= null;
+let durationCache = {}; // rev → seconds (in-memory, backed by localStorage)
+
+function loadDurationCache() {
+  try { durationCache = JSON.parse(localStorage.getItem(LS_DUR_KEY)||'{}'); } catch(e){ durationCache={}; }
+}
+function saveDurationToCache(rev, seconds) {
+  if (!rev || !seconds || isNaN(seconds)) return;
+  durationCache[rev] = seconds;
+  try { localStorage.setItem(LS_DUR_KEY, JSON.stringify(durationCache)); } catch(e){}
+}
 
 const audio     = document.getElementById('audio-el');
 const npName    = document.getElementById('np-name');
@@ -789,8 +800,65 @@ function _applyAllSongsCoverToDOM() {
 }
 
 // ═══════════════════════════════════════════════
-//  NAVIGATION
+//  DURATION PRELOAD
 // ═══════════════════════════════════════════════
+// Laddar in låtlängder utan att spela — via preload="metadata" på dolda audio-element.
+// Kollar först i durationCache (localStorage, nyckel = rev). Om ej cachad skapas ett
+// temporärt <audio preload="metadata"> som hämtar en Dropbox-länk och läser ut duration
+// via loadedmetadata-eventet. Uppdaterar tracks[].duration och DOM direkt när känt.
+async function preloadDurations(pkgTracks) {
+  const toLoad = pkgTracks.filter(t => !t.duration);
+  if (!toLoad.length) return;
+
+  // Fyll i från cache först (inga nätverksanrop)
+  for (const t of toLoad) {
+    if (t.rev && durationCache[t.rev]) {
+      t.duration = durationCache[t.rev];
+      _updateDurationEl(tracks.indexOf(t), t.duration);
+    }
+  }
+
+  const stillMissing = toLoad.filter(t => !t.duration);
+  if (!stillMissing.length) return;
+
+  // Hämta Dropbox-länk och läs metadata för resterande låtar
+  for (const t of stillMissing) {
+    // Kolla om offline-versionen finns i IDB — undviker nätverksanrop
+    (async () => {
+      try {
+        let url;
+        const stored = await idbGet(t.path);
+        const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+        if (stored && revMatch) {
+          url = URL.createObjectURL(stored.blob);
+        } else {
+          url = await getTmpLink(t.path);
+        }
+        const tmp = document.createElement('audio');
+        tmp.preload = 'metadata';
+        tmp.src = url;
+        tmp.addEventListener('loadedmetadata', () => {
+          const dur = tmp.duration;
+          if (dur && !isNaN(dur) && isFinite(dur)) {
+            t.duration = dur;
+            saveDurationToCache(t.rev, dur);
+            _updateDurationEl(tracks.indexOf(t), dur);
+          }
+          tmp.src = '';
+          if (stored && revMatch) URL.revokeObjectURL(url);
+        }, { once: true });
+        tmp.addEventListener('error', () => { tmp.src=''; }, { once: true });
+      } catch(e) { /* tyst fel — ingen duration visas */ }
+    })();
+  }
+}
+
+function _updateDurationEl(globalIdx, dur) {
+  const el = document.querySelector(`.track-item[data-idx="${globalIdx}"] .track-duration`);
+  if (el) el.textContent = fmtTime(dur);
+  // Spara även till localStorage via saveState
+  saveState();
+}
 function showLibrary() {
   activePkg = null;
   document.getElementById('library-view').classList.remove('hidden');
@@ -822,6 +890,7 @@ async function showPlaylist(pkg) {
   }
 
   renderTrackList(pkgTracks);
+  preloadDurations(pkgTracks);
   saveState();
 }
 
@@ -1036,7 +1105,7 @@ audio.addEventListener('timeupdate',()=>{
   progFill.style.width=(audio.currentTime/audio.duration*100)+'%';
   timeDisp.textContent=`${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`;
   const t=tracks[currentIdx];
-  if (t&&!t.duration&&audio.duration){t.duration=audio.duration;const el=document.querySelector(`.track-item[data-idx="${currentIdx}"] .track-duration`);if(el)el.textContent=fmtTime(audio.duration);}
+  if (t&&!t.duration&&audio.duration){t.duration=audio.duration;saveDurationToCache(t.rev,audio.duration);const el=document.querySelector(`.track-item[data-idx="${currentIdx}"] .track-duration`);if(el)el.textContent=fmtTime(audio.duration);}
 });
 audio.addEventListener('ended',()=>nextTrack(true));
 audio.addEventListener('play', ()=>{isPlaying=true; setPlayIcon(true);});
@@ -1096,6 +1165,13 @@ function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Mat
 // ═══════════════════════════════════════════════
 openIDB().then(async()=>{
   loadState();
+  loadDurationCache();
+  // Fyll in cachade durationer i tracks (rev-matchning)
+  for (const t of tracks) {
+    if (!t.duration && t.rev && durationCache[t.rev]) {
+      t.duration = durationCache[t.rev];
+    }
+  }
   loadOAuth();
   // Fallback: same-tab OAuth — oauth.html skickade oss hit med ?code= i URL
   const _urlParams = new URLSearchParams(window.location.search);
