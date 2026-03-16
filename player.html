@@ -508,6 +508,7 @@ let shuffle     = false;
 let shuffleQueue= [];
 let activePkg   = null; // null = library, 'all' or pkg name = playlist
 let syncedPaths = new Map();
+let restoredPosition = 0; // laddas från localStorage vid start
 let coverPathMap= {}; // pkg → { path, rev }
 let coverUrlMap = {}; // dropbox path → objectURL
 let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
@@ -546,10 +547,13 @@ function saveState() {
       config,
       tracks: tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null})),
       currentIdx, repeatMode, shuffle, activePkg,
-      coverPathMap
+      coverPathMap,
+      lastPosition: (audio && audio.currentTime > 0 && isFinite(audio.currentTime)) ? audio.currentTime : undefined
     }));
   } catch(e){}
 }
+let lastSavedPosition = 0; // throttle-referens för position-sparande
+
 function loadState() {
   try {
     const d = JSON.parse(localStorage.getItem(LS_KEY)||'null');
@@ -561,6 +565,7 @@ function loadState() {
     shuffle=d.shuffle||false;
     activePkg=d.activePkg??null;
     coverPathMap=d.coverPathMap||{};
+    restoredPosition=d.lastPosition||0;
   } catch(e){}
 }
 
@@ -1121,6 +1126,9 @@ async function deletePackageLocal(pkg) {
 // ═══════════════════════════════════════════════
 async function playTrack(idx) {
   if (idx<0||idx>=tracks.length) return;
+  // Spara position för nuvarande låt innan vi byter
+  lastSavedPosition = audio.currentTime || 0;
+  saveState();
   currentIdx=idx;
   const t=tracks[idx];
   npName.textContent=t.name;
@@ -1213,6 +1221,11 @@ audio.addEventListener('timeupdate',()=>{
   if (expOpen) drawWaveform();
   const t=tracks[currentIdx];
   if (t&&!t.duration&&audio.duration){t.duration=audio.duration;saveDurationToCache(t.rev,audio.duration);expTimeTot.textContent=fmtTime(audio.duration);const el=document.querySelector(`.track-item[data-idx="${currentIdx}"] .track-duration`);if(el)el.textContent=fmtTime(audio.duration);}
+  // Spara position throttlat (max var 5:e sekund)
+  if (Math.abs(audio.currentTime - lastSavedPosition) >= 5) {
+    lastSavedPosition = audio.currentTime;
+    saveState();
+  }
 });
 audio.addEventListener('ended',()=>nextTrack(true));
 audio.addEventListener('play', ()=>{isPlaying=true; setPlayIcon(true);});
@@ -1473,6 +1486,27 @@ openIDB().then(async()=>{
       const t=tracks[currentIdx];
       npName.textContent=t.name;
       npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
+
+      // Återställ senaste position — ladda blob/länk utan att spela
+      if (restoredPosition > 0) {
+        (async () => {
+          try {
+            const stored = await idbGet(t.path);
+            const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+            if (stored && revMatch) {
+              if (activeObjUrl) URL.revokeObjectURL(activeObjUrl);
+              activeObjUrl = URL.createObjectURL(stored.blob);
+              audio.src = activeObjUrl;
+              audio.addEventListener('loadedmetadata', () => {
+                audio.currentTime = restoredPosition;
+                const pct = (restoredPosition / audio.duration * 100) + '%';
+                progFill.style.width = pct;
+                timeDisp.textContent = `${fmtTime(restoredPosition)} / ${fmtTime(audio.duration)}`;
+              }, { once: true });
+            }
+          } catch(e) { /* tyst fel — ingen återställning */ }
+        })();
+      }
     }
   } else {
     renderLibrary();
