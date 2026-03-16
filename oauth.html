@@ -1,25 +1,45 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Dropbox Auth</title></head>
+<html lang="sv">
+<head><meta charset="UTF-8"><title>Dropbox Auth</title>
+<style>
+  body { font-family: monospace; background: #0a0d0b; color: #e8e0d0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; font-size: 14px; }
+  .msg { text-align: center; padding: 32px; }
+  .ok  { color: #4a7c59; }
+  .err { color: #7c4a4a; }
+</style>
+</head>
 <body>
+<div class="msg" id="msg">Hanterar inloggning…</div>
 <script>
-  // Svara på Dropbox challenge-verifiering
   const params = new URLSearchParams(window.location.search);
+
+  // Dropbox challenge-verifiering (körs vid registrering av redirect URI)
   const challenge = params.get('challenge');
   if (challenge) {
     document.open();
     document.write(challenge);
     document.close();
-  } else {
-    // OAuth callback — skicka token till player.html
-    const hash = new URLSearchParams(window.location.hash.slice(1));
-    const token = hash.get('access_token');
-    if (token) {
-      localStorage.setItem('dropbox_access_token', token);
-      window.location.href = '/player.html?oauth=success';
-    } else {
-      document.body.textContent = 'Något gick fel. Stäng och försök igen.';
-    }
+  }
+
+  // OAuth callback med authorization code
+  else if (params.get('code')) {
+    const code = params.get('code');
+    // Skicka koden till player.html via localStorage storage-event
+    localStorage.setItem('mm_dbx_auth_code', code);
+    document.getElementById('msg').innerHTML =
+      '<span class="ok">✓ Ansluten!</span><br><br>Du kan stänga det här fönstret.';
+    // Rensa koden ur localStorage efter kort stund (player.html tar emot den)
+    setTimeout(() => localStorage.removeItem('mm_dbx_auth_code'), 5000);
+  }
+
+  // Fel från Dropbox
+  else if (params.get('error')) {
+    document.getElementById('msg').innerHTML =
+      `<span class="err">Fel: ${params.get('error_description') || params.get('error')}</span><br><br>Stäng och försök igen.`;
+  }
+
+  else {
+    document.getElementById('msg').textContent = 'Inget att göra här.';
   }
 </script>
 </body>
