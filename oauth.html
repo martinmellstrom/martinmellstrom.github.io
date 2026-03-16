@@ -24,12 +24,12 @@
   // OAuth callback med authorization code
   else if (params.get('code')) {
     const code = params.get('code');
-    // Skicka koden till player.html via localStorage storage-event
-    localStorage.setItem('mm_dbx_auth_code', code);
+    // Skicka koden till player.html via BroadcastChannel
+    const ch = new BroadcastChannel('mm_dbx_oauth');
+    ch.postMessage({ type: 'auth_code', code });
+    ch.close();
     document.getElementById('msg').innerHTML =
-      '<span class="ok">✓ Ansluten!</span><br><br>Du kan stänga det här fönstret.';
-    // Rensa koden ur localStorage efter kort stund (player.html tar emot den)
-    setTimeout(() => localStorage.removeItem('mm_dbx_auth_code'), 5000);
+      '<span class="ok">✓ Ansluten!</span><br>Du kan stänga det här fönstret.';
   }
 
   // Fel från Dropbox

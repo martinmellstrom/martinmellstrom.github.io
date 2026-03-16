@@ -588,25 +588,23 @@ async function ensureAccessToken() {
 }
 
 function startOAuthFlow() {
-  // PKCE-fri implicit-flow via oauth.html → skickar token till localStorage
-  // Använder token access_type=offline för refresh token
   const params = new URLSearchParams({
-    client_id:     DBX_APP_KEY,
-    redirect_uri:  DBX_REDIRECT,
-    response_type: 'code',
+    client_id:         DBX_APP_KEY,
+    redirect_uri:      DBX_REDIRECT,
+    response_type:     'code',
     token_access_type: 'offline',
   });
   window.open(`${DBX_AUTH_URL}?${params}`, '_blank', 'width=520,height=640');
-  // Lyssna på storage-event — oauth.html skriver auth_code till localStorage
-  window.addEventListener('storage', onOAuthStorage);
+  // Lyssna på BroadcastChannel — oauth.html skickar auth_code direkt
+  const ch = new BroadcastChannel('mm_dbx_oauth');
+  ch.onmessage = async (e) => {
+    ch.close();
+    if (e.data?.type !== 'auth_code' || !e.data.code) return;
+    await handleAuthCode(e.data.code);
+  };
 }
 
-async function onOAuthStorage(e) {
-  if (e.key !== 'mm_dbx_auth_code') return;
-  window.removeEventListener('storage', onOAuthStorage);
-  const code = e.newValue;
-  localStorage.removeItem('mm_dbx_auth_code');
-  if (!code) return;
+async function handleAuthCode(code) {
   setStatus('loading', 'Ansluter till Dropbox…');
   try {
     const res = await fetch(DBX_TOKEN_URL, {
@@ -619,7 +617,10 @@ async function onOAuthStorage(e) {
         redirect_uri: DBX_REDIRECT,
       })
     });
-    if (!res.ok) throw new Error('Kunde inte hämta token');
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e?.error_description || 'Kunde inte hämta token');
+    }
     const d = await res.json();
     saveOAuth({
       access_token:  d.access_token,
