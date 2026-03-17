@@ -371,7 +371,6 @@ nav {
   scroll-snap-type: x mandatory;
   scrollbar-width: thin;
   scrollbar-color: #7a6030 transparent;
-  /* newest first — JS reverses the DOM order */
 }
 .blog-grid::-webkit-scrollbar { height: 3px; }
 .blog-grid::-webkit-scrollbar-track { background: transparent; }
@@ -393,7 +392,38 @@ nav {
 .blog-card:hover { transform: translateY(-3px); border-bottom-color: var(--gold); background: rgba(201,168,76,.04); }
 .blog-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(140deg, rgba(201,168,76,.04), transparent 55%); opacity: 0; transition: opacity .4s; pointer-events: none; }
 .blog-card:hover::before { opacity: 1; }
-.blog-card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; border-bottom: 1px solid rgba(201,168,76,.1); }
+
+/* ── Blog card image with fade/filter/object-fit ── */
+.blog-card-img-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.blog-card-img-wrap::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 45%;
+  background: linear-gradient(to bottom, transparent, var(--surface));
+  pointer-events: none;
+  z-index: 1;
+  transition: background .35s;
+}
+.blog-card:hover .blog-card-img-wrap::after {
+  background: linear-gradient(to bottom, transparent, rgba(201,168,76,.04));
+}
+.blog-card-img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  filter: brightness(0.85) saturate(0.9);
+  transition: filter 0.4s ease;
+}
+.blog-card:hover .blog-card-img {
+  filter: brightness(1) saturate(1);
+}
+
 .blog-card-body { padding: 28px 32px 36px; display: flex; flex-direction: column; flex: 1; }
 .blog-date { font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 14px; }
 .blog-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
@@ -402,7 +432,6 @@ nav {
 .blog-ingress {
   font-size: .92rem; color: var(--text); line-height: 1.75; font-weight: 300; font-style: italic;
   flex: 1;
-  /* clamp to ~4 lines as fallback */
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
@@ -800,6 +829,14 @@ footer { padding: 110px 64px 60px; }
       <!-- NEWEST FIRST (left to right) -->
 
       <div class="blog-card">
+        <div class="blog-card-img-wrap">
+          <img
+            class="blog-card-img"
+            src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/images-for-blog/IMG_9319.jpg"
+            alt="AI and Music-Making for Games"
+            loading="lazy"
+          >
+        </div>
         <div class="blog-card-body">
           <span class="blog-date">March 16, 2026</span>
           <div class="blog-tags"><span class="blog-tag">Workflow</span><span class="blog-tag">AI</span><span class="blog-tag">Music Packs</span></div>
