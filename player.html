@@ -446,6 +446,16 @@
 
 <script>
 // ═══════════════════════════════════════════════
+//  SERVICE WORKER REGISTRATION
+// ═══════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+
+// ═══════════════════════════════════════════════
 //  INDEXED DB
 // ═══════════════════════════════════════════════
 let idb = null;
