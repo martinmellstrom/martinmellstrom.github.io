@@ -530,8 +530,9 @@ function idbCoverPut(path, blob, rev) {
 // ═══════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════
-const LS_KEY    = 'mm_player_v2';
-const LS_DUR_KEY = 'mm_player_durations'; // { "<rev>": seconds } — cache av låtlängder
+const LS_KEY         = 'mm_player_v2';
+const LS_DUR_KEY     = 'mm_player_durations';  // { "<rev>": seconds }
+const LS_WAVE_KEY    = 'mm_player_waveforms';  // { "<rev>": Float32Array serialised as Array }
 let config      = { token:'', folder:'', exts:'mp3,wav,flac,aiff,m4a' };
 let tracks      = [];
 let currentIdx  = -1;
@@ -549,7 +550,8 @@ let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
 const ALL_SONGS_COVER_PATH = '/all_songs_cover.heic';
 let linkCache   = {};
 let activeObjUrl= null;
-let durationCache = {}; // rev → seconds (in-memory, backed by localStorage)
+let durationCache  = {}; // rev → seconds (in-memory, backed by localStorage)
+let waveformCache  = {}; // rev → Float32Array (in-memory, backed by localStorage)
 
 function loadDurationCache() {
   try { durationCache = JSON.parse(localStorage.getItem(LS_DUR_KEY)||'{}'); } catch(e){ durationCache={}; }
@@ -558,6 +560,20 @@ function saveDurationToCache(rev, seconds) {
   if (!rev || !seconds || isNaN(seconds)) return;
   durationCache[rev] = seconds;
   try { localStorage.setItem(LS_DUR_KEY, JSON.stringify(durationCache)); } catch(e){}
+}
+
+// ── Waveform cache helpers ──
+function loadWaveformCache() {
+  try { waveformCache = JSON.parse(localStorage.getItem(LS_WAVE_KEY)||'{}'); } catch(e){ waveformCache={}; }
+}
+function saveWaveformToCache(rev, peaks) {
+  if (!rev || !peaks) return;
+  waveformCache[rev] = Array.from(peaks);
+  try { localStorage.setItem(LS_WAVE_KEY, JSON.stringify(waveformCache)); } catch(e){}
+}
+function getWaveformFromCache(rev) {
+  if (!rev || !waveformCache[rev]) return null;
+  return new Float32Array(waveformCache[rev]);
 }
 
 const audio     = document.getElementById('audio-el');
@@ -1304,7 +1320,7 @@ async function playTrack(idx) {
     saveState();
     if (expOpen) syncExpandedMeta();
     waveformData = null; waveformPath = null;
-    buildWaveform(activeObjUrl, t.path);
+    buildWaveform(activeObjUrl, t);
   } catch(e){setStatus('error',`Kan inte spela: ${e.message}`);}
 }
 
@@ -1456,12 +1472,26 @@ document.getElementById('exp-seek-wrap').addEventListener('click', e => {
 });
 
 // ═══════════════════════════════════════════════
-//  WAVEFORM (Web Audio API)
+//  WAVEFORM (Web Audio API + localStorage cache)
 // ═══════════════════════════════════════════════
 let waveformData = null;
 let waveformPath = null;
 
-async function buildWaveform(objUrl, trackPath) {
+async function buildWaveform(objUrl, track) {
+  const rev = track?.rev || null;
+
+  // Kolla cache först — om rev finns och cachat data finns, använd det direkt
+  if (rev) {
+    const cached = getWaveformFromCache(rev);
+    if (cached) {
+      waveformData = cached;
+      waveformPath = track.path;
+      if (expOpen) drawWaveform();
+      return;
+    }
+  }
+
+  // Bygg från ljud-data
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const resp = await fetch(objUrl);
@@ -1483,7 +1513,9 @@ async function buildWaveform(objUrl, trackPath) {
     const maxPeak = Math.max(...peaks, 0.001);
     for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
     waveformData = peaks;
-    waveformPath = trackPath;
+    waveformPath = track.path;
+    // Spara i cache om vi har en rev att knyta till
+    if (rev) saveWaveformToCache(rev, peaks);
     if (expOpen) drawWaveform();
   } catch(e) {
     waveformData = null;
@@ -1648,6 +1680,7 @@ function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Mat
 openIDB().then(async()=>{
   loadState();
   loadDurationCache();
+  loadWaveformCache();
   for (const t of tracks) {
     if (!t.duration && t.rev && durationCache[t.rev]) {
       t.duration = durationCache[t.rev];
