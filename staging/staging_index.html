@@ -5,28 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>[STAGING] Martin Mellström — Royalty-Free Orchestral Music for Indie Games & Film</title>
 <meta name="description" content="Professional orchestral music packs for indie game developers and filmmakers. Seamless loops, battle layers and stingers for RPG, adventure, Metroidvania and platformer games. Royalty-free, commercially licensed. Available on itch.io, Fab.com, Unity Asset Store and GameDevMarket.">
+<meta name="keywords" content="royalty free orchestral music, game music pack, RPG music, indie game music, adventure game music, Metroidvania music, seamless loop music, battle music, game audio assets, orchestral music pack, fantasy game music, JRPG music, music for indie games, game composer, Swedish composer, film composer, documentary music, royalty free game music itch.io, Unity music asset, Fab music pack">
 <meta name="author" content="Martin Mellström">
 <meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://www.martinmellstrom.com/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.martinmellstrom.com/">
+<meta property="og:title" content="Martin Mellström — Orchestral Music for Indie Games & Film">
+<meta property="og:description" content="Professional royalty-free orchestral music packs. Seamless loops, battle layers and stingers for RPG, adventure and Metroidvania games.">
+<meta property="og:image" content="https://www.martinmellstrom.com/martin_photo.jpg">
+<meta name="twitter:card" content="summary_large_image">
 
-<script defer src="https://cloud.umami.is/script.js" data-website-id="1cd23595-3bb6-4290-ac23-bb14bbbe3204"></script>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="1cd23595-3bb6-4290-ac23-bb14bbbe3204" data-domains="martinmellstrom.com,www.martinmellstrom.com"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
-/* ─── STAGING BANNER ─── */
-.staging-banner {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-  background: repeating-linear-gradient(45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px);
-  border-bottom: 2px solid #ff4444;
-  height: 36px;
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
-  text-transform: uppercase; color: #ff8888;
-}
-.staging-banner strong { color: #ff4444; font-weight: 700; }
-.staging-banner a { color: #ff8888; text-decoration: underline; }
-
 :root {
   --bg: #131714;
   --surface: #191e1a;
@@ -47,11 +42,10 @@ body {
   font-size: 22px;
   line-height: 1.65;
   overflow-x: hidden;
-  padding-top: 36px;
 }
 
 nav {
-  position: fixed; top: 36px; left: 0; right: 0; z-index: 200;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
   display: flex; justify-content: space-between; align-items: center;
   padding: 26px 64px;
   background: linear-gradient(to bottom, rgba(12,18,12,.97), transparent);
@@ -69,7 +63,12 @@ nav {
 }
 .navlinks a:hover { color: var(--gold); }
 
-.hero { position: relative; min-height: 100vh; display: flex; align-items: flex-end; }
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+}
 .hero-bg {
   position: absolute; inset: 0;
   background:
@@ -81,50 +80,142 @@ nav {
 .hero-grain {
   position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: .45;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-  background-size: 180px 180px; mix-blend-mode: overlay;
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
 }
-.staff { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-.staff-group { position: absolute; left: 0; right: 0; animation: staff-drift 20s ease-in-out infinite; }
+.staff {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden;
+}
+.staff-group {
+  position: absolute; left: 0; right: 0;
+  animation: staff-drift 20s ease-in-out infinite;
+}
 .staff-group:nth-child(1) { top: 22%; animation-delay: 0s; }
 .staff-group:nth-child(2) { top: 58%; animation-delay: -7s; opacity: .6; }
 .staff-group:nth-child(3) { top: 76%; animation-delay: -13s; opacity: .35; }
-.staff-line { display: block; width: 100%; height: 1px; background: linear-gradient(to right, transparent 0%, rgba(201,168,76,.06) 15%, rgba(201,168,76,.14) 50%, rgba(201,168,76,.06) 85%, transparent 100%); margin-bottom: 9px; }
-@keyframes staff-drift { 0%, 100% { transform: translateX(0) scaleX(1); opacity: .7; } 50% { transform: translateX(-12px) scaleX(1.015); opacity: 1; } }
-.clef { position: absolute; z-index: 2; color: var(--gold); pointer-events: none; user-select: none; font-style: normal; animation: clef-rise linear infinite; opacity: 0; }
-@keyframes clef-rise { 0% { opacity: 0; transform: translateY(0) rotate(-5deg); } 10% { opacity: .13; } 80% { opacity: .07; } 100% { opacity: 0; transform: translateY(-140px) rotate(8deg); } }
-.hero-left { position: relative; z-index: 10; padding: 140px 80px 90px; max-width: 860px; }
-.hero-eyebrow { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; opacity: 0; animation: reveal-up .9s .2s cubic-bezier(.16,1,.3,1) forwards; }
-.eyebrow-line { width: 0; height: 1px; background: var(--gold); animation: line-grow .8s .6s ease forwards; }
+.staff-line {
+  display: block; width: 100%; height: 1px;
+  background: linear-gradient(to right, transparent 0%, rgba(201,168,76,.06) 15%, rgba(201,168,76,.14) 50%, rgba(201,168,76,.06) 85%, transparent 100%);
+  margin-bottom: 9px;
+}
+@keyframes staff-drift {
+  0%, 100% { transform: translateX(0) scaleX(1); opacity: .7; }
+  50% { transform: translateX(-12px) scaleX(1.015); opacity: 1; }
+}
+.clef {
+  position: absolute; z-index: 2; color: var(--gold); pointer-events: none; user-select: none;
+  font-style: normal;
+  animation: clef-rise linear infinite;
+  opacity: 0;
+}
+@keyframes clef-rise {
+  0%   { opacity: 0; transform: translateY(0) rotate(-5deg); }
+  10%  { opacity: .13; }
+  80%  { opacity: .07; }
+  100% { opacity: 0; transform: translateY(-140px) rotate(8deg); }
+}
+.hero-left {
+  position: relative; z-index: 10;
+  padding: 140px 80px 90px;
+  max-width: 860px;
+}
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 36px;
+  opacity: 0; animation: reveal-up .9s .2s cubic-bezier(.16,1,.3,1) forwards;
+}
+.eyebrow-line {
+  width: 0; height: 1px; background: var(--gold);
+  animation: line-grow .8s .6s ease forwards;
+}
 @keyframes line-grow { to { width: 44px; } }
-.eyebrow-text { font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .45em; text-transform: uppercase; color: var(--gold); }
-.hero-title { font-size: clamp(4rem, 7.5vw, 7rem); font-weight: 300; line-height: .92; color: var(--cream); letter-spacing: -.02em; margin-bottom: 0; }
+.eyebrow-text {
+  font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .45em;
+  text-transform: uppercase; color: var(--gold);
+}
+.hero-title {
+  font-size: clamp(4rem, 7.5vw, 7rem);
+  font-weight: 300;
+  line-height: .92;
+  color: var(--cream);
+  letter-spacing: -.02em;
+  margin-bottom: 0;
+}
 .hero-title .line { display: block; overflow: hidden; }
-.hero-title .line-inner { display: block; opacity: 0; transform: translateY(100%); animation: line-reveal .9s cubic-bezier(.16,1,.3,1) forwards; }
+.hero-title .line-inner {
+  display: block;
+  opacity: 0; transform: translateY(100%);
+  animation: line-reveal .9s cubic-bezier(.16,1,.3,1) forwards;
+}
 .hero-title .line:nth-child(1) .line-inner { animation-delay: .4s; }
 .hero-title .line:nth-child(2) .line-inner { animation-delay: .58s; }
 .hero-title .line:nth-child(3) .line-inner { animation-delay: .74s; }
 .hero-title em { font-style: italic; color: var(--gold); }
 @keyframes line-reveal { to { opacity: 1; transform: translateY(0); } }
 @keyframes reveal-up { to { opacity: 1; } }
-.hero-desc { font-size: 1.15rem; font-weight: 300; font-style: italic; color: var(--muted); letter-spacing: .03em; margin-top: 32px; max-width: 420px; opacity: 0; animation: reveal-up .9s 1s cubic-bezier(.16,1,.3,1) forwards; }
-.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 48px; opacity: 0; animation: reveal-up .9s 1.1s cubic-bezier(.16,1,.3,1) forwards; }
-.btn-p { display: inline-block; padding: 15px 40px; background: var(--gold); color: #0e140e; font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; text-decoration: none; transition: all .35s cubic-bezier(.16,1,.3,1); position: relative; overflow: hidden; }
-.btn-p::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,.15); transform: translateX(-100%); transition: transform .35s; }
+.hero-desc {
+  font-size: 1.15rem; font-weight: 300; font-style: italic;
+  color: var(--muted); letter-spacing: .03em;
+  margin-top: 32px; max-width: 420px;
+  opacity: 0; animation: reveal-up .9s 1s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hero-cta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-top: 48px;
+  opacity: 0; animation: reveal-up .9s 1.1s cubic-bezier(.16,1,.3,1) forwards;
+}
+.btn-p {
+  display: inline-block; padding: 15px 40px;
+  background: var(--gold); color: #0e140e;
+  font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase; text-decoration: none;
+  transition: all .35s cubic-bezier(.16,1,.3,1);
+  position: relative; overflow: hidden;
+}
+.btn-p::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(255,255,255,.15);
+  transform: translateX(-100%); transition: transform .35s;
+}
 .btn-p:hover::after { transform: translateX(0); }
 .btn-p:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(201,168,76,.25); }
-.btn-g { display: inline-block; padding: 14px 40px; border: 1px solid var(--golddim); color: var(--gold); font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; text-decoration: none; transition: all .35s; }
+.btn-g {
+  display: inline-block; padding: 14px 40px;
+  border: 1px solid var(--golddim); color: var(--gold);
+  font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 500;
+  letter-spacing: .22em; text-transform: uppercase; text-decoration: none;
+  transition: all .35s;
+}
 .btn-g:hover { border-color: var(--gold); background: rgba(201,168,76,.07); transform: translateY(-2px); }
-.scroll-ind { position: absolute; bottom: 40px; right: 80px; z-index: 10; display: flex; align-items: center; gap: 16px; font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); opacity: 0; animation: reveal-up .9s 1.6s ease forwards; }
-.scroll-arrow { width: 32px; height: 32px; border: 1px solid rgba(201,168,76,.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: bounce-down 2s ease-in-out infinite; }
-.scroll-arrow::after { content: ''; display: block; width: 7px; height: 7px; border-right: 1px solid var(--gold); border-bottom: 1px solid var(--gold); transform: rotate(45deg) translate(-2px,-2px); }
-@keyframes bounce-down { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
-
+.scroll-ind {
+  position: absolute; bottom: 40px; right: 80px; z-index: 10;
+  display: flex; align-items: center; gap: 16px;
+  font-family: 'Syne', sans-serif; font-size: .55rem;
+  letter-spacing: .3em; text-transform: uppercase; color: var(--muted);
+  opacity: 0; animation: reveal-up .9s 1.6s ease forwards;
+}
+.scroll-arrow {
+  width: 32px; height: 32px;
+  border: 1px solid rgba(201,168,76,.2); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  animation: bounce-down 2s ease-in-out infinite;
+}
+.scroll-arrow::after {
+  content: ''; display: block;
+  width: 7px; height: 7px;
+  border-right: 1px solid var(--gold);
+  border-bottom: 1px solid var(--gold);
+  transform: rotate(45deg) translate(-2px,-2px);
+}
+@keyframes bounce-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
 .sec { padding: 120px 64px; }
 .sec-label { display: block; font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .4em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
 .sec-title { font-size: clamp(2.2rem,5vw,3.8rem); font-weight: 300; color: var(--cream); line-height: 1.05; }
 .sec-title em { font-style: italic; color: var(--gold); }
 .rule { width: 60px; height: 1px; background: var(--golddim); margin: 0 64px; }
-
 #packs { background: var(--surface); position: relative; }
 #packs::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, var(--golddim), transparent); }
 .packs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 56px; align-items: stretch; }
@@ -157,7 +248,6 @@ nav {
 .badge-cs { position: absolute; top: 16px; right: 16px; font-family: 'Syne', sans-serif; font-size: .52rem; letter-spacing: .15em; text-transform: uppercase; background: transparent; border: 1px solid var(--golddim); color: var(--golddim); padding: 5px 12px; font-weight: 700; z-index: 2; }
 .sc-wrap { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(201,168,76,.1); }
 .sc-lbl { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 12px; }
-
 .cplayer { background: #0e1210; border: 1px solid rgba(201,168,76,.18); height: 360px; display: flex; flex-direction: column; }
 #cp3 { height: auto; }
 #cp3 .cp-list { overflow-y: visible; }
@@ -190,7 +280,6 @@ nav {
 .cp-li-num { font-family: 'Syne', sans-serif; font-size: .52rem; color: var(--golddim); width: 22px; flex-shrink: 0; }
 .cp-li-name { font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cp-li-dur { font-family: 'Syne', sans-serif; font-size: .52rem; color: var(--golddim); flex-shrink: 0; }
-
 #blog { overflow: hidden; }
 .blog-scroll-wrap { position: relative; margin-top: 56px; }
 .blog-scroll-wrap::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 80px; background: linear-gradient(to right, transparent, var(--bg)); pointer-events: none; z-index: 2; }
@@ -216,7 +305,6 @@ nav {
 .blog-ingress { font-size: .92rem; color: var(--text); line-height: 1.75; font-weight: 300; font-style: italic; flex: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 .blog-read-more { display: inline-block; margin-top: 18px; font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); text-decoration: none; border-bottom: 1px solid var(--golddim); padding-bottom: 2px; transition: color .25s, border-color .25s; align-self: flex-start; }
 .blog-read-more:hover { color: var(--cream); border-color: var(--cream); }
-
 #about { background: var(--surface); position: relative; }
 #about::before, #about::after { content: ''; position: absolute; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, var(--golddim), transparent); }
 #about::before { top: 0; } #about::after { bottom: 0; }
@@ -229,18 +317,15 @@ nav {
 .wb:nth-child(1){height:7px;animation-delay:.0s}.wb:nth-child(2){height:14px;animation-delay:.1s}.wb:nth-child(3){height:22px;animation-delay:.2s}.wb:nth-child(4){height:30px;animation-delay:.3s}.wb:nth-child(5){height:18px;animation-delay:.4s}.wb:nth-child(6){height:26px;animation-delay:.5s}.wb:nth-child(7){height:14px;animation-delay:.6s}.wb:nth-child(8){height:34px;animation-delay:.7s}.wb:nth-child(9){height:20px;animation-delay:.8s}.wb:nth-child(10){height:12px;animation-delay:.9s}.wb:nth-child(11){height:26px;animation-delay:1s}.wb:nth-child(12){height:8px;animation-delay:1.1s}
 @keyframes wv { 0%,100%{transform:scaleY(.3)} 50%{transform:scaleY(1)} }
 .about-text p { font-size: 1.15rem; line-height: 1.95; color: var(--text); margin-bottom: 18px; font-weight: 300; }
-
 .faq-item { border-top: 1px solid rgba(201,168,76,.12); padding: 28px 0; }
 .faq-item summary { font-family: 'Syne', sans-serif; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cream); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
 .faq-item p { margin-top: 18px; color: var(--text); font-size: 1.1rem; line-height: 1.9; font-weight: 300; }
-
 .film-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; max-width: 860px; margin: 0 auto; }
 .film-image { position: relative; border: 1px solid rgba(201,168,76,.15); }
 .film-image img { width: 100%; height: auto; display: block; }
 .film-image::before { content: ''; position: absolute; inset: 0; background: linear-gradient(140deg, rgba(201,168,76,.07), transparent 55%); pointer-events: none; z-index: 1; }
 .film-frame { position: absolute; top: 12px; right: -12px; bottom: -12px; left: 12px; border: 1px solid var(--golddim); z-index: -1; }
 .film-content { display: flex; flex-direction: column; }
-
 footer { padding: 110px 64px 60px; }
 .foot-h { font-size: clamp(2.6rem,5.5vw,4.2rem); font-weight: 300; color: var(--cream); line-height: 1.05; margin-bottom: 28px; }
 .foot-h em { color: var(--gold); font-style: italic; }
@@ -252,7 +337,9 @@ footer { padding: 110px 64px 60px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group label { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .25em; text-transform: uppercase; color: var(--gold); }
-.form-group input, .form-group select, .form-group textarea { background: rgba(201,168,76,.03); border: 1px solid rgba(201,168,76,.15); color: var(--cream); font-family: 'Cormorant Garamond', serif; font-size: 1rem; padding: 14px 16px; outline: none; transition: border-color .3s; resize: none; appearance: none; }
+.form-group input,
+.form-group select,
+.form-group textarea { background: rgba(201,168,76,.03); border: 1px solid rgba(201,168,76,.15); color: var(--cream); font-family: 'Cormorant Garamond', serif; font-size: 1rem; padding: 14px 16px; outline: none; transition: border-color .3s; resize: none; appearance: none; }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold); }
 .form-group input::placeholder, .form-group textarea::placeholder { color: var(--muted); font-style: italic; }
 .form-group select option { background: var(--surface); color: var(--cream); }
@@ -267,12 +354,13 @@ footer { padding: 110px 64px 60px; }
 .cval { font-size: .95rem; color: var(--cream); }
 .foot-bot { display: flex; justify-content: space-between; align-items: center; margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(201,168,76,.1); }
 .foot-copy { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
-
 .fade { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s ease; }
 .fade.in { opacity: 1; transform: translateY(0); }
-
+.staging-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #b8440a; color: #fff; font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; text-align: center; padding: 9px 16px; font-weight: 700; }
+body { padding-top: 36px; }
+nav { top: 36px; }
 @media(max-width:900px) {
-  nav { padding: 18px 24px; top: 36px; } .navlinks { display: none; }
+  nav { padding: 18px 24px; } .navlinks { display: none; }
   .hero-left { padding: 120px 24px 80px; }
   .sec { padding: 80px 24px; } .rule { margin: 0 24px; }
   .packs-grid { grid-template-columns: 1fr; } .film-inner { grid-template-columns: 1fr; gap: 40px; }
@@ -288,9 +376,7 @@ footer { padding: 110px 64px 60px; }
 </head>
 <body>
 
-<div class="staging-banner">
-  <strong>⚠ STAGING</strong> — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/">Gå till live-sidan →</a>
-</div>
+<div class="staging-banner">⚠ Staging — not indexed, analytics disabled</div>
 
 <nav id="nav">
   <a href="#home" class="logo">Martin Mellstrom</a>
@@ -337,85 +423,83 @@ footer { padding: 110px 64px 60px; }
   <div class="packs-grid">
     <div class="pack fade">
       <div class="pack-body">
-        <div class="pack-header">
-          <div><div class="pack-num">001</div><h3 class="pack-title">Orchestral Music Pack</h3><p class="pack-sub">Atlas Companion</p></div>
-          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP1%20icon%20960%20960.png" alt="Orchestral Music Pack — Atlas Companion" class="pack-icon">
-        </div>
-        <p class="pack-desc">Over two hours of professionally composed music. Adventurous exploration themes, intense battle layers, contextual pieces and stingers. Primarily orchestral, with dreamy electronic textures, gritty percussion loops and traditional acoustic instruments.</p>
-        <div class="pack-stats">
-          <div><span class="stat-val">11</span><span class="stat-lbl">Full songs</span></div>
-          <div><span class="stat-val">114</span><span class="stat-lbl">Audio files</span></div>
-          <div><span class="stat-val">2h+</span><span class="stat-lbl">Of music</span></div>
-          <div><span class="stat-val">9</span><span class="stat-lbl">Stingers</span></div>
-        </div>
-        <div class="tags"><span class="tag">Orchestral</span><span class="tag">Battle Layers</span><span class="tag">Seamless Loops</span><span class="tag">Stingers</span><span class="tag">RPG / JRPG</span><span class="tag">Metroidvania</span><span class="tag">44.1kHz / 16-bit</span><span class="tag">No AI</span><span class="tag">Royalty-free</span></div>
-        <p class="price">From <strong>$29.99</strong></p>
-        <div class="buyrow">
-          <a href="https://martinmellstrommusic.itch.io/orchestral-music-pack-atlas-companion" target="_blank" rel="noopener noreferrer" class="buy">itch.io</a>
-          <a href="https://www.fab.com/listings/fac7aff9-8f38-496f-a308-e98d2fb47321" target="_blank" rel="noopener noreferrer" class="buy">Fab.com</a>
-          <a href="https://assetstore.unity.com/packages/audio/music/orchestral/orchestral-music-pack-atlas-companion-307136" target="_blank" rel="noopener noreferrer" class="buy">Unity Store</a>
-          <a href="https://gamedevmarket.net/asset/orchestral-music-pack-atlas-companion-2" target="_blank" rel="noopener noreferrer" class="buy">GameDevMarket</a>
-        </div>
-        <div class="sc-wrap"><span class="sc-lbl">&#9835; Listen — full preview</span>
-          <div class="cplayer" id="cp1">
-            <div class="cp-now"><div class="cp-btns"><button class="cp-btn cp-prev" data-p="cp1" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg></button><button class="cp-btn cp-play" data-p="cp1" aria-label="Play"><svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button><button class="cp-btn cp-next" data-p="cp1" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg></button></div><div class="cp-meta"><span class="cp-title" id="cp1-title">Loading…</span><div class="cp-scrub" id="cp1-scrub"><div class="cp-scrub-fill" id="cp1-fill"></div></div><div class="cp-times"><span id="cp1-cur">0:00</span><span id="cp1-dur">0:00</span></div></div></div>
-            <ol class="cp-list" id="cp1-list"></ol>
-            <iframe id="sc-1" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/mfvg&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
-          </div>
+      <div class="pack-header">
+        <div><div class="pack-num">001</div><h3 class="pack-title">Orchestral Music Pack</h3><p class="pack-sub">Atlas Companion</p></div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP1%20icon%20960%20960.png" alt="Orchestral Music Pack — Atlas Companion" class="pack-icon">
+      </div>
+      <p class="pack-desc">Over two hours of professionally composed music. Adventurous exploration themes, intense battle layers, contextual pieces and stingers. Primarily orchestral, with dreamy electronic textures, gritty percussion loops and traditional acoustic instruments.</p>
+      <div class="pack-stats">
+        <div><span class="stat-val">11</span><span class="stat-lbl">Full songs</span></div>
+        <div><span class="stat-val">114</span><span class="stat-lbl">Audio files</span></div>
+        <div><span class="stat-val">2h+</span><span class="stat-lbl">Of music</span></div>
+        <div><span class="stat-val">9</span><span class="stat-lbl">Stingers</span></div>
+      </div>
+      <div class="tags"><span class="tag">Orchestral</span><span class="tag">Battle Layers</span><span class="tag">Seamless Loops</span><span class="tag">Stingers</span><span class="tag">RPG / JRPG</span><span class="tag">Metroidvania</span><span class="tag">44.1kHz / 16-bit</span><span class="tag">No AI</span><span class="tag">Royalty-free</span></div>
+      <p class="price">From <strong>$29.99</strong></p>
+      <div class="buyrow">
+        <a href="https://martinmellstrommusic.itch.io/orchestral-music-pack-atlas-companion" target="_blank" rel="noopener noreferrer" class="buy">itch.io</a>
+        <a href="https://www.fab.com/listings/fac7aff9-8f38-496f-a308-e98d2fb47321" target="_blank" rel="noopener noreferrer" class="buy">Fab.com</a>
+        <a href="https://assetstore.unity.com/packages/audio/music/orchestral/orchestral-music-pack-atlas-companion-307136" target="_blank" rel="noopener noreferrer" class="buy">Unity Store</a>
+        <a href="https://gamedevmarket.net/asset/orchestral-music-pack-atlas-companion-2" target="_blank" rel="noopener noreferrer" class="buy">GameDevMarket</a>
+      </div>
+      <div class="sc-wrap"><span class="sc-lbl">&#9835; Listen — full preview</span>
+        <div class="cplayer" id="cp1">
+          <div class="cp-now"><div class="cp-btns"><button class="cp-btn cp-prev" data-p="cp1" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg></button><button class="cp-btn cp-play" data-p="cp1" aria-label="Play"><svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button><button class="cp-btn cp-next" data-p="cp1" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg></button></div><div class="cp-meta"><span class="cp-title" id="cp1-title">Loading…</span><div class="cp-scrub" id="cp1-scrub"><div class="cp-scrub-fill" id="cp1-fill"></div></div><div class="cp-times"><span id="cp1-cur">0:00</span><span id="cp1-dur">0:00</span></div></div></div>
+          <ol class="cp-list" id="cp1-list"></ol>
+          <iframe id="sc-1" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/mfvg&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
         </div>
       </div>
+      </div>
     </div>
-
     <div class="pack fade">
       <div class="pack-body">
-        <div class="pack-header">
-          <div><div class="pack-num">002</div><h3 class="pack-title">Orchestral Exploration Pack</h3><p class="pack-sub">&nbsp;</p></div>
-          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP2%20Icon%20960%20960.png" alt="Orchestral Exploration Pack" class="pack-icon">
-        </div>
-        <p class="pack-desc">Over an hour of music spanning snowy peaks, forest fields and dark caverns. Each track includes multiple tension layers you can trigger dynamically in combat, or use as standalone themes.</p>
-        <div class="pack-stats">
-          <div><span class="stat-val">5</span><span class="stat-lbl">Full songs</span></div>
-          <div><span class="stat-val">29</span><span class="stat-lbl">Audio files</span></div>
-          <div><span class="stat-val">1h+</span><span class="stat-lbl">Of music</span></div>
-        </div>
-        <div class="tags"><span class="tag">Orchestral</span><span class="tag">Tension Layers</span><span class="tag">Seamless Loops</span><span class="tag">Adventure</span><span class="tag">JRPG</span><span class="tag">Platformer</span><span class="tag">No AI</span><span class="tag">Royalty-free</span></div>
-        <p class="price">From <strong>$9.99</strong></p>
-        <div class="buyrow">
-          <a href="https://martinmellstrommusic.itch.io/orchestral-exploration-pack" target="_blank" rel="noopener noreferrer" class="buy">itch.io</a>
-          <a href="https://www.fab.com/listings/61df8587-5bf4-4036-bf3a-c212846b96f6" target="_blank" rel="noopener noreferrer" class="buy">Fab.com</a>
-          <a href="https://assetstore.unity.com/packages/audio/music/orchestral/orchestral-exploration-pack-316496" target="_blank" rel="noopener noreferrer" class="buy">Unity Store</a>
-          <a href="https://gamedevmarket.net/asset/orchestral-exploration-music-pack" target="_blank" rel="noopener noreferrer" class="buy">GameDevMarket</a>
-        </div>
-        <div class="sc-wrap"><span class="sc-lbl">&#9835; Listen — full preview</span>
-          <div class="cplayer" id="cp2">
-            <div class="cp-now"><div class="cp-btns"><button class="cp-btn cp-prev" data-p="cp2" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg></button><button class="cp-btn cp-play" data-p="cp2" aria-label="Play"><svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button><button class="cp-btn cp-next" data-p="cp2" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg></button></div><div class="cp-meta"><span class="cp-title" id="cp2-title">Loading…</span><div class="cp-scrub" id="cp2-scrub"><div class="cp-scrub-fill" id="cp2-fill"></div></div><div class="cp-times"><span id="cp2-cur">0:00</span><span id="cp2-dur">0:00</span></div></div></div>
-            <ol class="cp-list" id="cp2-list"></ol>
-            <iframe id="sc-2" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/orchestral-exploration-pack&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
-          </div>
+      <div class="pack-header">
+        <div><div class="pack-num">002</div><h3 class="pack-title">Orchestral Exploration Pack</h3><p class="pack-sub">&nbsp;</p></div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/MP2%20Icon%20960%20960.png" alt="Orchestral Exploration Pack" class="pack-icon">
+      </div>
+      <p class="pack-desc">Over an hour of music spanning snowy peaks, forest fields and dark caverns. Each track includes multiple tension layers you can trigger dynamically in combat, or use as standalone themes.</p>
+      <div class="pack-stats">
+        <div><span class="stat-val">5</span><span class="stat-lbl">Full songs</span></div>
+        <div><span class="stat-val">29</span><span class="stat-lbl">Audio files</span></div>
+        <div><span class="stat-val">1h+</span><span class="stat-lbl">Of music</span></div>
+      </div>
+      <div class="tags"><span class="tag">Orchestral</span><span class="tag">Tension Layers</span><span class="tag">Seamless Loops</span><span class="tag">Adventure</span><span class="tag">JRPG</span><span class="tag">Platformer</span><span class="tag">No AI</span><span class="tag">Royalty-free</span></div>
+      <p class="price">From <strong>$9.99</strong></p>
+      <div class="buyrow">
+        <a href="https://martinmellstrommusic.itch.io/orchestral-exploration-pack" target="_blank" rel="noopener noreferrer" class="buy">itch.io</a>
+        <a href="https://www.fab.com/listings/61df8587-5bf4-4036-bf3a-c212846b96f6" target="_blank" rel="noopener noreferrer" class="buy">Fab.com</a>
+        <a href="https://assetstore.unity.com/packages/audio/music/orchestral/orchestral-exploration-pack-316496" target="_blank" rel="noopener noreferrer" class="buy">Unity Store</a>
+        <a href="https://gamedevmarket.net/asset/orchestral-exploration-music-pack" target="_blank" rel="noopener noreferrer" class="buy">GameDevMarket</a>
+      </div>
+      <div class="sc-wrap"><span class="sc-lbl">&#9835; Listen — full preview</span>
+        <div class="cplayer" id="cp2">
+          <div class="cp-now"><div class="cp-btns"><button class="cp-btn cp-prev" data-p="cp2" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg></button><button class="cp-btn cp-play" data-p="cp2" aria-label="Play"><svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button><button class="cp-btn cp-next" data-p="cp2" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg></button></div><div class="cp-meta"><span class="cp-title" id="cp2-title">Loading…</span><div class="cp-scrub" id="cp2-scrub"><div class="cp-scrub-fill" id="cp2-fill"></div></div><div class="cp-times"><span id="cp2-cur">0:00</span><span id="cp2-dur">0:00</span></div></div></div>
+          <ol class="cp-list" id="cp2-list"></ol>
+          <iframe id="sc-2" allow="autoplay" style="display:none" src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/martinmellstrom/sets/orchestral-exploration-pack&auto_play=false&buying=false&liking=false&download=false&sharing=false&show_artwork=false&show_comments=false&show_playcount=false&show_user=false"></iframe>
         </div>
       </div>
+      </div>
     </div>
-
     <div class="pack pack-coming fade">
       <div class="badge-cs">Coming Soon</div>
       <div class="pack-body">
-        <div class="pack-header">
-          <div><div class="pack-num">003</div><h3 class="pack-title">Echoes of the Silent Woods</h3><p class="pack-sub">Melancholic forest music for Metroidvanias</p></div>
-          <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/fJFGWJrKDDlc7lSYevtO--2--r9zq9.jpg" alt="Echoes of the Silent Woods" class="pack-icon">
-        </div>
-        <p class="pack-desc">A complete forest chapter solution — exploration, danger, safe zones and ambient in one coherent musical voice. Solo flute, pizzicato strings, celesta textures and haunting woodwinds. Designed for worlds that feel ancient and lonely.</p>
-        <div class="pack-stats">
-          <div><span class="stat-val">10</span><span class="stat-lbl">Full songs</span></div>
-          <div><span class="stat-val">6</span><span class="stat-lbl">Stingers</span></div>
-          <div><span class="stat-val">$19.99</span><span class="stat-lbl">At release</span></div>
-        </div>
-        <div class="tags"><span class="tag">Orchestral</span><span class="tag">Seamless Loops</span><span class="tag">Stingers</span><span class="tag">Metroidvania</span><span class="tag">Nordic</span><span class="tag">No AI</span><span class="tag">Royalty-free</span></div>
-        <div class="buyrow">
-          <a href="https://martinmellstrommusic.itch.io" target="_blank" rel="noopener noreferrer" class="buy">Follow on itch.io</a>
-          <a href="https://www.fab.com/sellers/MartinMellstromMusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on Fab</a>
-          <a href="https://assetstore.unity.com/publishers/110778" target="_blank" rel="noopener noreferrer" class="buy">Follow on Unity</a>
-          <a href="https://gamedevmarket.net/member/martinmellstrommusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on GameDevMarket</a>
-        </div>
+      <div class="pack-header">
+        <div><div class="pack-num">003</div><h3 class="pack-title">Echoes of the Silent Woods</h3><p class="pack-sub">Melancholic forest music for Metroidvanias</p></div>
+        <img src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/fJFGWJrKDDlc7lSYevtO--2--r9zq9.jpg" alt="Echoes of the Silent Woods" class="pack-icon">
+      </div>
+      <p class="pack-desc">A complete forest chapter solution — exploration, danger, safe zones and ambient in one coherent musical voice. Solo flute, pizzicato strings, celesta textures and haunting woodwinds. Designed for worlds that feel ancient and lonely.</p>
+      <div class="pack-stats">
+        <div><span class="stat-val">10</span><span class="stat-lbl">Full songs</span></div>
+        <div><span class="stat-val">6</span><span class="stat-lbl">Stingers</span></div>
+        <div><span class="stat-val">$19.99</span><span class="stat-lbl">At release</span></div>
+      </div>
+      <div class="tags"><span class="tag">Orchestral</span><span class="tag">Seamless Loops</span><span class="tag">Stingers</span><span class="tag">Metroidvania</span><span class="tag">Nordic</span><span class="tag">No AI</span><span class="tag">Royalty-free</span></div>
+      <div class="buyrow">
+        <a href="https://martinmellstrommusic.itch.io" target="_blank" rel="noopener noreferrer" class="buy">Follow on itch.io</a>
+        <a href="https://www.fab.com/sellers/MartinMellstromMusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on Fab</a>
+        <a href="https://assetstore.unity.com/publishers/110778" target="_blank" rel="noopener noreferrer" class="buy">Follow on Unity</a>
+        <a href="https://gamedevmarket.net/member/martinmellstrommusic" target="_blank" rel="noopener noreferrer" class="buy">Follow on GameDevMarket</a>
+      </div>
       </div>
     </div>
   </div>
@@ -452,6 +536,9 @@ footer { padding: 110px 64px 60px; }
   </div>
   <div class="blog-scroll-wrap fade">
     <div class="blog-grid" id="blogGrid">
+
+      <!-- NEWEST FIRST (left to right) -->
+
       <div class="blog-card">
         <div class="blog-card-img-wrap">
           <img class="blog-card-img" src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/images-for-blog/IMG_9319.jpeg" alt="AI and Music-Making for Games" loading="lazy">
@@ -461,18 +548,20 @@ footer { padding: 110px 64px 60px; }
           <div class="blog-tags"><span class="blog-tag">Workflow</span><span class="blog-tag">AI</span><span class="blog-tag">Music Packs</span></div>
           <h3 class="blog-title">AI and Music-Making for Games — Where I Draw the Line</h3>
           <p class="blog-ingress" data-full="AI is everywhere right now — a threat, a tool, a shortcut, and a debate all at once. Here's how I actually use it (and where I refuse to)."></p>
-          <a href="staging_blog.html#ai-and-music-making-where-i-draw-the-line" target="_blank" rel="noopener" class="blog-read-more">Read more →</a>
+          <a href="blog.html#ai-and-music-making-where-i-draw-the-line" target="_blank" rel="noopener" class="blog-read-more">Read more →</a>
         </div>
       </div>
+
       <div class="blog-card">
         <div class="blog-card-body">
           <span class="blog-date">March 10, 2026</span>
           <div class="blog-tags"><span class="blog-tag">Music Packs</span></div>
           <h3 class="blog-title">Welcome to the Studio</h3>
           <p class="blog-ingress" data-full="Notes on composing, game audio and the work behind the music packs. More posts coming soon — on workflow, instrument choices, and what actually goes into making a loop that stays interesting after the hundredth playthrough."></p>
-          <a href="staging_blog.html#welcome-to-the-studio" target="_blank" rel="noopener" class="blog-read-more">Read more →</a>
+          <a href="blog.html#welcome-to-the-studio" target="_blank" rel="noopener" class="blog-read-more">Read more →</a>
         </div>
       </div>
+
     </div>
   </div>
 </section>
@@ -609,7 +698,7 @@ setInterval(spawnClef, 3000);
     });
     widget.bind(SC.Widget.Events.PLAY, function() {
       playerEl.classList.add('playing');
-      widget.getCurrentSound(function(s) { if(s){var fb2=FALLBACK_TITLES[cfg.playerId]||[]; widget.getCurrentSoundIndex(function(si){titleEl.textContent=(s.title&&s.title.trim())?s.title.trim():(fb2[si]||'');}); duration=s.duration||0; durEl.textContent=fmt(duration);} });
+      widget.getCurrentSound(function(s) { if(s){var fb2=FALLBACK_TITLES[cfg.playerId]||[]; widget.getCurrentSoundIndex(function(si){titleEl.textContent=(s.title&&s.title.trim())?s.title.trim():(fb2[si]||'');});  duration=s.duration||0; durEl.textContent=fmt(duration);} });
       widget.getCurrentSoundIndex(function(scIdx) {
         Array.from(listEl.children).forEach(function(li){li.classList.toggle('active',parseInt(li.dataset.scIdx)===scIdx);});
         var active=listEl.querySelector('li.active'); if(active) active.scrollIntoView({block:'nearest',behavior:'smooth'});
