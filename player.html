@@ -442,7 +442,7 @@
 </div>
 
 </div><!-- /#app -->
-<audio id="audio-el"></audio>
+<audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -1237,6 +1237,36 @@ async function deletePackageLocal(pkg) {
 }
 
 // ═══════════════════════════════════════════════
+//  MEDIA SESSION API
+//  Registrerar spelaren med OS/Safari så att
+//  webbläsarens egna mediakontroller ersätts av
+//  spelarens egna handlers. Förhindrar att Safari
+//  visar en extra mini-player i UI:t.
+// ═══════════════════════════════════════════════
+function updateMediaSession(t) {
+  if (!('mediaSession' in navigator)) return;
+  const artwork = [];
+  if (t.package && coverUrlMap[coverPathMap[t.package]?.path]) {
+    artwork.push({ src: coverUrlMap[coverPathMap[t.package].path], sizes: '512x512', type: 'image/jpeg' });
+  } else if (!t.package && allSongsCoverUrl) {
+    artwork.push({ src: allSongsCoverUrl, sizes: '512x512', type: 'image/jpeg' });
+  }
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title:  t.name,
+    artist: 'Martin Mellström',
+    album:  t.package ? formatPkgName(t.package) : 'Alla låtar',
+    artwork,
+  });
+  navigator.mediaSession.setActionHandler('play',          () => { audio.play(); });
+  navigator.mediaSession.setActionHandler('pause',         () => { audio.pause(); });
+  navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
+  navigator.mediaSession.setActionHandler('nexttrack',     () => nextTrack(false));
+  navigator.mediaSession.setActionHandler('seekto', details => {
+    if (details.seekTime !== undefined) audio.currentTime = details.seekTime;
+  });
+}
+
+// ═══════════════════════════════════════════════
 //  PLAYBACK
 // ═══════════════════════════════════════════════
 async function playTrack(idx) {
@@ -1269,6 +1299,7 @@ async function playTrack(idx) {
     audio.src=activeObjUrl;
     await audio.play();
     isPlaying=true; setPlayIcon(true);
+    updateMediaSession(t);
     if (!searchQuery) renderTrackList(pool);
     saveState();
     if (expOpen) syncExpandedMeta();
@@ -1339,8 +1370,14 @@ audio.addEventListener('timeupdate',()=>{
   }
 });
 audio.addEventListener('ended',()=>nextTrack(true));
-audio.addEventListener('play', ()=>{isPlaying=true; setPlayIcon(true);});
-audio.addEventListener('pause',()=>{isPlaying=false;setPlayIcon(false);});
+audio.addEventListener('play', ()=>{
+  isPlaying=true; setPlayIcon(true);
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+});
+audio.addEventListener('pause',()=>{
+  isPlaying=false;setPlayIcon(false);
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+});
 document.getElementById('progress-wrap').addEventListener('click',e=>{
   if(!audio.duration)return;
   const r=e.currentTarget.getBoundingClientRect();
