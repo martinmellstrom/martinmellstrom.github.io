@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>[STAGING] Martin Mellström — Music Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+
+  .staging-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 36px;
+    background: repeating-linear-gradient(
+      45deg,
+      #1a0000,
+      #1a0000 10px,
+      #2d0000 10px,
+      #2d0000 20px
+    );
+    border-bottom: 2px solid #ff4444;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
+    text-transform: uppercase; color: #ff8888;
+    pointer-events: auto;
+  }
+  .staging-banner strong { color: #ff4444; font-weight: 700; }
+  .staging-banner a { color: #ff8888; text-decoration: underline; }
+
+  .player-frame {
+    position: fixed;
+    top: 36px; left: 0; right: 0; bottom: 0;
+    border: none;
+    width: 100%;
+    height: calc(100% - 36px);
+  }
+</style>
+</head>
+<body>
+  <div class="staging-banner">
+    <strong>⚠ STAGING</strong> — Detta är en förhandsvisning. <a href="/player.html">Gå till live-sidan →</a>
+  </div>
+  <!-- NOTE: iframe loads the live player.html for preview purposes -->
+  <!-- When staging is approved and changes exist, replace this with the full modified player.html content -->
+  <iframe class="player-frame" src="../player.html" allow="autoplay" title="Music Player (staging preview)"></iframe>
+</body>
+</html>
