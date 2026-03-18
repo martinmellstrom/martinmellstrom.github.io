@@ -164,6 +164,12 @@
   .track-sync.syncing svg { fill: var(--gold); animation: pulse 1s infinite; }
   .track-sync.unsynced svg { fill: var(--border); }
 
+  /* ── SEARCH RESULTS VIEW ── */
+  #search-results-view { display: none; padding: 0 10px 0; }
+  #search-results-view.visible { display: block; }
+  .search-results-header { font-family: 'Cormorant Garamond', serif; font-size: 11px; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); padding: 14px 2px 10px; display: flex; align-items: center; gap: 8px; }
+  .search-results-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
   /* ── PLAYER ── */
   #player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-h); background: rgba(10,13,11,0.95); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); border-top: 1px solid var(--border); z-index: 100; display: flex; flex-direction: column; }
   #progress-wrap { position: relative; height: 6px; background: var(--border); cursor: pointer; flex-shrink: 0; transition: height 0.15s; }
@@ -293,7 +299,7 @@
 <div id="search-panel" style="display:none">
   <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--surface);position:relative;z-index:9;animation:slideDown 0.2s ease;">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--text-dim)" style="flex-shrink:0"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-    <input type="text" id="search-input" placeholder="Sök låtar eller paket…" autocomplete="off" autocorrect="off" spellcheck="false" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:4px 0;">
+    <input type="text" id="search-input" placeholder="Sök bland alla låtar…" autocomplete="off" autocorrect="off" spellcheck="false" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:4px 0;">
     <button id="search-clear-btn" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px;display:none;align-items:center;-webkit-tap-highlight-color:transparent;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
@@ -337,6 +343,11 @@
       </div>
     </div>
     <div id="track-list"></div>
+  </div>
+
+  <!-- GLOBAL SEARCH RESULTS -->
+  <div id="search-results-view">
+    <div id="search-results-list"></div>
   </div>
 
 </div>
@@ -909,10 +920,6 @@ function _applyAllSongsCoverToDOM() {
 // ═══════════════════════════════════════════════
 //  DURATION PRELOAD
 // ═══════════════════════════════════════════════
-// Laddar in låtlängder utan att spela — via preload="metadata" på dolda audio-element.
-// Kollar först i durationCache (localStorage, nyckel = rev). Om ej cachad skapas ett
-// temporärt <audio preload="metadata"> som hämtar en Dropbox-länk och läser ut duration
-// via loadedmetadata-eventet. Uppdaterar tracks[].duration och DOM direkt när känt.
 async function preloadDurations(pkgTracks) {
   const toLoad = pkgTracks.filter(t => !t.duration);
   if (!toLoad.length) return;
@@ -928,9 +935,7 @@ async function preloadDurations(pkgTracks) {
   const stillMissing = toLoad.filter(t => !t.duration);
   if (!stillMissing.length) return;
 
-  // Hämta Dropbox-länk och läs metadata för resterande låtar
   for (const t of stillMissing) {
-    // Kolla om offline-versionen finns i IDB — undviker nätverksanrop
     (async () => {
       try {
         let url;
@@ -955,7 +960,7 @@ async function preloadDurations(pkgTracks) {
           if (stored && revMatch) URL.revokeObjectURL(url);
         }, { once: true });
         tmp.addEventListener('error', () => { tmp.src=''; }, { once: true });
-      } catch(e) { /* tyst fel — ingen duration visas */ }
+      } catch(e) { /* tyst fel */ }
     })();
   }
 }
@@ -963,9 +968,9 @@ async function preloadDurations(pkgTracks) {
 function _updateDurationEl(globalIdx, dur) {
   const el = document.querySelector(`.track-item[data-idx="${globalIdx}"] .track-duration`);
   if (el) el.textContent = fmtTime(dur);
-  // Spara även till localStorage via saveState
   saveState();
 }
+
 function showLibrary() {
   activePkg = null;
   document.getElementById('library-view').classList.remove('hidden');
@@ -1007,7 +1012,7 @@ async function showPlaylist(pkg) {
 async function renderLibrary() {
   const grid = document.getElementById('pkg-grid');
   if (!grid) return;
-  let pkgs = [...new Set(tracks.map(t=>t.package).filter(Boolean))].sort();
+  const pkgs = [...new Set(tracks.map(t=>t.package).filter(Boolean))].sort();
 
   if (tracks.length===0) {
     grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-dim);font-size:12px;">Inga låtar — tryck ↻ för att hämta</div>`;
@@ -1021,28 +1026,17 @@ async function renderLibrary() {
     return '';
   };
 
-  // Filtrera på sökfråga
-  const q = searchQuery;
-  if (q) pkgs = pkgs.filter(p => formatPkgName(p).toLowerCase().includes(q));
-  const showAllSongs = !q || 'alla låtar'.includes(q);
-
-  if (pkgs.length === 0 && !showAllSongs) {
-    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-dim);font-size:12px;">Inga träffar för "${searchQuery}"</div>`;
-    return;
-  }
-
   const allSynced = tracks.filter(t=>isSynced(t)).length;
   const allCoverHtml = allSongsCoverUrl
     ? `<img src="${allSongsCoverUrl}" alt="Alla låtar">`
     : `<span class="cover-placeholder">♬</span>`;
-  let html = '';
-  if (showAllSongs) { html += `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
+  let html = `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
     <div class="pkg-card-cover" id="card-cover-all">${allCoverHtml}${syncBadge(allSynced,tracks.length)}</div>
     <div class="pkg-card-info">
       <div class="pkg-card-name">Alla låtar</div>
       <div class="pkg-card-meta">${tracks.length} låtar · ${pkgs.length} paket</div>
     </div>
-  </div>`; }
+  </div>`;
 
   for (const p of pkgs) {
     const pt = tracks.filter(t=>t.package===p);
@@ -1057,7 +1051,6 @@ async function renderLibrary() {
   }
   grid.innerHTML = html;
 
-  // Ladda alla omslag asynkront från IDB (eller Dropbox om ej cachade)
   if (!allSongsCoverUrl) fetchAllSongsCover();
   for (const p of pkgs) {
     if (!coverPathMap[p]) continue;
@@ -1073,17 +1066,14 @@ async function renderLibrary() {
 }
 
 // ═══════════════════════════════════════════════
-//  RENDER TRACK LIST
+//  RENDER TRACK LIST (playlist view)
 // ═══════════════════════════════════════════════
 function renderTrackList(pkgTracks) {
   const list = document.getElementById('track-list');
   if (!list) return;
-  const q = searchQuery;
-  const filtered = q ? pkgTracks.filter(t => t.name.toLowerCase().includes(q)) : pkgTracks;
-  if (filtered.length===0) {
-    list.innerHTML = q
-      ? `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga träffar för "${searchQuery}"</div>`
-      : `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar</div>`;
+
+  if (pkgTracks.length===0) {
+    list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar</div>`;
     return;
   }
 
@@ -1091,7 +1081,7 @@ function renderTrackList(pkgTracks) {
   const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
 
   let html = '<div class="pkg-section">';
-  filtered.forEach((t,i) => {
+  pkgTracks.forEach((t,i) => {
     const gi      = tracks.indexOf(t);
     const isActive= gi===currentIdx;
     const isPlay  = isActive&&isPlaying;
@@ -1100,7 +1090,7 @@ function renderTrackList(pkgTracks) {
       <div class="track-num">${i+1}</div>
       <div class="track-bars"><span></span><span></span><span></span></div>
       <div class="track-info">
-        <div class="track-name">${q ? (() => { const ix = t.name.toLowerCase().indexOf(q); return ix>=0 ? escHtml(t.name.slice(0,ix))+'<mark style="background:var(--gold-glow);color:var(--gold);border-radius:2px;">'+escHtml(t.name.slice(ix,ix+q.length))+'</mark>'+escHtml(t.name.slice(ix+q.length)) : escHtml(t.name); })() : escHtml(t.name)}</div>
+        <div class="track-name">${escHtml(t.name)}</div>
         <div class="track-meta">${t.ext}</div>
       </div>
       <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
@@ -1111,7 +1101,79 @@ function renderTrackList(pkgTracks) {
   list.innerHTML = html;
 }
 
+// ═══════════════════════════════════════════════
+//  GLOBAL SEARCH RESULTS
+// ═══════════════════════════════════════════════
+function renderSearchResults(q) {
+  const resultsView = document.getElementById('search-results-view');
+  const resultsList = document.getElementById('search-results-list');
+
+  if (!q) {
+    resultsView.classList.remove('visible');
+    // Återställ rätt vy
+    if (activePkg === null) {
+      document.getElementById('library-view').classList.remove('hidden');
+    } else {
+      document.getElementById('playlist-view').classList.add('visible');
+    }
+    return;
+  }
+
+  // Dölj bibliotek och spellista — visa sökresultat
+  document.getElementById('library-view').classList.add('hidden');
+  document.getElementById('playlist-view').classList.remove('visible');
+  resultsView.classList.add('visible');
+
+  const matched = tracks.filter(t => t.name.toLowerCase().includes(q));
+
+  if (matched.length === 0) {
+    resultsList.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar matchar "${escHtml(q)}"</div>`;
+    return;
+  }
+
+  const checkSvg = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+  const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
+
+  function highlight(name) {
+    const ix = name.toLowerCase().indexOf(q);
+    if (ix < 0) return escHtml(name);
+    return escHtml(name.slice(0, ix))
+      + '<mark style="background:var(--gold-glow);color:var(--gold);border-radius:2px;">' + escHtml(name.slice(ix, ix + q.length)) + '</mark>'
+      + escHtml(name.slice(ix + q.length));
+  }
+
+  let html = `<div style="padding:14px 2px 10px 10px;font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:8px;">${matched.length} träff${matched.length !== 1 ? 'ar' : ''}<span style="flex:1;height:1px;background:var(--border);display:block;"></span></div>`;
+  html += '<div class="pkg-section">';
+  matched.forEach((t, i) => {
+    const gi = tracks.indexOf(t);
+    const isActive = gi === currentIdx;
+    const isPlay = isActive && isPlaying;
+    const synced = isSynced(t);
+    const pkgLabel = t.package ? formatPkgName(t.package) : 'Alla låtar';
+    html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrackFromSearch(${gi})">
+      <div class="track-num">${i+1}</div>
+      <div class="track-bars"><span></span><span></span><span></span></div>
+      <div class="track-info">
+        <div class="track-name">${highlight(t.name)}</div>
+        <div class="track-meta">${pkgLabel} · ${t.ext}</div>
+      </div>
+      <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
+      <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
+    </div>`;
+  });
+  html += '</div>';
+  resultsList.innerHTML = html;
+}
+
+// Spela en låt från sökresultaten — utan att ändra activePkg
+function playTrackFromSearch(idx) {
+  playTrack(idx);
+  // Uppdatera bara sökresultat-vyn med nytt aktivt state
+  if (searchQuery) renderSearchResults(searchQuery);
+}
+
 function refreshView() {
+  if (searchQuery) { renderSearchResults(searchQuery); return; }
   if (activePkg===null) { renderLibrary(); }
   else { renderTrackList(activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg)); }
 }
@@ -1133,9 +1195,9 @@ function setTrackSyncState(globalIdx, state) {
 
 async function syncPackage(pkg) {
   const pt     = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
-  const toSync = pt.filter(t=>!isSynced(t)); // includes new + rev-mismatched
+  const toSync = pt.filter(t=>!isSynced(t));
   if (!toSync.length){setStatus('ok','Redan synkat och uppdaterat');return;}
-  const hasStale = toSync.some(t=>syncedPaths.has(t.path)); // has old version
+  const hasStale = toSync.some(t=>syncedPaths.has(t.path));
   setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} 0/${toSync.length}…`);
   let done=0;
   for (const t of toSync) {
@@ -1176,12 +1238,11 @@ async function playTrack(idx) {
   npName.textContent=t.name;
   npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
   const pool = activePkg==='all'||activePkg===null?tracks:tracks.filter(x=>x.package===activePkg);
-  renderTrackList(pool);
+  if (!searchQuery) renderTrackList(pool);
   try {
     if (activeObjUrl){URL.revokeObjectURL(activeObjUrl);activeObjUrl=null;}
     const stored = await idbGet(t.path);
     let blob;
-    // Use stored blob only if rev matches (or no rev info to compare)
     const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
     if (stored && revMatch) {
       blob = stored.blob;
@@ -1190,7 +1251,6 @@ async function playTrack(idx) {
       else setStatus('loading',`Laddar: ${t.name}…`);
       const link=await getTmpLink(t.path);
       blob=await (await fetch(link)).blob();
-      // Save to IDB with current rev (overwrites stale version)
       await idbPut(t.path, blob, t.rev);
       syncedPaths.set(t.path, t.rev||null);
       setStatus('ok','');
@@ -1199,8 +1259,8 @@ async function playTrack(idx) {
     audio.src=activeObjUrl;
     await audio.play();
     isPlaying=true; setPlayIcon(true);
-    renderTrackList(pool); saveState();
-    // Build waveform and sync expanded player
+    if (!searchQuery) renderTrackList(pool);
+    saveState();
     if (expOpen) syncExpandedMeta();
     waveformData = null; waveformPath = null;
     buildWaveform(activeObjUrl, t.path);
@@ -1306,7 +1366,6 @@ function syncExpandedMeta() {
   expName.textContent = t ? t.name : 'Ingen låt vald';
   expSub.textContent  = t ? (t.package ? formatPkgName(t.package) : 'Alla låtar') : '—';
   expTimeTot.textContent = t?.duration ? fmtTime(t.duration) : '—';
-  // Cover
   expCover.innerHTML = '<span class="cover-placeholder">♬</span>';
   if (t) {
     if (t.package === null || t.package === undefined) {
@@ -1317,9 +1376,7 @@ function syncExpandedMeta() {
       });
     }
   }
-  // Sync play icon
   setExpandedPlayIcon(isPlaying);
-  // Sync repeat/shuffle
   document.getElementById('repeat-btn-exp').classList.toggle('active', repeatMode !== 'none');
   document.getElementById('shuffle-btn-exp').classList.toggle('active', shuffle);
 }
@@ -1329,45 +1386,37 @@ function setExpandedPlayIcon(p) {
   document.getElementById('icon-pause-exp').style.display = p ? 'block' : 'none';
 }
 
-// Open on click of mini player info area (not controls)
 document.querySelector('.player-info-row').addEventListener('click', () => {
   if (currentIdx >= 0) openExpandedPlayer();
 });
-// Swipe down to close
 let touchStartY = 0;
 expPanel.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
 expPanel.addEventListener('touchend', e => {
   if (e.changedTouches[0].clientY - touchStartY > 60) closeExpandedPlayer();
 }, { passive: true });
-// Handle bar click also closes
 document.querySelector('.exp-handle-bar').addEventListener('click', closeExpandedPlayer);
 
-// Expanded play button
 document.getElementById('play-btn-exp').addEventListener('click', togglePlay);
 document.getElementById('prev-btn-exp').addEventListener('click', prevTrack);
 document.getElementById('next-btn-exp').addEventListener('click', () => nextTrack(false));
 document.getElementById('repeat-btn-exp').addEventListener('click', cycleRepeat);
 document.getElementById('shuffle-btn-exp').addEventListener('click', toggleShuffle);
 
-// Expanded seek
 document.getElementById('exp-seek-wrap').addEventListener('click', e => {
   if (!audio.duration) return;
   const r = e.currentTarget.getBoundingClientRect();
   audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
 });
 
-// Sync expanded state from main audio events
-
 // ═══════════════════════════════════════════════
 //  WAVEFORM (Web Audio API)
 // ═══════════════════════════════════════════════
-let waveformData = null;   // Float32Array of normalised peak values
-let waveformPath = null;   // path we decoded for
+let waveformData = null;
+let waveformPath = null;
 
 async function buildWaveform(objUrl, trackPath) {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // Fetch the audio blob again (it's already loaded as activeObjUrl so should be fast from memory)
     const resp = await fetch(objUrl);
     const buf  = await resp.arrayBuffer();
     const decoded = await ctx.decodeAudioData(buf);
@@ -1384,7 +1433,6 @@ async function buildWaveform(objUrl, trackPath) {
       }
       peaks[i] = max;
     }
-    // Normalise
     const maxPeak = Math.max(...peaks, 0.001);
     for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
     waveformData = peaks;
@@ -1423,7 +1471,6 @@ function drawWaveform() {
     const barH = Math.max(2, amp * midLine * 0.95);
     const played = (x + barW / 2) < progX;
     ctx.fillStyle = played ? gold : goldDim;
-    // Draw symmetric bar around midLine
     ctx.beginPath();
     ctx.roundRect
       ? ctx.roundRect(x, midLine - barH, barW, barH * 2, 1)
@@ -1431,7 +1478,6 @@ function drawWaveform() {
     ctx.fill();
   }
 
-  // Playhead line
   if (audio.duration) {
     ctx.strokeStyle = gold;
     ctx.globalAlpha = 0.9;
@@ -1444,13 +1490,11 @@ function drawWaveform() {
   }
 }
 
-// Click on waveform to seek
 document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
   if (!audio.duration) return;
   const r = e.currentTarget.getBoundingClientRect();
   audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
 });
-
 
 // ═══════════════════════════════════════════════
 //  SEARCH
@@ -1460,37 +1504,42 @@ let searchQuery = '';
 function openSearch() {
   document.getElementById('search-panel').style.display = 'block';
   document.getElementById('search-btn').style.color = 'var(--gold)';
-  document.getElementById('search-input').focus();
+  setTimeout(() => document.getElementById('search-input').focus(), 50);
 }
 function closeSearch() {
   document.getElementById('search-panel').style.display = 'none';
   document.getElementById('search-btn').style.color = '';
   document.getElementById('search-input').value = '';
-  searchQuery = '';
   document.getElementById('search-clear-btn').style.display = 'none';
-  if (activePkg === null) renderLibrary();
-  else renderTrackList(activePkg === 'all' ? tracks : tracks.filter(t => t.package === activePkg));
+  searchQuery = '';
+  // Dölj sökresultat, återställ rätt vy
+  document.getElementById('search-results-view').classList.remove('visible');
+  if (activePkg === null) {
+    document.getElementById('library-view').classList.remove('hidden');
+  } else {
+    document.getElementById('playlist-view').classList.add('visible');
+  }
 }
 function toggleSearch() {
   const panel = document.getElementById('search-panel');
-  if (panel.style.display === 'none') openSearch(); else closeSearch();
+  if (panel.style.display === 'none' || !panel.style.display) openSearch(); else closeSearch();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('search-btn').addEventListener('click', toggleSearch);
+
   document.getElementById('search-clear-btn').addEventListener('click', () => {
     document.getElementById('search-input').value = '';
     searchQuery = '';
     document.getElementById('search-clear-btn').style.display = 'none';
-    if (activePkg === null) renderLibrary();
-    else renderTrackList(activePkg === 'all' ? tracks : tracks.filter(t => t.package === activePkg));
+    renderSearchResults('');
     document.getElementById('search-input').focus();
   });
+
   document.getElementById('search-input').addEventListener('input', e => {
     searchQuery = e.target.value.trim().toLowerCase();
     document.getElementById('search-clear-btn').style.display = searchQuery ? 'flex' : 'none';
-    if (activePkg === null) renderLibrary();
-    else renderTrackList(activePkg === 'all' ? tracks : tracks.filter(t => t.package === activePkg));
+    renderSearchResults(searchQuery);
   });
 });
 
@@ -1520,7 +1569,7 @@ document.getElementById('save-config-btn').addEventListener('click',()=>{config.
 document.getElementById('cancel-config-btn').addEventListener('click',closeSettings);
 document.getElementById('refresh-btn').addEventListener('click',()=>{loadState();fetchTracks();});
 document.getElementById('help-btn').addEventListener('click',()=>document.getElementById('help-modal').classList.add('open'));
-document.getElementById('back-btn').addEventListener('click',showLibrary);
+document.getElementById('back-btn').addEventListener('click',()=>{if(searchQuery){closeSearch();}else{showLibrary();}});
 document.getElementById('sync-pkg-btn').addEventListener('click',()=>syncPackage(activePkg));
 document.getElementById('delete-pkg-btn').addEventListener('click',async()=>{if(confirm(`Ta bort lokalt sparade filer för "${activePkg==='all'?'alla låtar':formatPkgName(activePkg)}"?`))await deletePackageLocal(activePkg);});
 
@@ -1536,7 +1585,7 @@ document.querySelectorAll('.modal-backdrop').forEach(el=>el.addEventListener('cl
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT')return;
   if(e.code==='Escape'&&expOpen){closeExpandedPlayer();return;}
-  if(e.code==='Escape'&&document.getElementById('search-panel').style.display!=='none'){closeSearch();return;}
+  if(e.code==='Escape'&&document.getElementById('search-panel').style.display==='block'){closeSearch();return;}
   if(e.code==='Space'){e.preventDefault();togglePlay();}
   if(e.code==='ArrowRight')nextTrack(false);
   if(e.code==='ArrowLeft')prevTrack();
@@ -1552,14 +1601,12 @@ function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Mat
 openIDB().then(async()=>{
   loadState();
   loadDurationCache();
-  // Fyll in cachade durationer i tracks (rev-matchning)
   for (const t of tracks) {
     if (!t.duration && t.rev && durationCache[t.rev]) {
       t.duration = durationCache[t.rev];
     }
   }
   loadOAuth();
-  // Fallback: same-tab OAuth — oauth.html skickade oss hit med ?code= i URL
   const _urlParams = new URLSearchParams(window.location.search);
   if (_urlParams.get('code')) {
     history.replaceState(null,'',window.location.pathname);
