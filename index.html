@@ -39,7 +39,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1.65;
   overflow-x: hidden;
 }
@@ -154,7 +154,7 @@ nav {
 @keyframes line-reveal { to { opacity: 1; transform: translateY(0); } }
 @keyframes reveal-up { to { opacity: 1; } }
 .hero-desc {
-  font-size: 1.05rem; font-weight: 300; font-style: italic;
+  font-size: 1.15rem; font-weight: 300; font-style: italic;
   color: var(--muted); letter-spacing: .03em;
   margin-top: 32px; max-width: 420px;
   opacity: 0; animation: reveal-up .9s 1s cubic-bezier(.16,1,.3,1) forwards;
@@ -231,8 +231,8 @@ nav {
 .pack-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 0; }
 .pack-icon { width: 100px; height: 100px; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(201,168,76,.15); }
 .pack-title { font-size: 1.9rem; font-weight: 400; color: var(--cream); line-height: 1.15; margin-bottom: 8px; }
-.pack-sub { font-size: .95rem; font-style: italic; color: var(--golddim); margin-bottom: 16px; font-weight: 300; }
-.pack-desc { font-size: .98rem; color: var(--text); line-height: 1.75; margin-bottom: 22px; font-weight: 300; flex: 1; }
+.pack-sub { font-size: 1.1rem; font-style: italic; color: var(--golddim); margin-bottom: 16px; font-weight: 300; }
+.pack-desc { font-size: 1.1rem; color: var(--text); line-height: 1.75; margin-bottom: 22px; font-weight: 300; flex: 1; }
 .pack-stats { display: flex; gap: 28px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(201,168,76,.1); }
 .stat-val { font-size: 1.6rem; font-weight: 300; color: var(--gold); display: block; line-height: 1; }
 .stat-lbl { font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); display: block; margin-top: 4px; }
@@ -316,10 +316,10 @@ nav {
 .wb { width: 2px; background: var(--gold); border-radius: 1px; opacity: .55; animation: wv 1.8s ease-in-out infinite; }
 .wb:nth-child(1){height:7px;animation-delay:.0s}.wb:nth-child(2){height:14px;animation-delay:.1s}.wb:nth-child(3){height:22px;animation-delay:.2s}.wb:nth-child(4){height:30px;animation-delay:.3s}.wb:nth-child(5){height:18px;animation-delay:.4s}.wb:nth-child(6){height:26px;animation-delay:.5s}.wb:nth-child(7){height:14px;animation-delay:.6s}.wb:nth-child(8){height:34px;animation-delay:.7s}.wb:nth-child(9){height:20px;animation-delay:.8s}.wb:nth-child(10){height:12px;animation-delay:.9s}.wb:nth-child(11){height:26px;animation-delay:1s}.wb:nth-child(12){height:8px;animation-delay:1.1s}
 @keyframes wv { 0%,100%{transform:scaleY(.3)} 50%{transform:scaleY(1)} }
-.about-text p { font-size: 1.05rem; line-height: 1.95; color: var(--text); margin-bottom: 18px; font-weight: 300; }
+.about-text p { font-size: 1.15rem; line-height: 1.95; color: var(--text); margin-bottom: 18px; font-weight: 300; }
 .faq-item { border-top: 1px solid rgba(201,168,76,.12); padding: 28px 0; }
 .faq-item summary { font-family: 'Syne', sans-serif; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cream); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-.faq-item p { margin-top: 18px; color: var(--text); font-size: 1rem; line-height: 1.9; font-weight: 300; }
+.faq-item p { margin-top: 18px; color: var(--text); font-size: 1.1rem; line-height: 1.9; font-weight: 300; }
 .film-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; max-width: 860px; margin: 0 auto; }
 .film-image { position: relative; border: 1px solid rgba(201,168,76,.15); }
 .film-image img { width: 100%; height: auto; display: block; }
@@ -330,7 +330,7 @@ footer { padding: 110px 64px 60px; }
 .foot-h { font-size: clamp(2.6rem,5.5vw,4.2rem); font-weight: 300; color: var(--cream); line-height: 1.05; margin-bottom: 28px; }
 .foot-h em { color: var(--gold); font-style: italic; }
 .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-.contact-info p { font-size: 1.05rem; line-height: 1.9; color: var(--text); font-weight: 300; margin-bottom: 32px; font-style: italic; }
+.contact-info p { font-size: 1.15rem; line-height: 1.9; color: var(--text); font-weight: 300; margin-bottom: 32px; font-style: italic; }
 .contact-direct { display: flex; flex-direction: column; gap: 10px; margin-top: 40px; padding-top: 40px; border-top: 1px solid rgba(201,168,76,.12); }
 .contact-form { display: flex; flex-direction: column; gap: 18px; }
 .contact-form-col { padding-top: 34px; }
@@ -414,7 +414,7 @@ footer { padding: 110px 64px 60px; }
 <section class="sec" id="packs">
   <span class="sec-label">Featured Releases</span>
   <h2 class="sec-title">Music <em>Packs</em></h2>
-  <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px;margin-bottom:0">Orchestral music packs with seamless loops, adaptive layers and stingers — built for RPG, adventure, Metroidvania and platformer games.</p>
+  <p style="font-style:italic;color:var(--text);font-size:1.1rem;margin-top:16px;margin-bottom:0">Orchestral music packs with seamless loops, adaptive layers and stingers — built for RPG, adventure, Metroidvania and platformer games.</p>
   <div class="packs-grid">
     <div class="pack fade">
       <div class="pack-body">
@@ -525,9 +525,9 @@ footer { padding: 110px 64px 60px; }
 
 <section class="sec" id="blog">
   <div class="fade">
-    <span class="sec-label">Notes & Thoughts</span>
+    <span class="sec-label">Notes &amp; Thoughts</span>
     <h2 class="sec-title">From the <em>Studio</em></h2>
-    <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px">On composing, game audio and the occasional tool recommendation.</p>
+    <p style="font-style:italic;color:var(--text);font-size:1.1rem;margin-top:16px">On composing, game audio and the occasional tool recommendation.</p>
   </div>
   <div class="blog-scroll-wrap fade">
     <div class="blog-grid" id="blogGrid">
@@ -536,12 +536,7 @@ footer { padding: 110px 64px 60px; }
 
       <div class="blog-card">
         <div class="blog-card-img-wrap">
-          <img
-            class="blog-card-img"
-            src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/images-for-blog/IMG_9319.jpeg"
-            alt="AI and Music-Making for Games"
-            loading="lazy"
-          >
+          <img class="blog-card-img" src="https://raw.githubusercontent.com/martinmellstrom/martinmellstrom.github.io/main/images-for-blog/IMG_9319.jpeg" alt="AI and Music-Making for Games" loading="lazy">
         </div>
         <div class="blog-card-body">
           <span class="blog-date">March 16, 2026</span>
@@ -580,7 +575,7 @@ footer { padding: 110px 64px 60px; }
         <div class="film-frame"></div>
       </div>
       <div class="film-content">
-        <p style="font-style:italic;color:var(--text);font-size:1rem;margin-bottom:28px">Original score for the Swedish documentary directed by Charlotte Berglin. Piano-led compositions with ambient textures, written to sit close to the story.</p>
+        <p style="font-style:italic;color:var(--text);font-size:1.1rem;margin-bottom:28px">Original score for the Swedish documentary directed by Charlotte Berglin. Piano-led compositions with ambient textures, written to sit close to the story.</p>
         <span class="sc-lbl">&#9835; Listen — original score</span>
         <div class="cplayer" id="cp3">
           <div class="cp-now"><div class="cp-btns"><button class="cp-btn cp-prev" data-p="cp3" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm10 0L7.5 12 16 18V6z"/></svg></button><button class="cp-btn cp-play" data-p="cp3" aria-label="Play"><svg class="cp-ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg><svg class="cp-ico-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button><button class="cp-btn cp-next" data-p="cp3" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zm-10 0l8.5 6-8.5 6V6z"/></svg></button></div><div class="cp-meta"><span class="cp-title" id="cp3-title">Loading…</span><div class="cp-scrub" id="cp3-scrub"><div class="cp-scrub-fill" id="cp3-fill"></div></div><div class="cp-times"><span id="cp3-cur">0:00</span><span id="cp3-dur">0:00</span></div></div></div>
