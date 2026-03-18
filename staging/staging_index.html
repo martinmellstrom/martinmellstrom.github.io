@@ -47,7 +47,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1.65;
   overflow-x: hidden;
   padding-top: 36px;
@@ -116,7 +116,7 @@ nav {
 .hero-title em { font-style: italic; color: var(--gold); }
 @keyframes line-reveal { to { opacity: 1; transform: translateY(0); } }
 @keyframes reveal-up { to { opacity: 1; } }
-.hero-desc { font-size: 1.05rem; font-weight: 300; font-style: italic; color: var(--muted); letter-spacing: .03em; margin-top: 32px; max-width: 420px; opacity: 0; animation: reveal-up .9s 1s cubic-bezier(.16,1,.3,1) forwards; }
+.hero-desc { font-size: 1.15rem; font-weight: 300; font-style: italic; color: var(--muted); letter-spacing: .03em; margin-top: 32px; max-width: 420px; opacity: 0; animation: reveal-up .9s 1s cubic-bezier(.16,1,.3,1) forwards; }
 .hero-cta { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 48px; opacity: 0; animation: reveal-up .9s 1.1s cubic-bezier(.16,1,.3,1) forwards; }
 .btn-p { display: inline-block; padding: 15px 40px; background: var(--gold); color: #0e140e; font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; text-decoration: none; transition: all .35s cubic-bezier(.16,1,.3,1); position: relative; overflow: hidden; }
 .btn-p::after { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,.15); transform: translateX(-100%); transition: transform .35s; }
@@ -131,7 +131,7 @@ nav {
 
 .sec { padding: 120px 64px; }
 .sec-label { display: block; font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .4em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
-.sec-title { font-size: clamp(2.2rem,5vw,3.8rem); font-weight: 300; color: var(--cream); line-height: 1.05; }
+.sec-title { font-size: clamp(2.5rem,5vw,4rem); font-weight: 300; color: var(--cream); line-height: 1.05; }
 .sec-title em { font-style: italic; color: var(--gold); }
 .rule { width: 60px; height: 1px; background: var(--golddim); margin: 0 64px; }
 
@@ -148,9 +148,9 @@ nav {
 .pack-num { font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .3em; color: var(--golddim); margin-bottom: 14px; }
 .pack-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 0; }
 .pack-icon { width: 100px; height: 100px; object-fit: cover; flex-shrink: 0; border: 1px solid rgba(201,168,76,.15); }
-.pack-title { font-size: 1.9rem; font-weight: 400; color: var(--cream); line-height: 1.15; margin-bottom: 8px; }
-.pack-sub { font-size: .95rem; font-style: italic; color: var(--golddim); margin-bottom: 16px; font-weight: 300; }
-.pack-desc { font-size: .98rem; color: var(--text); line-height: 1.75; margin-bottom: 22px; font-weight: 300; flex: 1; }
+.pack-title { font-size: 2.1rem; font-weight: 400; color: var(--cream); line-height: 1.15; margin-bottom: 8px; }
+.pack-sub { font-size: 1rem; font-style: italic; color: var(--golddim); margin-bottom: 16px; font-weight: 300; }
+.pack-desc { font-size: 1.1rem; color: var(--text); line-height: 1.75; margin-bottom: 22px; font-weight: 300; flex: 1; }
 .pack-stats { display: flex; gap: 28px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(201,168,76,.1); }
 .stat-val { font-size: 1.6rem; font-weight: 300; color: var(--gold); display: block; line-height: 1; }
 .stat-lbl { font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); display: block; margin-top: 4px; }
@@ -209,8 +209,8 @@ nav {
 .blog-date { font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .25em; text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 14px; }
 .blog-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .blog-tag { font-family: 'Syne', sans-serif; font-size: .48rem; letter-spacing: .12em; text-transform: uppercase; color: var(--golddim); border: 1px solid var(--golddim); padding: 3px 8px; }
-.blog-title { font-size: 1.3rem; font-weight: 400; color: var(--cream); line-height: 1.25; margin-bottom: 12px; }
-.blog-ingress { font-size: .92rem; color: var(--text); line-height: 1.75; font-weight: 300; font-style: italic; }
+.blog-title { font-size: 1.4rem; font-weight: 400; color: var(--cream); line-height: 1.25; margin-bottom: 12px; }
+.blog-ingress { font-size: 1rem; color: var(--text); line-height: 1.75; font-weight: 300; font-style: italic; }
 @media(max-width:900px) { .blog-grid { grid-template-columns: 1fr; } }
 
 #about { background: var(--surface); position: relative; }
@@ -224,11 +224,11 @@ nav {
 .wb { width: 2px; background: var(--gold); border-radius: 1px; opacity: .55; animation: wv 1.8s ease-in-out infinite; }
 .wb:nth-child(1){height:7px;animation-delay:.0s}.wb:nth-child(2){height:14px;animation-delay:.1s}.wb:nth-child(3){height:22px;animation-delay:.2s}.wb:nth-child(4){height:30px;animation-delay:.3s}.wb:nth-child(5){height:18px;animation-delay:.4s}.wb:nth-child(6){height:26px;animation-delay:.5s}.wb:nth-child(7){height:14px;animation-delay:.6s}.wb:nth-child(8){height:34px;animation-delay:.7s}.wb:nth-child(9){height:20px;animation-delay:.8s}.wb:nth-child(10){height:12px;animation-delay:.9s}.wb:nth-child(11){height:26px;animation-delay:1s}.wb:nth-child(12){height:8px;animation-delay:1.1s}
 @keyframes wv { 0%,100%{transform:scaleY(.3)} 50%{transform:scaleY(1)} }
-.about-text p { font-size: 1.05rem; line-height: 1.95; color: var(--text); margin-bottom: 18px; font-weight: 300; }
+.about-text p { font-size: 1.15rem; line-height: 1.95; color: var(--text); margin-bottom: 18px; font-weight: 300; }
 
 .faq-item { border-top: 1px solid rgba(201,168,76,.12); padding: 28px 0; }
 .faq-item summary { font-family: 'Syne', sans-serif; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; color: var(--cream); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
-.faq-item p { margin-top: 18px; color: var(--text); font-size: 1rem; line-height: 1.9; font-weight: 300; }
+.faq-item p { margin-top: 18px; color: var(--text); font-size: 1.1rem; line-height: 1.9; font-weight: 300; }
 
 .film-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; max-width: 860px; margin: 0 auto; }
 .film-image { position: relative; border: 1px solid rgba(201,168,76,.15); }
@@ -238,10 +238,10 @@ nav {
 .film-content { display: flex; flex-direction: column; }
 
 footer { padding: 110px 64px 60px; }
-.foot-h { font-size: clamp(2.6rem,5.5vw,4.2rem); font-weight: 300; color: var(--cream); line-height: 1.05; margin-bottom: 28px; }
+.foot-h { font-size: clamp(2.8rem,5.5vw,4.4rem); font-weight: 300; color: var(--cream); line-height: 1.05; margin-bottom: 28px; }
 .foot-h em { color: var(--gold); font-style: italic; }
 .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-.contact-info p { font-size: 1.05rem; line-height: 1.9; color: var(--text); font-weight: 300; margin-bottom: 32px; font-style: italic; }
+.contact-info p { font-size: 1.15rem; line-height: 1.9; color: var(--text); font-weight: 300; margin-bottom: 32px; font-style: italic; }
 .contact-direct { display: flex; flex-direction: column; gap: 10px; margin-top: 40px; padding-top: 40px; border-top: 1px solid rgba(201,168,76,.12); }
 .contact-form { display: flex; flex-direction: column; gap: 18px; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
@@ -331,7 +331,7 @@ footer { padding: 110px 64px 60px; }
 <section class="sec" id="packs">
   <span class="sec-label">Featured Releases</span>
   <h2 class="sec-title">Music <em>Packs</em></h2>
-  <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px;margin-bottom:0">Orchestral music packs with seamless loops, adaptive layers and stingers — built for RPG, adventure, Metroidvania and platformer games.</p>
+  <p style="font-style:italic;color:var(--text);font-size:1.1rem;margin-top:16px;margin-bottom:0">Orchestral music packs with seamless loops, adaptive layers and stingers — built for RPG, adventure, Metroidvania and platformer games.</p>
   <div class="packs-grid">
 
     <div class="pack fade">
@@ -501,7 +501,7 @@ footer { padding: 110px 64px 60px; }
   <div class="fade">
     <span class="sec-label">Notes &amp; Thoughts</span>
     <h2 class="sec-title">From the <em>Studio</em></h2>
-    <p style="font-style:italic;color:var(--text);font-size:1rem;margin-top:16px">On composing, game audio and the occasional tool recommendation.</p>
+    <p style="font-style:italic;color:var(--text);font-size:1.1rem;margin-top:16px">On composing, game audio and the occasional tool recommendation.</p>
   </div>
   <div class="blog-grid fade" id="blogGrid">
     <div class="blog-card">
@@ -530,7 +530,7 @@ footer { padding: 110px 64px 60px; }
         <div class="film-frame"></div>
       </div>
       <div class="film-content">
-        <p style="font-style:italic;color:var(--text);font-size:1rem;margin-bottom:28px">Original score for the Swedish documentary directed by Charlotte Berglin. Piano-led compositions with ambient textures, written to sit close to the story.</p>
+        <p style="font-style:italic;color:var(--text);font-size:1.1rem;margin-bottom:28px">Original score for the Swedish documentary directed by Charlotte Berglin. Piano-led compositions with ambient textures, written to sit close to the story.</p>
         <span class="sc-lbl">&#9835; Listen — original score</span>
         <div class="cplayer" id="cp3">
           <div class="cp-now">
