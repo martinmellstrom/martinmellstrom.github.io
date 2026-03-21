@@ -142,8 +142,6 @@
   .track-item:active { background: var(--card); }
   .track-item.active { background: var(--card); border-color: var(--border); }
   .track-item.active::before { content: ''; position: absolute; left: 0; top: 10%; bottom: 10%; width: 2px; background: var(--gold); border-radius: 0 2px 2px 0; }
-  .track-item.ab-b-track { border-color: rgba(201,168,76,0.3); background: rgba(201,168,76,0.04); }
-  .track-item.ab-b-track::before { content: ''; position: absolute; left: 0; top: 10%; bottom: 10%; width: 2px; background: var(--gold-dim); border-radius: 0 2px 2px 0; }
 
   .track-num { font-size: 10px; color: var(--text-dim); width: 20px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
   .track-item.active .track-num { color: var(--gold); }
@@ -165,20 +163,6 @@
   .track-sync.synced svg { fill: var(--green); }
   .track-sync.syncing svg { fill: var(--gold); animation: pulse 1s infinite; }
   .track-sync.unsynced svg { fill: var(--border); }
-
-  /* ── A/B SET-B BUTTON ── */
-  .track-ab-btn {
-    flex-shrink: 0; width: 28px; height: 24px;
-    display: flex; align-items: center; justify-content: center;
-    background: none; border: 1px solid var(--border); border-radius: 4px;
-    color: var(--text-dim); font-family: 'Space Mono', monospace; font-size: 9px;
-    font-weight: 700; letter-spacing: 0.05em; cursor: pointer;
-    transition: all 0.15s; -webkit-tap-highlight-color: transparent;
-  }
-  .track-ab-btn:active, .track-ab-btn.active {
-    border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow);
-  }
-  .track-ab-btn.active { border-color: var(--gold); }
 
   /* ── SEARCH RESULTS VIEW ── */
   #search-results-view { display: none; padding: 0 10px 0; }
@@ -242,63 +226,6 @@
   .exp-seek-fill { height: 100%; background: var(--gold); width: 0%; border-radius: 3px; pointer-events: none; position: relative; transition: width 0.25s linear; }
   .exp-seek-fill::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: var(--gold); border-radius: 50%; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
   .exp-seek-wrap:hover .exp-seek-fill::after { opacity: 1; }
-
-  /* ── A/B ROW (expanded) ── */
-  .exp-ab-row {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 20px 2px; flex-shrink: 0;
-  }
-  .ab-toggle-btn {
-    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
-    letter-spacing: 0.1em; padding: 6px 14px; border-radius: 6px;
-    border: 1px solid var(--border); cursor: pointer;
-    background: var(--card); color: var(--text-dim);
-    transition: all 0.15s; -webkit-tap-highlight-color: transparent;
-    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-  }
-  .ab-toggle-btn.ab-active-a { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
-  .ab-toggle-btn.ab-active-b { border-color: #7aafef; color: #7aafef; background: rgba(122,175,239,0.1); }
-  .ab-b-label {
-    font-size: 10px; color: var(--text-dim); flex: 1; min-width: 0;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    letter-spacing: 0.04em;
-  }
-  .ab-b-label.has-b { color: var(--text-mid); }
-  .ab-clear-btn {
-    background: none; border: none; color: var(--text-dim); cursor: pointer;
-    padding: 4px; border-radius: 4px; font-size: 14px; line-height: 1;
-    -webkit-tap-highlight-color: transparent; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .ab-clear-btn:active { color: var(--red); }
-
-  /* ── NORMALIZE ROW (expanded) ── */
-  .exp-norm-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 4px 20px 2px; flex-shrink: 0;
-  }
-  .norm-toggle {
-    font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700;
-    letter-spacing: 0.08em; padding: 5px 10px; border-radius: 5px;
-    border: 1px solid var(--border); cursor: pointer;
-    background: var(--card); color: var(--text-dim);
-    transition: all 0.15s; -webkit-tap-highlight-color: transparent; flex-shrink: 0;
-  }
-  .norm-toggle.active { border-color: var(--green); color: var(--green); background: rgba(74,124,89,0.12); }
-  .norm-label { font-size: 9px; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0; }
-  .gain-slider {
-    flex: 1; -webkit-appearance: none; appearance: none;
-    height: 3px; background: var(--border); border-radius: 2px; outline: none; cursor: pointer;
-  }
-  .gain-slider::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 14px; height: 14px;
-    border-radius: 50%; background: var(--gold); cursor: pointer;
-  }
-  .gain-slider::-moz-range-thumb {
-    width: 14px; height: 14px; border-radius: 50%; background: var(--gold);
-    cursor: pointer; border: none;
-  }
-  .gain-val { font-size: 9px; color: var(--text-dim); font-variant-numeric: tabular-nums; width: 32px; text-align: right; flex-shrink: 0; }
 
   .exp-controls { display: flex; align-items: center; justify-content: center; padding: 10px 8px 8px; flex-shrink: 0; }
   .exp-controls .ctrl { width: 56px; height: 48px; }
@@ -477,22 +404,6 @@
   <div class="exp-seek-wrap" id="exp-seek-wrap">
     <div class="exp-seek-fill" id="exp-seek-fill"></div>
   </div>
-
-  <!-- A/B ROW -->
-  <div class="exp-ab-row" id="exp-ab-row">
-    <button class="ab-toggle-btn" id="ab-toggle-btn" disabled title="Välj ett B-spår i spellistan">A/B</button>
-    <span class="ab-b-label" id="ab-b-label">Välj B-spår i spellistan</span>
-    <button class="ab-clear-btn" id="ab-clear-btn" title="Rensa B-spår" style="display:none;">×</button>
-  </div>
-
-  <!-- NORMALIZE ROW -->
-  <div class="exp-norm-row" id="exp-norm-row">
-    <button class="norm-toggle active" id="norm-toggle">NORM</button>
-    <span class="norm-label">Gain</span>
-    <input type="range" class="gain-slider" id="gain-slider" min="-6" max="6" step="0.5" value="0">
-    <span class="gain-val" id="gain-val">0 dB</span>
-  </div>
-
   <div class="exp-controls">
     <button class="ctrl" id="prev-btn-exp">
       <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
@@ -524,10 +435,6 @@
     Lägg låtar i undermappar — varje mapp blir ett paket/spellista. Lägg en bild döpt <code>cover.jpg</code> i mappen för omslagsbild.</p>
     <p><strong>3. Offline</strong><br>
     Öppna ett paket och tryck "Ladda ner paket". Filerna sparas lokalt i webbläsaren och finns kvar nästa session. En grön bock visar vilka låtar som är sparade.</p>
-    <p><strong>4. A/B-lyssning</strong><br>
-    Tryck <code>B</code> på ett spår i spellistan för att sätta det som B-spår. Öppna expanded player och växla med A/B-knappen — båda spåren spelas simultant vid exakt samma tidsstämpel.</p>
-    <p><strong>5. Volymsnormalisering</strong><br>
-    NORM-knappen i expanded player normaliserar volymen automatiskt via RMS. Justera med gain-reglaget (−6 till +6 dB). Inställningarna cachas per spår.</p>
     <div class="config-actions" style="margin-top:14px">
       <button class="btn btn-primary" onclick="closeModal('help-modal');openSettings()">Öppna inställningar</button>
     </div>
@@ -536,7 +443,6 @@
 
 </div><!-- /#app -->
 <audio id="audio-el" playsinline webkit-playsinline></audio>
-<audio id="audio-b" playsinline webkit-playsinline></audio>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -561,6 +467,8 @@ function openIDB() {
       if (!db.objectStoreNames.contains('audio')) {
         db.createObjectStore('audio',{keyPath:'path'});
       }
+      // v2: audio store holds {path, blob, rev}
+      // v3: covers store — {path, blob, rev}
       if (!db.objectStoreNames.contains('covers')) {
         db.createObjectStore('covers',{keyPath:'path'});
       }
@@ -623,9 +531,8 @@ function idbCoverPut(path, blob, rev) {
 //  STATE
 // ═══════════════════════════════════════════════
 const LS_KEY         = 'mm_player_v2';
-const LS_DUR_KEY     = 'mm_player_durations';
-const LS_WAVE_KEY    = 'mm_player_waveforms';
-const LS_RMS_KEY     = 'mm_player_rms';        // { "<rev>": rmsValue }
+const LS_DUR_KEY     = 'mm_player_durations';  // { "<rev>": seconds }
+const LS_WAVE_KEY    = 'mm_player_waveforms';  // { "<rev>": Float32Array serialised as Array }
 let config      = { token:'', folder:'', exts:'mp3,wav,flac,aiff,m4a' };
 let tracks      = [];
 let currentIdx  = -1;
@@ -633,19 +540,18 @@ let isPlaying   = false;
 let repeatMode  = 'none';
 let shuffle     = false;
 let shuffleQueue= [];
-let activePkg   = null;
+let activePkg   = null; // null = library, 'all' or pkg name = playlist
 let syncedPaths = new Map();
 let restoredPosition = 0;
 let lastSavedPosition = 0;
-let coverPathMap= {};
-let coverUrlMap = {};
-let allSongsCoverUrl = null;
+let coverPathMap= {}; // pkg → { path, rev }
+let coverUrlMap = {}; // dropbox path → objectURL
+let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
 const ALL_SONGS_COVER_PATH = '/all_songs_cover.heic';
 let linkCache   = {};
 let activeObjUrl= null;
-let durationCache  = {};
-let waveformCache  = {};
-let rmsCache       = {};  // rev → rms value (0–1)
+let durationCache  = {}; // rev → seconds (in-memory, backed by localStorage)
+let waveformCache  = {}; // rev → Float32Array (in-memory, backed by localStorage)
 
 function loadDurationCache() {
   try { durationCache = JSON.parse(localStorage.getItem(LS_DUR_KEY)||'{}'); } catch(e){ durationCache={}; }
@@ -656,6 +562,7 @@ function saveDurationToCache(rev, seconds) {
   try { localStorage.setItem(LS_DUR_KEY, JSON.stringify(durationCache)); } catch(e){}
 }
 
+// ── Waveform cache helpers ──
 function loadWaveformCache() {
   try { waveformCache = JSON.parse(localStorage.getItem(LS_WAVE_KEY)||'{}'); } catch(e){ waveformCache={}; }
 }
@@ -669,17 +576,7 @@ function getWaveformFromCache(rev) {
   return new Float32Array(waveformCache[rev]);
 }
 
-function loadRmsCache() {
-  try { rmsCache = JSON.parse(localStorage.getItem(LS_RMS_KEY)||'{}'); } catch(e){ rmsCache={}; }
-}
-function saveRmsToCache(rev, rms) {
-  if (!rev || rms == null || isNaN(rms)) return;
-  rmsCache[rev] = rms;
-  try { localStorage.setItem(LS_RMS_KEY, JSON.stringify(rmsCache)); } catch(e){}
-}
-
 const audio     = document.getElementById('audio-el');
-const audioB    = document.getElementById('audio-b');
 const npName    = document.getElementById('np-name');
 const npSub     = document.getElementById('np-sub');
 const progFill  = document.getElementById('progress-fill');
@@ -721,219 +618,16 @@ function loadState() {
 }
 
 // ═══════════════════════════════════════════════
-//  WEB AUDIO API — GAIN/NORMALIZE GRAPH
-//  audio el → sourceNodeA → gainNodeA → destination
-//  audioB el → sourceNodeB → gainNodeB → destination
-//  (nodes created lazily on first play)
-// ═══════════════════════════════════════════════
-let audioCtx    = null;
-let sourceNodeA = null;
-let sourceNodeB = null;
-let gainNodeA   = null;
-let gainNodeB   = null;
-
-// Normalize state
-let normalizeEnabled = true;
-let manualGainDb     = 0;   // −6 to +6
-let currentRmsA      = null;
-let currentRmsB      = null;
-
-function getAudioCtx() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  return audioCtx;
-}
-
-function ensureAudioGraph() {
-  const ctx = getAudioCtx();
-  if (!gainNodeA) {
-    gainNodeA = ctx.createGain();
-    gainNodeA.connect(ctx.destination);
-  }
-  if (!gainNodeB) {
-    gainNodeB = ctx.createGain();
-    gainNodeB.connect(ctx.destination);
-  }
-  if (!sourceNodeA) {
-    sourceNodeA = ctx.createMediaElementSource(audio);
-    sourceNodeA.connect(gainNodeA);
-  }
-  if (!sourceNodeB) {
-    sourceNodeB = ctx.createMediaElementSource(audioB);
-    sourceNodeB.connect(gainNodeB);
-  }
-}
-
-// Target RMS we normalize towards (roughly −18 dBFS)
-const TARGET_RMS = 0.05;
-
-function applyGains() {
-  if (!gainNodeA || !gainNodeB) return;
-  const manualLinear = Math.pow(10, manualGainDb / 20);
-
-  // ── A gain ──
-  let gainA = 1.0;
-  if (normalizeEnabled && currentRmsA && currentRmsA > 0) {
-    gainA = Math.min(TARGET_RMS / currentRmsA, 4.0); // cap at +12 dBFS
-  }
-  gainNodeA.gain.setTargetAtTime(gainA * manualLinear, getAudioCtx().currentTime, 0.05);
-
-  // ── B gain ──
-  let gainB = 1.0;
-  if (normalizeEnabled && currentRmsB && currentRmsB > 0) {
-    gainB = Math.min(TARGET_RMS / currentRmsB, 4.0);
-  }
-  gainNodeB.gain.setTargetAtTime(gainB * manualLinear, getAudioCtx().currentTime, 0.05);
-}
-
-// Calculate RMS from Float32Array channel data
-function calcRms(channelData) {
-  let sum = 0;
-  const n = channelData.length;
-  for (let i = 0; i < n; i++) sum += channelData[i] * channelData[i];
-  return Math.sqrt(sum / n);
-}
-
-// ═══════════════════════════════════════════════
-//  A/B STATE
-// ═══════════════════════════════════════════════
-let abBIdx      = -1;   // global track index of B track
-let abBObjUrl   = null;
-let abActive    = 'A';  // 'A' or 'B' — which is audible
-
-function setAbBTrack(idx) {
-  if (idx === abBIdx) return; // toggle off
-  clearAbB(false);
-  abBIdx = idx;
-  updateAbUI();
-  loadAbBTrack();
-}
-
-function clearAbB(updateUI = true) {
-  abBIdx = -1;
-  abActive = 'A';
-  if (abBObjUrl) { URL.revokeObjectURL(abBObjUrl); abBObjUrl = null; }
-  audioB.src = '';
-  audioB.pause();
-  currentRmsB = null;
-  if (updateUI) { updateAbUI(); applyGains(); refreshView(); }
-}
-
-async function loadAbBTrack() {
-  if (abBIdx < 0 || abBIdx >= tracks.length) return;
-  const t = tracks[abBIdx];
-  setStatus('loading', `Laddar B: ${t.name}…`);
-  try {
-    ensureAudioGraph();
-    if (abBObjUrl) { URL.revokeObjectURL(abBObjUrl); abBObjUrl = null; }
-    const stored = await idbGet(t.path);
-    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
-    let blob;
-    if (stored && revMatch) {
-      blob = stored.blob;
-    } else {
-      const link = await getTmpLink(t.path);
-      blob = await (await fetch(link)).blob();
-      await idbPut(t.path, blob, t.rev);
-      syncedPaths.set(t.path, t.rev || null);
-    }
-    abBObjUrl = URL.createObjectURL(blob);
-    audioB.src = abBObjUrl;
-    // Sync position to A
-    audioB.currentTime = audio.currentTime;
-    // Mute B initially (A is audible)
-    gainNodeB.gain.setTargetAtTime(0, getAudioCtx().currentTime, 0.01);
-    if (isPlaying) audioB.play().catch(()=>{});
-
-    // RMS for B
-    if (t.rev && rmsCache[t.rev] != null) {
-      currentRmsB = rmsCache[t.rev];
-    } else {
-      computeRmsFromBlob(blob, t.rev, 'B');
-    }
-    setStatus('ok', `B-spår: ${t.name}`);
-    updateAbUI();
-    applyGains();
-    refreshView();
-  } catch(e) {
-    setStatus('error', `Kunde inte ladda B: ${e.message}`);
-    abBIdx = -1; updateAbUI(); refreshView();
-  }
-}
-
-async function computeRmsFromBlob(blob, rev, slot) {
-  try {
-    const ctx2 = new (window.AudioContext || window.webkitAudioContext)();
-    const buf = await blob.arrayBuffer();
-    const decoded = await ctx2.decodeAudioData(buf);
-    ctx2.close();
-    const rms = calcRms(decoded.getChannelData(0));
-    if (slot === 'A') { currentRmsA = rms; if (rev) saveRmsToCache(rev, rms); }
-    if (slot === 'B') { currentRmsB = rms; if (rev) saveRmsToCache(rev, rms); }
-    applyGains();
-  } catch(e) { /* tyst */ }
-}
-
-function toggleAb() {
-  if (abBIdx < 0) return;
-  abActive = abActive === 'A' ? 'B' : 'A';
-  const ctx = getAudioCtx();
-  if (abActive === 'A') {
-    // Fade to A
-    applyGains(); // A gets full gain
-    gainNodeB.gain.setTargetAtTime(0, ctx.currentTime, 0.04);
-    // Sync B time to A (keep it running silently)
-    audioB.currentTime = audio.currentTime;
-    if (isPlaying && audioB.paused) audioB.play().catch(()=>{});
-  } else {
-    // Fade to B — sync B to A first
-    audioB.currentTime = audio.currentTime;
-    if (isPlaying && audioB.paused) audioB.play().catch(()=>{});
-    // Mute A, unmute B
-    gainNodeA.gain.setTargetAtTime(0, ctx.currentTime, 0.04);
-    // B gain
-    let gainB = 1.0;
-    if (normalizeEnabled && currentRmsB && currentRmsB > 0) gainB = Math.min(TARGET_RMS / currentRmsB, 4.0);
-    const manualLinear = Math.pow(10, manualGainDb / 20);
-    gainNodeB.gain.setTargetAtTime(gainB * manualLinear, ctx.currentTime, 0.04);
-  }
-  updateAbUI();
-}
-
-function updateAbUI() {
-  const toggleBtn = document.getElementById('ab-toggle-btn');
-  const bLabel    = document.getElementById('ab-b-label');
-  const clearBtn  = document.getElementById('ab-clear-btn');
-  const hasB      = abBIdx >= 0 && abBIdx < tracks.length;
-  toggleBtn.disabled = !hasB;
-  if (hasB) {
-    toggleBtn.className = `ab-toggle-btn ${abActive === 'A' ? 'ab-active-a' : 'ab-active-b'}`;
-    toggleBtn.textContent = abActive === 'A' ? '▶ A' : '▶ B';
-    bLabel.textContent = `B: ${tracks[abBIdx].name}`;
-    bLabel.className = 'ab-b-label has-b';
-    clearBtn.style.display = 'flex';
-  } else {
-    toggleBtn.className = 'ab-toggle-btn';
-    toggleBtn.textContent = 'A/B';
-    bLabel.textContent = 'Välj B-spår i spellistan';
-    bLabel.className = 'ab-b-label';
-    clearBtn.style.display = 'none';
-  }
-  // Refresh track list to show B highlight
-}
-
-// ═══════════════════════════════════════════════
 //  DROPBOX OAUTH (PKCE)
 // ═══════════════════════════════════════════════
-const DBX_APP_KEY    = 's7z6n7hg25ipk7n';
+const DBX_APP_KEY    = 's7z6n7hg25ipk7n'; // ← byt ut mot din App Key
 const DBX_REDIRECT   = 'https://martinmellstrom.github.io/oauth.html';
 const DBX_TOKEN_URL  = 'https://api.dropbox.com/oauth2/token';
 const DBX_AUTH_URL   = 'https://www.dropbox.com/oauth2/authorize';
 const LS_OAUTH_KEY   = 'mm_dbx_oauth';
 const LS_PKCE_KEY    = 'mm_dbx_pkce_verifier';
 
-let oauthData = null;
+let oauthData = null; // { access_token, refresh_token, expires_at }
 
 function loadOAuth() {
   try { oauthData = JSON.parse(localStorage.getItem(LS_OAUTH_KEY)||'null'); } catch(e){}
@@ -959,6 +653,7 @@ async function ensureAccessToken() {
   if (oauthData.access_token && oauthData.expires_at && Date.now() < oauthData.expires_at - margin) {
     return oauthData.access_token;
   }
+  // Förnya med refresh token (PKCE refresh behöver inte code_verifier)
   const res = await fetch(DBX_TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -981,6 +676,7 @@ async function ensureAccessToken() {
   return d.access_token;
 }
 
+// PKCE-hjälpfunktioner
 async function generatePKCE() {
   const verifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(48))))
     .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'').slice(0,128);
@@ -991,9 +687,12 @@ async function generatePKCE() {
 }
 
 async function startOAuthFlow() {
+  // Öppna popup INNAN await — annars blockerar Safari/mobil det som ej user-initiated
   const popup = window.open('about:blank', '_blank', 'width=520,height=640');
+
   const { verifier, challenge } = await generatePKCE();
   localStorage.setItem(LS_PKCE_KEY, verifier);
+
   const params = new URLSearchParams({
     client_id:             DBX_APP_KEY,
     redirect_uri:          DBX_REDIRECT,
@@ -1002,15 +701,19 @@ async function startOAuthFlow() {
     code_challenge:        challenge,
     code_challenge_method: 'S256',
   });
+
   if (popup && !popup.closed) {
     popup.location.href = `${DBX_AUTH_URL}?${params}`;
   } else {
+    // Popup blockerades — fallback: navigera i samma flik
     localStorage.setItem('mm_dbx_oauth_redirect_back', window.location.href);
     window.location.href = `${DBX_AUTH_URL}?${params}`;
   }
+
   const ch = new BroadcastChannel('mm_dbx_oauth');
   ch.onmessage = async (e) => {
     if (e.data?.type !== 'auth_code' || !e.data.code) return;
+    // Bekräfta till oauth.html att vi tog emot koden (stoppar same-tab fallback)
     e.target.postMessage({ type: 'ack' });
     ch.close();
     await handleAuthCode(e.data.code);
@@ -1121,26 +824,32 @@ async function fetchTracks() {
   try {
     const {audio:aFiles,covers} = await listAllFiles(config.folder);
     const folderLower = (config.folder||'').toLowerCase();
+
+    // Build cover map — pkg → { path, rev }
     coverPathMap={};
     for (const c of covers) {
       const rel   = c.path_lower.replace(folderLower,'');
       const parts = rel.split('/').filter(Boolean);
       if (parts.length>=2) coverPathMap[parts[0]] = { path: c.path_lower, rev: c.rev||null };
     }
+
     tracks = aFiles.map(f => {
       const rel   = f.path_lower.replace(folderLower,'');
       const parts = rel.split('/').filter(Boolean);
       const pkg   = parts.length>1?parts[0]:null;
       return { id:f.id||f.path_lower, name:f.name.replace(/\.[^.]+$/,''), path:f.path_lower, package:pkg, ext:f.name.split('.').pop().toUpperCase(), duration:null, rev:f.rev||null };
     });
+
     tracks.sort((a,b)=>{
       if (a.package&&!b.package) return -1;
       if (!a.package&&b.package) return 1;
       if (a.package!==b.package) return (a.package||'').localeCompare(b.package||'');
       return a.name.localeCompare(b.name);
     });
+
     if (currentIdx>=tracks.length) currentIdx=-1;
     await refreshSynced();
+    // Vid ↻ tvingar vi nedladdning av alla omslag (rev kan ha ändrats)
     coverUrlMap = {};
     _allSongsCoverNeedsRefresh = true;
     fetchAllSongsCover();
@@ -1152,13 +861,16 @@ async function fetchTracks() {
 
 async function refreshSynced() {
   const all = await idbGetAll();
+  // syncedPaths: path → stored rev (or true if no rev stored)
   syncedPaths = new Map(all.map(r => [r.path, r.rev||null]));
 }
 
 function isSynced(track) {
   if (!syncedPaths.has(track.path)) return false;
   const storedRev = syncedPaths.get(track.path);
+  // If we have rev info on both sides, compare them
   if (storedRev && track.rev) return storedRev === track.rev;
+  // Fallback: file exists in IDB, assume ok
   return true;
 }
 
@@ -1169,7 +881,11 @@ async function getCoverUrl(pkg) {
   const entry = coverPathMap[pkg];
   if (!entry) return null;
   const { path, rev } = entry;
+
+  // Returnera redan skapad object URL direkt
   if (coverUrlMap[path]) return coverUrlMap[path];
+
+  // Kolla IDB-cache — använd om rev matchar (eller ingen rev-info finns)
   const cached = await idbCoverGet(path);
   if (cached?.blob) {
     const revOk = !rev || !cached.rev || cached.rev === rev;
@@ -1179,6 +895,8 @@ async function getCoverUrl(pkg) {
       return url;
     }
   }
+
+  // Ladda ner färsk, spara i IDB
   try {
     const link = await getTmpLink(path);
     const blob = await (await fetch(link)).blob();
@@ -1192,6 +910,7 @@ async function getCoverUrl(pkg) {
 let _allSongsCoverNeedsRefresh = false;
 
 async function fetchAllSongsCover() {
+  // Kolla IDB-cache vid uppstart (ingen rev för denna hårdkodade fil)
   if (!_allSongsCoverNeedsRefresh) {
     const cached = await idbCoverGet(ALL_SONGS_COVER_PATH);
     if (cached?.blob) {
@@ -1201,13 +920,14 @@ async function fetchAllSongsCover() {
     }
   }
   _allSongsCoverNeedsRefresh = false;
+  // Ladda ner färsk
   try {
     const link = await getTmpLink(ALL_SONGS_COVER_PATH);
     const blob = await (await fetch(link)).blob();
     await idbCoverPut(ALL_SONGS_COVER_PATH, blob, null);
     allSongsCoverUrl = URL.createObjectURL(blob);
     _applyAllSongsCoverToDOM();
-  } catch(e) {}
+  } catch(e) { /* filen saknas eller fel — visa placeholder */ }
 }
 
 function _applyAllSongsCoverToDOM() {
@@ -1229,14 +949,18 @@ function _applyAllSongsCoverToDOM() {
 async function preloadDurations(pkgTracks) {
   const toLoad = pkgTracks.filter(t => !t.duration);
   if (!toLoad.length) return;
+
+  // Fyll i från cache först (inga nätverksanrop)
   for (const t of toLoad) {
     if (t.rev && durationCache[t.rev]) {
       t.duration = durationCache[t.rev];
       _updateDurationEl(tracks.indexOf(t), t.duration);
     }
   }
+
   const stillMissing = toLoad.filter(t => !t.duration);
   if (!stillMissing.length) return;
+
   for (const t of stillMissing) {
     (async () => {
       try {
@@ -1262,7 +986,7 @@ async function preloadDurations(pkgTracks) {
           if (stored && revMatch) URL.revokeObjectURL(url);
         }, { once: true });
         tmp.addEventListener('error', () => { tmp.src=''; }, { once: true });
-      } catch(e) {}
+      } catch(e) { /* tyst fel */ }
     })();
   }
 }
@@ -1287,10 +1011,12 @@ async function showPlaylist(pkg) {
   document.getElementById('library-view').classList.add('hidden');
   document.getElementById('playlist-view').classList.add('visible');
   document.getElementById('back-btn').classList.add('visible');
+
   const pkgTracks = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
   const name = pkg==='all'?'Alla låtar':formatPkgName(pkg);
   document.getElementById('playlist-name').textContent = name;
   document.getElementById('playlist-count').textContent = `${pkgTracks.length} låtar`;
+
   const coverEl = document.getElementById('playlist-cover');
   if (pkg==='all' && allSongsCoverUrl) {
     coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
@@ -1300,6 +1026,7 @@ async function showPlaylist(pkg) {
   } else {
     coverEl.innerHTML = `<span class="cover-placeholder">♬</span>`;
   }
+
   renderTrackList(pkgTracks);
   preloadDurations(pkgTracks);
   saveState();
@@ -1312,16 +1039,19 @@ async function renderLibrary() {
   const grid = document.getElementById('pkg-grid');
   if (!grid) return;
   const pkgs = [...new Set(tracks.map(t=>t.package).filter(Boolean))].sort();
+
   if (tracks.length===0) {
     grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-dim);font-size:12px;">Inga låtar — tryck ↻ för att hämta</div>`;
     return;
   }
+
   const syncBadge = (n,total) => {
     if (total===0) return '';
     if (n===total) return `<div class="pkg-sync-badge synced"><svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>`;
     if (n>0)       return `<div class="pkg-sync-badge partial"><svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>${n}/${total}</div>`;
     return '';
   };
+
   const allSynced = tracks.filter(t=>isSynced(t)).length;
   const allCoverHtml = allSongsCoverUrl
     ? `<img src="${allSongsCoverUrl}" alt="Alla låtar">`
@@ -1333,6 +1063,7 @@ async function renderLibrary() {
       <div class="pkg-card-meta">${tracks.length} låtar · ${pkgs.length} paket</div>
     </div>
   </div>`;
+
   for (const p of pkgs) {
     const pt = tracks.filter(t=>t.package===p);
     const ns = pt.filter(t=>isSynced(t)).length;
@@ -1345,6 +1076,7 @@ async function renderLibrary() {
     </div>`;
   }
   grid.innerHTML = html;
+
   if (!allSongsCoverUrl) fetchAllSongsCover();
   for (const p of pkgs) {
     if (!coverPathMap[p]) continue;
@@ -1365,10 +1097,12 @@ async function renderLibrary() {
 function renderTrackList(pkgTracks) {
   const list = document.getElementById('track-list');
   if (!list) return;
+
   if (pkgTracks.length===0) {
     list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar</div>`;
     return;
   }
+
   const checkSvg = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
   const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
 
@@ -1377,16 +1111,14 @@ function renderTrackList(pkgTracks) {
     const gi      = tracks.indexOf(t);
     const isActive= gi===currentIdx;
     const isPlay  = isActive&&isPlaying;
-    const isB     = gi===abBIdx;
     const synced  = isSynced(t);
-    html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}${isB?' ab-b-track':''}" data-idx="${gi}" onclick="playTrack(${gi})">
+    html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrack(${gi})">
       <div class="track-num">${i+1}</div>
       <div class="track-bars"><span></span><span></span><span></span></div>
       <div class="track-info">
         <div class="track-name">${escHtml(t.name)}</div>
         <div class="track-meta">${t.ext}</div>
       </div>
-      <button class="track-ab-btn${isB?' active':''}" onclick="event.stopPropagation();handleAbBtnClick(${gi})" title="${isB?'Rensa B-spår':'Sätt som B-spår'}">B</button>
       <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
       <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
     </div>`;
@@ -1395,24 +1127,16 @@ function renderTrackList(pkgTracks) {
   list.innerHTML = html;
 }
 
-function handleAbBtnClick(gi) {
-  if (gi === abBIdx) {
-    clearAbB(true);
-  } else if (gi === currentIdx) {
-    setStatus('error', 'Välj ett annat spår som B — A och B måste vara olika');
-  } else {
-    setAbBTrack(gi);
-  }
-}
-
 // ═══════════════════════════════════════════════
 //  GLOBAL SEARCH RESULTS
 // ═══════════════════════════════════════════════
 function renderSearchResults(q) {
   const resultsView = document.getElementById('search-results-view');
   const resultsList = document.getElementById('search-results-list');
+
   if (!q) {
     resultsView.classList.remove('visible');
+    // Återställ rätt vy
     if (activePkg === null) {
       document.getElementById('library-view').classList.remove('hidden');
     } else {
@@ -1420,16 +1144,22 @@ function renderSearchResults(q) {
     }
     return;
   }
+
+  // Dölj bibliotek och spellista — visa sökresultat
   document.getElementById('library-view').classList.add('hidden');
   document.getElementById('playlist-view').classList.remove('visible');
   resultsView.classList.add('visible');
+
   const matched = tracks.filter(t => t.name.toLowerCase().includes(q));
+
   if (matched.length === 0) {
     resultsList.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar matchar "${escHtml(q)}"</div>`;
     return;
   }
+
   const checkSvg = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
   const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
+
   function highlight(name) {
     const ix = name.toLowerCase().indexOf(q);
     if (ix < 0) return escHtml(name);
@@ -1437,6 +1167,7 @@ function renderSearchResults(q) {
       + '<mark style="background:var(--gold-glow);color:var(--gold);border-radius:2px;">' + escHtml(name.slice(ix, ix + q.length)) + '</mark>'
       + escHtml(name.slice(ix + q.length));
   }
+
   let html = `<div style="padding:14px 2px 10px 10px;font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:8px;">${matched.length} träff${matched.length !== 1 ? 'ar' : ''}<span style="flex:1;height:1px;background:var(--border);display:block;"></span></div>`;
   html += '<div class="pkg-section">';
   matched.forEach((t, i) => {
@@ -1460,8 +1191,10 @@ function renderSearchResults(q) {
   resultsList.innerHTML = html;
 }
 
+// Spela en låt från sökresultaten — utan att ändra activePkg
 function playTrackFromSearch(idx) {
   playTrack(idx);
+  // Uppdatera bara sökresultat-vyn med nytt aktivt state
   if (searchQuery) renderSearchResults(searchQuery);
 }
 
@@ -1521,6 +1254,10 @@ async function deletePackageLocal(pkg) {
 
 // ═══════════════════════════════════════════════
 //  MEDIA SESSION API
+//  Registrerar spelaren med OS/Safari så att
+//  webbläsarens egna mediakontroller ersätts av
+//  spelarens egna handlers. Förhindrar att Safari
+//  visar en extra mini-player i UI:t.
 // ═══════════════════════════════════════════════
 function updateMediaSession(t) {
   if (!('mediaSession' in navigator)) return;
@@ -1553,19 +1290,12 @@ async function playTrack(idx) {
   lastSavedPosition = audio.currentTime || 0;
   saveState();
   currentIdx=idx;
-  // Clear A/B if A-track changes and B was set
-  if (abBIdx >= 0 && abBIdx === idx) {
-    clearAbB(false);
-  }
   const t=tracks[idx];
   npName.textContent=t.name;
   npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
   const pool = activePkg==='all'||activePkg===null?tracks:tracks.filter(x=>x.package===activePkg);
   if (!searchQuery) renderTrackList(pool);
   try {
-    ensureAudioGraph();
-    if (getAudioCtx().state === 'suspended') getAudioCtx().resume();
-
     if (activeObjUrl){URL.revokeObjectURL(activeObjUrl);activeObjUrl=null;}
     const stored = await idbGet(t.path);
     let blob;
@@ -1581,18 +1311,8 @@ async function playTrack(idx) {
       syncedPaths.set(t.path, t.rev||null);
       setStatus('ok','');
     }
-
-    // RMS for A
-    if (t.rev && rmsCache[t.rev] != null) {
-      currentRmsA = rmsCache[t.rev];
-      applyGains();
-    } else {
-      computeRmsFromBlob(blob, t.rev, 'A');
-    }
-
     activeObjUrl=URL.createObjectURL(blob);
     audio.src=activeObjUrl;
-    applyGains();
     await audio.play();
     isPlaying=true; setPlayIcon(true);
     updateMediaSession(t);
@@ -1601,16 +1321,6 @@ async function playTrack(idx) {
     if (expOpen) syncExpandedMeta();
     waveformData = null; waveformPath = null;
     buildWaveform(activeObjUrl, t);
-
-    // If B track is set, sync it
-    if (abBIdx >= 0 && audioB.src) {
-      audioB.currentTime = 0;
-      audioB.play().catch(()=>{});
-      if (abActive === 'B') {
-        // keep B audible
-      }
-      applyGains();
-    }
   } catch(e){setStatus('error',`Kan inte spela: ${e.message}`);}
 }
 
@@ -1618,33 +1328,25 @@ function getPool(){return !activePkg||activePkg==='all'?tracks:tracks.filter(t=>
 
 function togglePlay(){
   if (currentIdx<0&&tracks.length){playTrack(0);return;}
-  if (audio.paused){
-    if (getAudioCtx().state === 'suspended') getAudioCtx().resume();
-    audio.play();
-    if (abBIdx >= 0 && audioB.src) audioB.play().catch(()=>{});
-    isPlaying=true;setPlayIcon(true);
-  } else {
-    audio.pause();
-    audioB.pause();
-    isPlaying=false;setPlayIcon(false);
-  }
+  if (audio.paused){audio.play();isPlaying=true;setPlayIcon(true);}
+  else{audio.pause();isPlaying=false;setPlayIcon(false);}
 }
 
 function prevTrack(){
-  if (audio.currentTime>3){audio.currentTime=0;if(audioB.src)audioB.currentTime=0;return;}
+  if (audio.currentTime>3){audio.currentTime=0;return;}
   const pool=getPool(),ci=pool.indexOf(tracks[currentIdx]);
   playTrack(tracks.indexOf(pool[(ci-1+pool.length)%pool.length]));
 }
 
 function nextTrack(fromEnded=false){
-  if (repeatMode==='one'&&fromEnded){audio.currentTime=0;if(audioB.src)audioB.currentTime=0;audio.play();return;}
+  if (repeatMode==='one'&&fromEnded){audio.currentTime=0;audio.play();return;}
   const pool=getPool();
   if (shuffle&&fromEnded){
     if (!shuffleQueue.length) shuffleQueue=pool.map((_,i)=>i).sort(()=>Math.random()-0.5);
     playTrack(tracks.indexOf(pool[shuffleQueue.shift()]));return;
   }
   const ci=pool.indexOf(tracks[currentIdx]),ni=(ci+1)%pool.length;
-  if (ni===0&&fromEnded&&repeatMode==='none'){isPlaying=false;setPlayIcon(false);audioB.pause();return;}
+  if (ni===0&&fromEnded&&repeatMode==='none'){isPlaying=false;setPlayIcon(false);return;}
   playTrack(tracks.indexOf(pool[ni]));
 }
 
@@ -1672,6 +1374,7 @@ audio.addEventListener('timeupdate',()=>{
   const pct = (audio.currentTime/audio.duration*100)+'%';
   progFill.style.width = pct;
   timeDisp.textContent = `${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`;
+  // Sync expanded
   expSeekFill.style.width = pct;
   expTimeCur.textContent  = fmtTime(audio.currentTime);
   if (expOpen) drawWaveform();
@@ -1680,11 +1383,6 @@ audio.addEventListener('timeupdate',()=>{
   if (Math.abs(audio.currentTime - lastSavedPosition) >= 5) {
     lastSavedPosition = audio.currentTime;
     saveState();
-  }
-  // Keep B in sync (max 0.3s drift)
-  if (abBIdx >= 0 && audioB.src && !audioB.paused) {
-    const drift = Math.abs(audioB.currentTime - audio.currentTime);
-    if (drift > 0.3) audioB.currentTime = audio.currentTime;
   }
 });
 audio.addEventListener('ended',()=>nextTrack(true));
@@ -1695,14 +1393,11 @@ audio.addEventListener('play', ()=>{
 audio.addEventListener('pause',()=>{
   isPlaying=false;setPlayIcon(false);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-  if (abBIdx >= 0) audioB.pause();
 });
 document.getElementById('progress-wrap').addEventListener('click',e=>{
   if(!audio.duration)return;
   const r=e.currentTarget.getBoundingClientRect();
-  const t=((e.clientX-r.left)/r.width)*audio.duration;
-  audio.currentTime=t;
-  if(audioB.src) audioB.currentTime=t;
+  audio.currentTime=((e.clientX-r.left)/r.width)*audio.duration;
 });
 
 // ═══════════════════════════════════════════════
@@ -1747,8 +1442,6 @@ function syncExpandedMeta() {
   setExpandedPlayIcon(isPlaying);
   document.getElementById('repeat-btn-exp').classList.toggle('active', repeatMode !== 'none');
   document.getElementById('shuffle-btn-exp').classList.toggle('active', shuffle);
-  updateAbUI();
-  updateNormUI();
 }
 
 function setExpandedPlayIcon(p) {
@@ -1775,34 +1468,7 @@ document.getElementById('shuffle-btn-exp').addEventListener('click', toggleShuff
 document.getElementById('exp-seek-wrap').addEventListener('click', e => {
   if (!audio.duration) return;
   const r = e.currentTarget.getBoundingClientRect();
-  const t = ((e.clientX - r.left) / r.width) * audio.duration;
-  audio.currentTime = t;
-  if (audioB.src) audioB.currentTime = t;
-});
-
-// ── A/B controls ──
-document.getElementById('ab-toggle-btn').addEventListener('click', toggleAb);
-document.getElementById('ab-clear-btn').addEventListener('click', () => clearAbB(true));
-
-// ── Normalize controls ──
-function updateNormUI() {
-  const toggle = document.getElementById('norm-toggle');
-  toggle.className = `norm-toggle${normalizeEnabled?' active':''}`;
-  const slider = document.getElementById('gain-slider');
-  slider.value = manualGainDb;
-  document.getElementById('gain-val').textContent = `${manualGainDb > 0 ? '+' : ''}${manualGainDb} dB`;
-}
-
-document.getElementById('norm-toggle').addEventListener('click', () => {
-  normalizeEnabled = !normalizeEnabled;
-  updateNormUI();
-  applyGains();
-});
-
-document.getElementById('gain-slider').addEventListener('input', e => {
-  manualGainDb = parseFloat(e.target.value);
-  document.getElementById('gain-val').textContent = `${manualGainDb > 0 ? '+' : ''}${manualGainDb} dB`;
-  applyGains();
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
 });
 
 // ═══════════════════════════════════════════════
@@ -1813,6 +1479,8 @@ let waveformPath = null;
 
 async function buildWaveform(objUrl, track) {
   const rev = track?.rev || null;
+
+  // Kolla cache först — om rev finns och cachat data finns, använd det direkt
   if (rev) {
     const cached = getWaveformFromCache(rev);
     if (cached) {
@@ -1822,13 +1490,14 @@ async function buildWaveform(objUrl, track) {
       return;
     }
   }
+
+  // Bygg från ljud-data
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const resp = await fetch(objUrl);
     const buf  = await resp.arrayBuffer();
     const decoded = await ctx.decodeAudioData(buf);
     ctx.close();
-
     const ch   = decoded.getChannelData(0);
     const bins = 200;
     const step = Math.floor(ch.length / bins);
@@ -1845,16 +1514,8 @@ async function buildWaveform(objUrl, track) {
     for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
     waveformData = peaks;
     waveformPath = track.path;
+    // Spara i cache om vi har en rev att knyta till
     if (rev) saveWaveformToCache(rev, peaks);
-
-    // Also compute RMS from same decoded buffer if not already cached
-    if (!currentRmsA || (rev && rmsCache[rev] == null)) {
-      const rms = calcRms(ch);
-      currentRmsA = rms;
-      if (rev) saveRmsToCache(rev, rms);
-      applyGains();
-    }
-
     if (expOpen) drawWaveform();
   } catch(e) {
     waveformData = null;
@@ -1872,14 +1533,17 @@ function drawWaveform() {
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
+
   const bins = waveformData ? waveformData.length : 200;
   const barW = Math.max(1, (W / bins) - 0.5);
   const gap  = (W / bins) - barW;
   const prog = audio.duration ? (audio.currentTime / audio.duration) : 0;
   const progX = prog * W;
+
   const gold     = '#c9a84c';
   const goldDim  = 'rgba(201,168,76,0.25)';
   const midLine  = H / 2;
+
   for (let i = 0; i < bins; i++) {
     const x   = i * (barW + gap);
     const amp = waveformData ? waveformData[i] : 0.3;
@@ -1892,6 +1556,7 @@ function drawWaveform() {
       : ctx.rect(x, midLine - barH, barW, barH * 2);
     ctx.fill();
   }
+
   if (audio.duration) {
     ctx.strokeStyle = gold;
     ctx.globalAlpha = 0.9;
@@ -1907,9 +1572,7 @@ function drawWaveform() {
 document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
   if (!audio.duration) return;
   const r = e.currentTarget.getBoundingClientRect();
-  const t = ((e.clientX - r.left) / r.width) * audio.duration;
-  audio.currentTime = t;
-  if (audioB.src) audioB.currentTime = t;
+  audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
 });
 
 // ═══════════════════════════════════════════════
@@ -1928,6 +1591,7 @@ function closeSearch() {
   document.getElementById('search-input').value = '';
   document.getElementById('search-clear-btn').style.display = 'none';
   searchQuery = '';
+  // Dölj sökresultat, återställ rätt vy
   document.getElementById('search-results-view').classList.remove('visible');
   if (activePkg === null) {
     document.getElementById('library-view').classList.remove('hidden');
@@ -1942,6 +1606,7 @@ function toggleSearch() {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('search-btn').addEventListener('click', toggleSearch);
+
   document.getElementById('search-clear-btn').addEventListener('click', () => {
     document.getElementById('search-input').value = '';
     searchQuery = '';
@@ -1949,6 +1614,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderSearchResults('');
     document.getElementById('search-input').focus();
   });
+
   document.getElementById('search-input').addEventListener('input', e => {
     searchQuery = e.target.value.trim().toLowerCase();
     document.getElementById('search-clear-btn').style.display = searchQuery ? 'flex' : 'none';
@@ -2004,7 +1670,6 @@ document.addEventListener('keydown',e=>{
   if(e.code==='ArrowLeft')prevTrack();
   if(e.code==='KeyR')cycleRepeat();
   if(e.code==='KeyS')toggleShuffle();
-  if(e.code==='KeyA'&&expOpen)toggleAb();
 });
 
 function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;}
@@ -2016,7 +1681,6 @@ openIDB().then(async()=>{
   loadState();
   loadDurationCache();
   loadWaveformCache();
-  loadRmsCache();
   for (const t of tracks) {
     if (!t.duration && t.rev && durationCache[t.rev]) {
       t.duration = durationCache[t.rev];
@@ -2032,7 +1696,6 @@ openIDB().then(async()=>{
   }
   updateRepeatUI();
   shuffleBtn.classList.toggle('active',shuffle);
-  updateNormUI();
   await refreshSynced();
 
   if (tracks.length){
