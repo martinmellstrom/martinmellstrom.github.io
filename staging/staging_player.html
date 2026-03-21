@@ -30,21 +30,40 @@
   .staging-banner strong { color: #ff4444; font-weight: 700; }
   .staging-banner a { color: #ff8888; text-decoration: underline; }
 
-  .player-frame {
+  .player-wrap {
     position: fixed;
     top: 36px; left: 0; right: 0; bottom: 0;
-    border: none;
-    width: 100%;
-    height: calc(100% - 36px);
+    overflow: hidden;
   }
+  /* Inject the player content below the banner */
 </style>
 </head>
 <body>
   <div class="staging-banner">
-    <strong>⚠ STAGING</strong> — Detta är en förhandsvisning. <a href="/player.html">Gå till live-sidan →</a>
+    <strong>⚠ STAGING v2.11</strong> — A/B-lyssning + RMS-normalisering. <a href="/player.html">Gå till live →</a>
   </div>
-  <!-- NOTE: iframe loads the live player.html for preview purposes -->
-  <!-- When staging is approved and changes exist, replace this with the full modified player.html content -->
-  <iframe class="player-frame" src="../player.html" allow="autoplay" title="Music Player (staging preview)"></iframe>
+
+  <!--
+    STAGING-INSTRUKTION FÖR CLAUDE:
+    Ersätt allt innehåll i <div class="player-wrap"> med hela player.html-koden
+    (minus <!DOCTYPE>, <html>, <head> och <body>-taggar) vid varje ny staging-version.
+    Uppdatera versionsnumret i staging-bannern ovan.
+  -->
+
+  <div class="player-wrap">
+    <!-- v2.11 player-kod inbäddad nedan -->
+    <iframe
+      style="position:absolute;inset:0;width:100%;height:100%;border:none;"
+      src="/player.html"
+      allow="autoplay"
+      title="Music Player staging v2.11"
+    ></iframe>
+    <!--
+      OBS: iframe pekar just nu mot live-versionen av player.html eftersom
+      v2.11 av misstag commitades direkt till main (utan staging-steg).
+      Nästa version ska ha den faktiska källkoden inbäddad här istället.
+    -->
+  </div>
+
 </body>
 </html>
