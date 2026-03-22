@@ -489,6 +489,54 @@
 
 <script>
 // ═══════════════════════════════════════════════
+//  ARCHITECTURE MAP — update when adding/removing globals or functions
+//
+//  STATE (globals)
+//    Playback:   currentIdx, isPlaying, repeatMode, shuffle, shuffleQueue
+//    Library:    tracks, activePkg, syncedPaths, coverPathMap, coverUrlMap,
+//                allSongsCoverUrl, linkCache, activeObjUrl
+//    Position:   restoredPosition, lastSavedPosition
+//    Cache:      durationCache, waveformCache
+//    A/B mode:   abMode, abA, abB, abActiveSlot, waveformDataA, waveformDataB
+//    Waveform:   waveformData, waveformPath
+//    Config:     config (token, folder, exts)
+//    Constants:  LS_KEY, LS_DUR_KEY, LS_WAVE_KEY, ALL_SONGS_COVER_PATH
+//
+//  DOM REFS (consts)
+//    audio, npName, npSub, progFill, timeDisp, playBtn, repeatBtn, shuffleBtn
+//    expPanel (expanded player root)
+//
+//  FUNCTIONS BY SECTION
+//    IndexedDB:       openIDB, idbGet, idbPut, idbDelete, idbGetAll, idbGetAllKeys
+//                     idbCoverGet, idbCoverPut
+//    State persist:   saveState, loadState
+//                     loadDurationCache, saveDurationToCache
+//                     loadWaveformCache, saveWaveformToCache, getWaveformFromCache
+//    OAuth/Auth:      startOAuthFlow, handleAuthCode, ensureAccessToken,
+//                     generatePKCE, clearOAuth, updateOAuthUI
+//    Dropbox API:     dbxCall, getTmpLink, listAllFiles, fetchTracks,
+//                     getCoverUrl, fetchAllSongsCover
+//    Sync:            syncPackage, deletePackageLocal, refreshSynced, isSynced,
+//                     setTrackSyncState
+//    Library/Nav:     renderLibrary, showPlaylist, showLibrary, refreshView,
+//                     preloadDurations
+//    Playlist:        renderTrackList, renderSearchResults, playTrackFromSearch
+//    Playback:        playTrack, nextTrack, prevTrack, togglePlay,
+//                     cycleRepeat, updateRepeatUI, toggleShuffle
+//    Expanded player: openExpandedPlayer, closeExpandedPlayer, syncExpandedMeta,
+//                     setExpandedPlayIcon
+//    Waveform:        buildWaveform, drawWaveform
+//    A/B mode:        toggleABMode, setABSlot, switchABSlot, handleABSectionClick,
+//                     showABExpandedLayout, hideABExpandedLayout, updateABExpandedUI,
+//                     drawABWaveforms, drawOneABCanvas,
+//                     preloadBWaveform, buildWaveformForB
+//    Search:          openSearch, closeSearch, toggleSearch
+//    Settings:        openSettings, closeSettings
+//    UI helpers:      setStatus, setPlayIcon, setExpandedPlayIcon,
+//                     fmtTime, escHtml, formatPkgName, closeModal
+// ═══════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
 if ('serviceWorker' in navigator) {
