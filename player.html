@@ -249,6 +249,25 @@
 
   audio { display: none; }
   html { scroll-behavior: smooth; }
+
+  /* ── A/B COMPARISON MODE ── */
+  .btn-ab-active { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+  .track-ab-btns { display: none; gap: 4px; flex-shrink: 0; }
+  .ab-mode-active .track-ab-btns { display: flex; }
+  .track-ab-btn { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--border); background: var(--card); color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; transition: all 0.15s; flex-shrink: 0; }
+  .track-ab-btn.ab-sel { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+  #ab-expanded-content { display: none; flex: 1; min-height: 0; flex-direction: column; }
+  #ab-expanded-content.ab-visible { display: flex; }
+  .ab-section { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 10px 20px 14px; cursor: pointer; transition: opacity 0.25s; }
+  .ab-section.ab-inactive { opacity: 0.35; }
+  .ab-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .ab-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--gold); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; line-height: 1.5; }
+  .ab-section.ab-inactive .ab-badge { background: var(--gold-dim); }
+  .ab-section-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+  .ab-canvas { width: 100%; height: 60px; display: block; border-radius: 4px; }
+  .ab-divider { height: 1px; background: var(--border); margin: 0 20px; flex-shrink: 0; }
+  .np-ab-badge { font-size: 9px; font-weight: 700; background: var(--gold); color: var(--bg); border-radius: 3px; padding: 1px 5px; margin-left: 4px; letter-spacing: 0.1em; display: none; flex-shrink: 0; vertical-align: middle; }
+  .np-ab-badge.ab-visible { display: inline-block; }
 </style>
 </head>
 <body>
@@ -339,6 +358,7 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
             Ta bort lokalt
           </button>
+          <button class="btn" id="ab-mode-btn" style="font-size:10px;padding:6px 10px;">A/B</button>
         </div>
       </div>
     </div>
@@ -357,7 +377,10 @@
   <div id="progress-wrap"><div id="progress-fill"></div></div>
   <div class="player-info-row">
     <div class="now-playing">
-      <div class="np-name" id="np-name">Ingen låt vald</div>
+      <div style="display:flex;align-items:center;overflow:hidden;">
+        <div class="np-name" id="np-name" style="flex:1;min-width:0;">Ingen låt vald</div>
+        <span class="np-ab-badge" id="np-ab-badge">A</span>
+      </div>
       <div class="np-sub" id="np-sub">—</div>
     </div>
     <div class="time-display" id="time-display">0:00 / 0:00</div>
@@ -385,19 +408,37 @@
 <!-- EXPANDED PLAYER -->
 <div id="expanded-player">
   <div class="exp-handle-bar"></div>
-  <div class="exp-cover-wrap">
+  <!-- A/B expanded content -->
+  <div id="ab-expanded-content">
+    <div class="ab-section" id="ab-section-a" onclick="handleABSectionClick(event,'a')">
+      <div class="ab-section-header">
+        <span class="ab-badge">A</span>
+        <span class="ab-section-name" id="ab-name-a">—</span>
+      </div>
+      <canvas class="ab-canvas" id="ab-canvas-a"></canvas>
+    </div>
+    <div class="ab-divider"></div>
+    <div class="ab-section" id="ab-section-b" onclick="handleABSectionClick(event,'b')">
+      <div class="ab-section-header">
+        <span class="ab-badge">B</span>
+        <span class="ab-section-name" id="ab-name-b">—</span>
+      </div>
+      <canvas class="ab-canvas" id="ab-canvas-b"></canvas>
+    </div>
+  </div>
+  <div class="exp-cover-wrap" id="exp-cover-wrap">
     <div class="exp-cover" id="exp-cover">
       <span class="cover-placeholder">♬</span>
     </div>
   </div>
-  <div class="exp-meta">
+  <div class="exp-meta" id="exp-meta">
     <div class="exp-name" id="exp-name">Ingen låt vald</div>
     <div class="exp-sub" id="exp-sub">—</div>
   </div>
   <div class="exp-waveform-wrap" id="exp-waveform-wrap">
     <canvas id="waveform-canvas"></canvas>
   </div>
-  <div class="exp-time-row">
+  <div class="exp-time-row" id="exp-time-row">
     <span id="exp-time-cur">0:00</span>
     <span id="exp-time-tot">—</span>
   </div>
@@ -435,6 +476,8 @@
     Lägg låtar i undermappar — varje mapp blir ett paket/spellista. Lägg en bild döpt <code>cover.jpg</code> i mappen för omslagsbild.</p>
     <p><strong>3. Offline</strong><br>
     Öppna ett paket och tryck "Ladda ner paket". Filerna sparas lokalt i webbläsaren och finns kvar nästa session. En grön bock visar vilka låtar som är sparade.</p>
+    <p><strong>4. A/B-jämförelseläge</strong><br>
+    Tryck <strong>A/B</strong>-knappen i spellistan för att aktivera jämförelseläget. Varje låt får då A- och B-knappar — tryck för att tilldela låtar till respektive plats. I den utvidgade spelaren visas A och B med vågform; tryck på ett avsnitt för att växla vilket spår som spelas. Låten loopar automatiskt så du kan lyssna i lugn och ro. Tryck <strong>A/B</strong> igen för att stänga av läget.</p>
     <div class="config-actions" style="margin-top:14px">
       <button class="btn btn-primary" onclick="closeModal('help-modal');openSettings()">Öppna inställningar</button>
     </div>
@@ -552,6 +595,14 @@ let linkCache   = {};
 let activeObjUrl= null;
 let durationCache  = {}; // rev → seconds (in-memory, backed by localStorage)
 let waveformCache  = {}; // rev → Float32Array (in-memory, backed by localStorage)
+
+// A/B comparison mode state
+let abMode        = false;
+let abA           = null;   // global track index for slot A, or null
+let abB           = null;   // global track index for slot B, or null
+let abActiveSlot  = 'a';   // 'a' or 'b' — which slot is currently playing
+let waveformDataA = null;   // Float32Array of peaks for slot A
+let waveformDataB = null;   // Float32Array of peaks for slot B
 
 function loadDurationCache() {
   try { durationCache = JSON.parse(localStorage.getItem(LS_DUR_KEY)||'{}'); } catch(e){ durationCache={}; }
@@ -1106,12 +1157,17 @@ function renderTrackList(pkgTracks) {
   const checkSvg = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
   const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
 
+  list.classList.toggle('ab-mode-active', abMode);
   let html = '<div class="pkg-section">';
   pkgTracks.forEach((t,i) => {
     const gi      = tracks.indexOf(t);
     const isActive= gi===currentIdx;
     const isPlay  = isActive&&isPlaying;
     const synced  = isSynced(t);
+    const abBtns  = `<div class="track-ab-btns">
+      <button class="track-ab-btn${abA===gi?' ab-sel':''}" onclick="setABSlot('a',${gi},event)">A</button>
+      <button class="track-ab-btn${abB===gi?' ab-sel':''}" onclick="setABSlot('b',${gi},event)">B</button>
+    </div>`;
     html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrack(${gi})">
       <div class="track-num">${i+1}</div>
       <div class="track-bars"><span></span><span></span><span></span></div>
@@ -1119,6 +1175,7 @@ function renderTrackList(pkgTracks) {
         <div class="track-name">${escHtml(t.name)}</div>
         <div class="track-meta">${t.ext}</div>
       </div>
+      ${abBtns}
       <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
       <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
     </div>`;
@@ -1385,7 +1442,7 @@ audio.addEventListener('timeupdate',()=>{
     saveState();
   }
 });
-audio.addEventListener('ended',()=>nextTrack(true));
+audio.addEventListener('ended',()=>{ if(abMode){audio.currentTime=0;audio.play();return;} nextTrack(true); });
 audio.addEventListener('play', ()=>{
   isPlaying=true; setPlayIcon(true);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
@@ -1415,8 +1472,14 @@ let expOpen = false;
 function openExpandedPlayer() {
   expPanel.classList.add('open');
   expOpen = true;
-  syncExpandedMeta();
-  drawWaveform();
+  if (abMode && abA !== null && abB !== null) {
+    showABExpandedLayout();
+    updateABExpandedUI();
+  } else {
+    hideABExpandedLayout();
+    syncExpandedMeta();
+    drawWaveform();
+  }
 }
 function closeExpandedPlayer() {
   expPanel.classList.remove('open');
@@ -1425,6 +1488,7 @@ function closeExpandedPlayer() {
 
 function syncExpandedMeta() {
   if (!expOpen) return;
+  if (abMode && abA !== null && abB !== null) { updateABExpandedUI(); return; }
   const t = tracks[currentIdx];
   expName.textContent = t ? t.name : 'Ingen låt vald';
   expSub.textContent  = t ? (t.package ? formatPkgName(t.package) : 'Alla låtar') : '—';
@@ -1486,6 +1550,7 @@ async function buildWaveform(objUrl, track) {
     if (cached) {
       waveformData = cached;
       waveformPath = track.path;
+      if (abMode) { if (abActiveSlot === 'a') waveformDataA = cached; else waveformDataB = cached; }
       if (expOpen) drawWaveform();
       return;
     }
@@ -1514,6 +1579,7 @@ async function buildWaveform(objUrl, track) {
     for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
     waveformData = peaks;
     waveformPath = track.path;
+    if (abMode) { if (abActiveSlot === 'a') waveformDataA = peaks; else waveformDataB = peaks; }
     // Spara i cache om vi har en rev att knyta till
     if (rev) saveWaveformToCache(rev, peaks);
     if (expOpen) drawWaveform();
@@ -1523,6 +1589,7 @@ async function buildWaveform(objUrl, track) {
 }
 
 function drawWaveform() {
+  if (abMode && abA !== null && abB !== null) { drawABWaveforms(); return; }
   const canvas = document.getElementById('waveform-canvas');
   if (!canvas) return;
   const dpr = window.devicePixelRatio || 1;
@@ -1574,6 +1641,197 @@ document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
   const r = e.currentTarget.getBoundingClientRect();
   audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
 });
+
+// ═══════════════════════════════════════════════
+//  A/B COMPARISON MODE
+// ═══════════════════════════════════════════════
+function showABExpandedLayout() {
+  document.getElementById('ab-expanded-content').classList.add('ab-visible');
+  document.getElementById('exp-cover-wrap').style.display = 'none';
+  document.getElementById('exp-meta').style.display = 'none';
+  document.getElementById('exp-waveform-wrap').style.display = 'none';
+  document.getElementById('exp-time-row').style.display = 'none';
+  document.getElementById('exp-seek-wrap').style.display = 'none';
+}
+function hideABExpandedLayout() {
+  document.getElementById('ab-expanded-content').classList.remove('ab-visible');
+  document.getElementById('exp-cover-wrap').style.display = '';
+  document.getElementById('exp-meta').style.display = '';
+  document.getElementById('exp-waveform-wrap').style.display = '';
+  document.getElementById('exp-time-row').style.display = '';
+  document.getElementById('exp-seek-wrap').style.display = '';
+}
+
+function updateABExpandedUI() {
+  const tA = abA !== null ? tracks[abA] : null;
+  const tB = abB !== null ? tracks[abB] : null;
+  document.getElementById('ab-name-a').textContent = tA ? tA.name : '—';
+  document.getElementById('ab-name-b').textContent = tB ? tB.name : '—';
+  document.getElementById('ab-section-a').classList.toggle('ab-inactive', abActiveSlot !== 'a');
+  document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
+  const badge = document.getElementById('np-ab-badge');
+  if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
+  drawABWaveforms();
+}
+
+function drawABWaveforms() {
+  drawOneABCanvas('a');
+  drawOneABCanvas('b');
+}
+
+function drawOneABCanvas(slot) {
+  const canvas = document.getElementById(`ab-canvas-${slot}`);
+  if (!canvas || !canvas.offsetWidth) return;
+  const isActive = slot === abActiveSlot;
+  const data = slot === 'a' ? waveformDataA : waveformDataB;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight || 60;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+  const bins = data ? data.length : 200;
+  const barW = Math.max(1, (W / bins) - 0.5);
+  const gap  = (W / bins) - barW;
+  const prog = (isActive && audio.duration) ? (audio.currentTime / audio.duration) : 0;
+  const progX = prog * W;
+  const gold    = '#c9a84c';
+  const goldDim = isActive ? 'rgba(201,168,76,0.28)' : 'rgba(201,168,76,0.14)';
+  const midLine = H / 2;
+  for (let i = 0; i < bins; i++) {
+    const x   = i * (barW + gap);
+    const amp = data ? data[i] : 0.3;
+    const barH = Math.max(2, amp * midLine * 0.95);
+    const played = isActive && (x + barW / 2) < progX;
+    ctx.fillStyle = played ? gold : goldDim;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, midLine - barH, barW, barH * 2, 1);
+    else ctx.rect(x, midLine - barH, barW, barH * 2);
+    ctx.fill();
+  }
+  if (isActive && audio.duration) {
+    ctx.strokeStyle = gold;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(progX, 0);
+    ctx.lineTo(progX, H);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function handleABSectionClick(e, slot) {
+  if (slot !== abActiveSlot) {
+    switchABSlot(slot);
+  } else {
+    if (!audio.duration) return;
+    const canvas = document.getElementById(`ab-canvas-${slot}`);
+    if (!canvas) return;
+    const r = canvas.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  }
+}
+
+async function switchABSlot(slot) {
+  if (slot === abActiveSlot) return;
+  const savedTime = audio.currentTime;
+  const targetIdx = slot === 'a' ? abA : abB;
+  if (targetIdx === null) return;
+  abActiveSlot = slot;
+  await playTrack(targetIdx);
+  if (isFinite(savedTime) && savedTime > 0 && audio.duration) {
+    audio.currentTime = Math.min(savedTime, audio.duration);
+  }
+  updateABExpandedUI();
+}
+
+function toggleABMode() {
+  abMode = !abMode;
+  const btn = document.getElementById('ab-mode-btn');
+  if (btn) btn.classList.toggle('btn-ab-active', abMode);
+  if (!abMode) {
+    abA = null; abB = null;
+    waveformDataA = null; waveformDataB = null;
+    abActiveSlot = 'a';
+    const badge = document.getElementById('np-ab-badge');
+    if (badge) badge.classList.remove('ab-visible');
+    if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
+  }
+  refreshView();
+}
+
+function setABSlot(slot, gi, event) {
+  event.stopPropagation();
+  if (slot === 'a') {
+    if (abB === gi) abB = null;
+    if (abA === gi) { abA = null; }
+    else { abA = gi; abActiveSlot = 'a'; playTrack(gi); }
+  } else {
+    if (abA === gi) abA = null;
+    if (abB === gi) { abB = null; }
+    else { abB = gi; preloadBWaveform(gi); }
+  }
+  if (abA !== null && abB !== null) {
+    if (!expOpen) openExpandedPlayer();
+    else { showABExpandedLayout(); updateABExpandedUI(); }
+  } else if (expOpen) {
+    hideABExpandedLayout();
+    syncExpandedMeta();
+    drawWaveform();
+  }
+  const pool = activePkg === 'all' || activePkg === null ? tracks : tracks.filter(t => t.package === activePkg);
+  renderTrackList(pool);
+}
+
+async function preloadBWaveform(gi) {
+  const t = tracks[gi];
+  if (!t) return;
+  if (t.rev) {
+    const cached = getWaveformFromCache(t.rev);
+    if (cached) { waveformDataB = cached; if (expOpen && abMode) drawABWaveforms(); return; }
+  }
+  try {
+    let url, shouldRevoke = false;
+    const stored = await idbGet(t.path);
+    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+    if (stored && revMatch) { url = URL.createObjectURL(stored.blob); shouldRevoke = true; }
+    else { url = await getTmpLink(t.path); }
+    await buildWaveformForB(url, t);
+    if (shouldRevoke) URL.revokeObjectURL(url);
+  } catch(e) {}
+}
+
+async function buildWaveformForB(objUrl, track) {
+  const rev = track?.rev || null;
+  if (rev) {
+    const cached = getWaveformFromCache(rev);
+    if (cached) { waveformDataB = cached; if (expOpen && abMode) drawABWaveforms(); return; }
+  }
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const resp = await fetch(objUrl);
+    const buf  = await resp.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(buf);
+    ctx.close();
+    const ch   = decoded.getChannelData(0);
+    const bins = 200;
+    const step = Math.floor(ch.length / bins);
+    const peaks = new Float32Array(bins);
+    for (let i = 0; i < bins; i++) {
+      let max = 0;
+      for (let j = 0; j < step; j++) { const v = Math.abs(ch[i * step + j] || 0); if (v > max) max = v; }
+      peaks[i] = max;
+    }
+    const maxPeak = Math.max(...peaks, 0.001);
+    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
+    waveformDataB = peaks;
+    if (rev) saveWaveformToCache(rev, peaks);
+    if (expOpen && abMode) drawABWaveforms();
+  } catch(e) {}
+}
 
 // ═══════════════════════════════════════════════
 //  SEARCH
@@ -1651,6 +1909,7 @@ document.getElementById('help-btn').addEventListener('click',()=>document.getEle
 document.getElementById('back-btn').addEventListener('click',()=>{if(searchQuery){closeSearch();}else{showLibrary();}});
 document.getElementById('sync-pkg-btn').addEventListener('click',()=>syncPackage(activePkg));
 document.getElementById('delete-pkg-btn').addEventListener('click',async()=>{if(confirm(`Ta bort lokalt sparade filer för "${activePkg==='all'?'alla låtar':formatPkgName(activePkg)}"?`))await deletePackageLocal(activePkg);});
+document.getElementById('ab-mode-btn').addEventListener('click', toggleABMode);
 
 playBtn.addEventListener('click',togglePlay);
 document.getElementById('prev-btn').addEventListener('click',prevTrack);
