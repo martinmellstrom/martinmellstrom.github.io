@@ -307,6 +307,7 @@
     cursor: pointer;
     border: none;
   }
+  .exp-gain-slider:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
   .exp-gain-value {
     font-size: 10px;
     font-family: 'Space Mono', monospace;
@@ -321,13 +322,13 @@
     align-items: center;
     gap: 10px;
     padding: 6px 0 2px;
-    margin-top: 10px;
+    margin-top: 18px;
   }
 </style>
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.14</strong> — Progressbar borttagen; gain-kontroll förbättrad (storlek, horisontell input, A/B-luft). <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.15</strong> — A/B-buggar fixade: gain inaktiverat på passivt spår, slot-synk vid direktklick, badge-uppdatering. <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -1463,6 +1464,12 @@ async function playTrack(idx) {
   lastSavedPosition = audio.currentTime || 0;
   saveState();
   currentIdx=idx;
+  if (abMode) {
+    if (idx === abA) abActiveSlot = 'a';
+    else if (idx === abB) abActiveSlot = 'b';
+    const badge = document.getElementById('np-ab-badge');
+    if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
+  }
   const t=tracks[idx];
   npName.textContent=t.name;
   npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
@@ -1860,6 +1867,8 @@ function updateABExpandedUI() {
   document.getElementById('ab-name-b').textContent = tB ? tB.name : '—';
   document.getElementById('ab-section-a').classList.toggle('ab-inactive', abActiveSlot !== 'a');
   document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
+  abGainSliderA.disabled = abActiveSlot !== 'a';
+  abGainSliderB.disabled = abActiveSlot !== 'b';
   const badge = document.getElementById('np-ab-badge');
   if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
   drawABWaveforms();
