@@ -1447,7 +1447,7 @@ audio.addEventListener('timeupdate',()=>{
     saveState();
   }
 });
-audio.addEventListener('ended',()=>nextTrack(true));
+audio.addEventListener('ended',()=>{ if(abMode){audio.currentTime=0;audio.play();return;} nextTrack(true); });
 audio.addEventListener('play', ()=>{
   isPlaying=true; setPlayIcon(true);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
