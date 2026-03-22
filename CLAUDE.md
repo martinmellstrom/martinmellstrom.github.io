@@ -86,6 +86,8 @@ Claude (both claude.ai and Claude Code) must flag and propose updates to these i
 
 **Always edit staging first. Never touch live files until Martin approves.**
 
+**In Claude Code:** when working on a feature branch, only edit the staging file (`staging/staging_*.html`). Never edit the live file (`index.html`, `player.html`, etc.) in the same commit or branch as staging — live edits must be a separate step after explicit approval. A branch merge to main must not include live file changes unless Martin has approved staging.
+
 1. **Always fetch the live file via `github:get_file_contents`** (owner: martinmellstrom, repo: martinmellstrom.github.io) — this is the only reliable source of truth. **Never use `web_fetch` from raw.githubusercontent.com** — CDN-cached and may be hours stale. Never use the existing staging file as a base.
 2. Apply the intended changes to the fetched live content.
 3. Add staging-specific modifications (see `docs/staging.md`).
@@ -123,12 +125,14 @@ Format: `🔗 [Kontrollera i Safari](URL)` — never plain text.
 ## Claude Code / terminal workflow
 ```bash
 git pull
-# Edit staging file with str_replace
+# STEP 1 — edit ONLY the staging file, never the live file
 git add staging/staging_*.html
 git commit -m "staging: short description"
 git push
-# After approval:
-git add index.html
+# Wait for Martin's explicit approval before touching live files
+
+# STEP 2 — after approval only:
+git add index.html   # or player.html etc — NEVER in same commit as staging
 git commit -m "live: short description"
 git push
 ```
@@ -173,3 +177,4 @@ Rules:
 - When in doubt, read the relevant `docs/` file before proceeding
 - **Proactively flag instruction updates** — see "Instruction maintenance" above
 - **claude.ai never writes HTML** — delegate to Claude Code via Guide 07
+- **Never edit live files on a feature branch** — staging and live are always separate commits; live is only touched after Martin's explicit approval of staging
