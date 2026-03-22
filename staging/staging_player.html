@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.17</strong> — Inaktiv A/B-gain: opacity 0.25 (ej hidden); titel+vågform+gain 10px upp i normalläge. <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.18</strong> — Inaktiv A/B-gain: opacity 0.25 via inline-stil i JS (ej CSS-kaskad); titel+vågform+gain 10px upp i normalläge. <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -1868,6 +1868,8 @@ function updateABExpandedUI() {
   document.getElementById('ab-name-b').textContent = tB ? tB.name : '—';
   document.getElementById('ab-section-a').classList.toggle('ab-inactive', abActiveSlot !== 'a');
   document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
+  document.querySelector('#ab-section-a .ab-gain-row').style.opacity = abActiveSlot === 'a' ? '' : '0.25';
+  document.querySelector('#ab-section-b .ab-gain-row').style.opacity = abActiveSlot === 'b' ? '' : '0.25';
   abGainSliderA.disabled = abActiveSlot !== 'a';
   abGainSliderB.disabled = abActiveSlot !== 'b';
   const badge = document.getElementById('np-ab-badge');
