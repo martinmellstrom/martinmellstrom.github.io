@@ -122,6 +122,33 @@ Format: `🔗 [Kontrollera i Safari](URL)` — never plain text.
 
 ---
 
+## Build number versioning (player.html only)
+
+`player.html` uses an incrementing integer build number stored as a JS constant:
+
+```js
+const PLAYER_VERSION = 42;
+```
+
+**Rules — apply on every player.html deploy:**
+
+1. Read `PLAYER_VERSION` from the live `player.html` before building staging.
+2. Increment by 1. Use this value for the entire deploy (staging + live).
+3. **Staging banner** must include the build number:
+   ```
+   ⚠ STAGING — build 43 — Detta är en förhandsvisning.
+   ```
+4. **Report to Martin** when staging is pushed:
+   > "Deployat till staging — build 43"
+5. **Git commit message** when promoting to live:
+   ```
+   Deploy player.html build 43
+   ```
+6. **Notion changelog** entry (when logged): include build number.
+7. The constant exists in live code but is **never shown in the player UI**.
+
+---
+
 ## Claude Code / terminal workflow
 ```bash
 git pull
@@ -178,3 +205,4 @@ Rules:
 - **Proactively flag instruction updates** — see "Instruction maintenance" above
 - **claude.ai never writes HTML** — delegate to Claude Code via Guide 07
 - **Never edit live files on a feature branch** — staging and live are always separate commits; live is only touched after Martin's explicit approval of staging
+- **player.html build number** — always read `PLAYER_VERSION` from live, increment by 1, include in staging banner, commit message, and report to Martin. See "Build number versioning" section above.
