@@ -2114,20 +2114,43 @@ function handleABSectionClick(e, slot) {
   }
 }
 
+// Söker framåt i bufferten efter nästa negativ→positiv nollgenomgång.
+// Max söktid 5 ms — ger bara några samples extra fördröjning vid byte.
+function findNextZeroCrossing(audioBuffer, fromSeconds) {
+  const ch = audioBuffer.getChannelData(0);
+  const sr = audioBuffer.sampleRate;
+  const start = Math.floor(fromSeconds * sr);
+  const limit = Math.min(start + Math.floor(0.005 * sr), ch.length - 1);
+  for (let i = start; i < limit; i++) {
+    if (ch[i] <= 0 && ch[i + 1] > 0) return (i + 1) / sr;
+  }
+  return fromSeconds; // fallback om ingen crossing hittas inom 5 ms
+}
+
 function switchABSlot(slot) {
   if (slot === abActiveSlot) return;
   const FADE = 0.04; // 40 ms cross-fade
   ensureAudioGraph();
   const now = audioCtx.currentTime;
+  const currentOffset = abStartOffset + (now - abStartContextTime);
+
+  // Hitta nästa nollgenomgång i utgående buffert (max 5 ms framåt)
+  const outBuf = abActiveSlot === 'a' ? abAudioBufA : abAudioBufB;
+  const zcOffset = outBuf ? findNextZeroCrossing(outBuf, currentOffset) : currentOffset;
+  const fadeStart = now + Math.max(0, zcOffset - currentOffset);
+
   abActiveSlot = slot;
-  // Cross-fade: aktiv slot fadear in till sitt gainDb-värde, inaktiv fadear ut
+  // Cross-fade: aktiv slot fadear in, inaktiv ut.
+  // setValueAtTime förankrar startvärdet — krävs för korrekt linearRamp i alla browsers.
   if (abGainNodeA) {
     abGainNodeA.gain.cancelScheduledValues(now);
-    abGainNodeA.gain.linearRampToValueAtTime(slot === 'a' ? dbToGain(gainDbA) : 0, now + FADE);
+    abGainNodeA.gain.setValueAtTime(abGainNodeA.gain.value, now);
+    abGainNodeA.gain.linearRampToValueAtTime(slot === 'a' ? dbToGain(gainDbA) : 0, fadeStart + FADE);
   }
   if (abGainNodeB) {
     abGainNodeB.gain.cancelScheduledValues(now);
-    abGainNodeB.gain.linearRampToValueAtTime(slot === 'b' ? dbToGain(gainDbB) : 0, now + FADE);
+    abGainNodeB.gain.setValueAtTime(abGainNodeB.gain.value, now);
+    abGainNodeB.gain.linearRampToValueAtTime(slot === 'b' ? dbToGain(gainDbB) : 0, fadeStart + FADE);
   }
   // Uppdatera currentIdx och mini-player UI
   const targetIdx = slot === 'a' ? abA : abB;
