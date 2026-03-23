@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.23</strong> — Inaktiv A/B-gain: display:none (ej visibility:hidden) — iOS renderar native slider-thumb utanför visibility-systemet. <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.24-debug</strong> — Loggar bounding rect för alla GAIN-labels för att identifiera vilket element som syns. <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -1885,6 +1885,11 @@ function updateABExpandedUI() {
   const _secB = document.getElementById('ab-section-b');
   const _expGR = document.getElementById('exp-gain-row');
   abDebug(`updateABExpandedUI: slot=${abActiveSlot} | secB.inactive=${_secB?.classList.contains('ab-inactive')} | grB.display="${_grB?.style.display}" | sliderB.disabled=${abGainSliderB.disabled} | expGainRow.display="${_expGR?.style.display}"`);
+  document.querySelectorAll('.exp-gain-label').forEach((el, i) => {
+    const r = el.getBoundingClientRect();
+    const d = getComputedStyle(el.parentElement).display;
+    abDebug(`  gainLabel[${i}] parent="${el.parentElement?.id||el.parentElement?.className}" computed=${d} top=${r.top.toFixed(0)} h=${r.height.toFixed(0)}`);
+  });
 }
 
 function drawABWaveforms() {
