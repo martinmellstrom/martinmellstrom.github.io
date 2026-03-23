@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.25-debug</strong> — Debugpanel uppgraderad: dropdown, kopieringsknapp, 50 rader, scrollbar. <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.26-debug</strong> — Fix: iOS Safari repaint-bugg vid slot-byte (offsetHeight-flush efter updateABExpandedUI). <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -2003,12 +2003,14 @@ async function switchABSlot(slot) {
   if (targetIdx === null) return;
   abActiveSlot = slot;
   updateABExpandedUI();          // omedelbar UI-uppdatering innan laddning
+  void document.getElementById('ab-expanded-content').offsetHeight; // tvinga iOS Safari repaint
   await playTrack(targetIdx);
   applyGain(slot === 'a' ? gainDbA : gainDbB);
   if (isFinite(savedTime) && savedTime > 0 && audio.duration) {
     audio.currentTime = Math.min(savedTime, audio.duration);
   }
   updateABExpandedUI();
+  void document.getElementById('ab-expanded-content').offsetHeight; // tvinga iOS Safari repaint
 }
 
 function toggleABMode() {
