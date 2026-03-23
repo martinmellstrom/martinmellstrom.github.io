@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 7 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 8 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 7;
+const PLAYER_VERSION = 8;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -2189,20 +2189,18 @@ function toggleABMode() {
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
     ensureAudioGraph();
-    gainNode.gain.value = 1.0;
-    // iOS-unlock: audio.play() måste ha anropats minst en gång för att
-    // AudioBufferSourceNode ska producera ljud. Anropa det här (mutat) om
-    // audio.src är satt (dvs ett spår har laddats). Anropas bara en gång
-    // vid aktivering, inte vid varje A/B-knapptryckning.
-    if (audio.src && audio.src !== window.location.href) {
-      const wasMuted = audio.muted;
-      audio.muted = true;
-      audio.play()
-        .then(() => { audio.pause(); audio.muted = wasMuted; })
-        .catch(() => { audio.muted = wasMuted; });
-    }
+    // gainNode.gain = 0 tystar audio-elementet i Web Audio-grafen men
+    // låter det förbli "spelande" ur iOS audio-sessionens perspektiv.
+    // A/B-källor kopplar direkt till destination och påverkas inte av gainNode.
+    gainNode.gain.value = 0;
+    // iOS-unlock: spela audio-elementet (tyst via gainNode=0) och pausa det INTE här.
+    // Sessionen måste förbli aktiv tills launch() i startABPlayback anropar audio.pause()
+    // och omedelbart startar AudioBufferSourceNode. Om vi pausar här hinner sessionen
+    // stänga innan buffertar är laddade — det är den ursprungliga buggen.
+    audio.play().catch(() => {});
   } else {
-    // Städning — stoppa sources och frigör resurser
+    // Städning — stoppa sources, audio-elementet och frigör resurser
+    audio.pause();
     stopABRaf();
     [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
     abSourceA = null; abSourceB = null;
@@ -2214,8 +2212,8 @@ function toggleABMode() {
     abA = null; abB = null;
     waveformDataA = null; waveformDataB = null;
     abActiveSlot = 'a';
-    // Återställ gainNode till aktuell gain
-    if (gainNode && audioCtx) gainNode.gain.setValueAtTime(dbToGain(currentGainDb), audioCtx.currentTime);
+    // Återställ gainNode till aktuell gain (sattes till 0 vid AB-aktivering)
+    if (gainNode && audioCtx) gainNode.gain.value = dbToGain(currentGainDb);
     const badge = document.getElementById('np-ab-badge');
     if (badge) badge.classList.remove('ab-visible');
     if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
