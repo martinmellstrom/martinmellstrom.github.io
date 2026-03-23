@@ -264,7 +264,7 @@
   .ab-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .ab-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--gold); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; line-height: 1.5; }
   .ab-section.ab-inactive .ab-badge { background: var(--gold-dim); }
-  .ab-section.ab-inactive .ab-gain-row { visibility: hidden; }
+  .ab-section.ab-inactive .ab-gain-row { display: none; }
   .ab-section-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
   .ab-canvas { width: 100%; height: 60px; display: block; border-radius: 4px; }
   .ab-divider { height: 1px; background: var(--border); margin: 0 20px; flex-shrink: 0; }
@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.22-debug</strong> — Loggar nu även exp-gain-row.display för att identifiera vilket element som syns. <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.23</strong> — Inaktiv A/B-gain: display:none (ej visibility:hidden) — iOS renderar native slider-thumb utanför visibility-systemet. <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -1872,8 +1872,8 @@ function updateABExpandedUI() {
   document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
   const grA = document.querySelector('#ab-section-a .ab-gain-row');
   const grB = document.querySelector('#ab-section-b .ab-gain-row');
-  if (grA) grA.style.visibility = abActiveSlot === 'a' ? '' : 'hidden';
-  if (grB) grB.style.visibility = abActiveSlot === 'b' ? '' : 'hidden';
+  if (grA) grA.style.display = abActiveSlot === 'a' ? '' : 'none';
+  if (grB) grB.style.display = abActiveSlot === 'b' ? '' : 'none';
   abGainSliderA.disabled = abActiveSlot !== 'a';
   abGainSliderB.disabled = abActiveSlot !== 'b';
   const badge = document.getElementById('np-ab-badge');
@@ -1884,7 +1884,7 @@ function updateABExpandedUI() {
   const _grB = document.querySelector('#ab-section-b .ab-gain-row');
   const _secB = document.getElementById('ab-section-b');
   const _expGR = document.getElementById('exp-gain-row');
-  abDebug(`updateABExpandedUI: slot=${abActiveSlot} | secB.inactive=${_secB?.classList.contains('ab-inactive')} | grB.visibility="${_grB?.style.visibility}" | sliderB.disabled=${abGainSliderB.disabled} | expGainRow.display="${_expGR?.style.display}"`);
+  abDebug(`updateABExpandedUI: slot=${abActiveSlot} | secB.inactive=${_secB?.classList.contains('ab-inactive')} | grB.display="${_grB?.style.display}" | sliderB.disabled=${abGainSliderB.disabled} | expGainRow.display="${_expGR?.style.display}"`);
 }
 
 function drawABWaveforms() {
