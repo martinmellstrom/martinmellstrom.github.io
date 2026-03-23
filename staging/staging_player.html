@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 6 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 7 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 6;
+const PLAYER_VERSION = 7;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -843,8 +843,7 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    audio.pause();      // stoppa audio-elementet; pause-eventet ignoreras via guard
-    audio.muted = false;
+    audio.pause(); // stoppa audio-elementet; pause-eventet ignoreras av abMode-guard
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
 
@@ -1749,12 +1748,12 @@ audio.addEventListener('timeupdate',()=>{
 });
 audio.addEventListener('ended',()=>{ if(abMode){audio.currentTime=0;audio.play();return;} nextTrack(true); });
 audio.addEventListener('play', ()=>{
-  if (abIsPlaying) return; // A/B spelar — audio-elementets play-event ska inte styra UI
+  if (abMode) return; // I A/B-läge styr audio-elementets events inte play-ikonen
   isPlaying=true; setPlayIcon(true);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
 });
 audio.addEventListener('pause',()=>{
-  if (abIsPlaying) return; // A/B spelar — audio-elementets pause-event ska inte styra UI
+  if (abMode) return; // I A/B-läge styr audio-elementets events inte play-ikonen
   isPlaying=false;setPlayIcon(false);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
 });
@@ -2189,9 +2188,19 @@ function toggleABMode() {
   const btn = document.getElementById('ab-mode-btn');
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
-    // Neutralisera gainNode — all gain-styrning sker via abGainNodeA/B
     ensureAudioGraph();
-    gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
+    gainNode.gain.value = 1.0;
+    // iOS-unlock: audio.play() måste ha anropats minst en gång för att
+    // AudioBufferSourceNode ska producera ljud. Anropa det här (mutat) om
+    // audio.src är satt (dvs ett spår har laddats). Anropas bara en gång
+    // vid aktivering, inte vid varje A/B-knapptryckning.
+    if (audio.src && audio.src !== window.location.href) {
+      const wasMuted = audio.muted;
+      audio.muted = true;
+      audio.play()
+        .then(() => { audio.pause(); audio.muted = wasMuted; })
+        .catch(() => { audio.muted = wasMuted; });
+    }
   } else {
     // Städning — stoppa sources och frigör resurser
     stopABRaf();
@@ -2217,11 +2226,6 @@ function toggleABMode() {
 function setABSlot(slot, gi, event) {
   event.stopPropagation();
   ensureAudioGraph();
-  // iOS-unlock: audio.play() måste anropas synkront i click-handler för att
-  // aktivera iOS audio-sessionen. Utan detta är AudioBufferSourceNode tyst
-  // även om AudioContext är running. Mutar elementet för att undvika hörbart brus.
-  audio.muted = true;
-  audio.play().catch(() => {});
   if (slot === 'a') {
     if (abB === gi) abB = null;
     if (abA === gi) {
