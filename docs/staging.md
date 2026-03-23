@@ -76,8 +76,8 @@ nav  { top: 36px; }   /* shift fixed nav below banner */
 
 <!-- Banner HTML (first element in <body>) -->
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — Detta är en förhandsvisning.
-  <a href="/index.html">Gå till live-sidan →</a>  <!-- adjust path per file -->
+  <strong>⚠ STAGING</strong> — build N — Detta är en förhandsvisning.
+  <a href="/player.html">Gå till live-sidan →</a>
 </div>
 ```
 
@@ -130,3 +130,32 @@ If a change specifically affects `player.html`, create a full copy in staging fo
 2. Apply the change
 3. Add the staging banner
 4. After approval, apply to live `player.html` and restore staging to the iframe wrapper
+
+## Build number versioning (player.html only)
+
+`player.html` uses an incrementing integer build number stored as a JS constant:
+
+```js
+const PLAYER_VERSION = 42;
+```
+
+**Every push to GitHub increments the build number by 1** — staging and live are counted separately.
+
+### Example flow
+| Step | Action | Build number |
+|---|---|---|
+| Start | Read `PLAYER_VERSION` from live | 42 |
+| Step 1 | Push to staging | 43 — write `PLAYER_VERSION = 43` in staging file |
+| Step 2 | Push to live (promotion) | 44 — write `PLAYER_VERSION = 44` in live file |
+
+### Rules
+1. **Always read `PLAYER_VERSION` from the live file first** — never assume the number.
+2. Staging gets `live + 1`. Live promotion gets `staging + 1`.
+3. **Staging banner** must show the build number:
+   ```
+   ⚠ STAGING — build 43 — Detta är en förhandsvisning.
+   ```
+4. **Report to Martin** when staging is pushed: `"Deployat till staging — build 43"`
+5. **Git commit message** for live promotion: `Deploy player.html build 44`
+6. **Notion changelog** entry (when logged): include build number.
+7. `PLAYER_VERSION` is never shown in the player UI — internal tracking only.
