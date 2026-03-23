@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 3 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 4 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 3;
+const PLAYER_VERSION = 4;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -839,18 +839,29 @@ function startABPlayback(slot, offsetSeconds) {
   abSourceB.buffer = bufB;
   abSourceB.connect(abGainNodeB);
 
-  const offset = Math.max(0, Math.min(offsetSeconds, bufA.duration, bufB.duration));
-  abStartOffset = offset;
-  abStartContextTime = audioCtx.currentTime;
-  abIsPlaying = true;
+  // Starta källorna först efter att kontexten garanterat är igång.
+  // audioCtx.resume() är asynkron — utan await kan .start() anropas mot en
+  // fortfarande suspended kontext (vanligt på iOS utan tidigare audio.play()).
+  const launch = () => {
+    const offset = Math.max(0, Math.min(offsetSeconds, bufA.duration, bufB.duration));
+    abStartOffset = offset;
+    abStartContextTime = audioCtx.currentTime;
+    abIsPlaying = true;
 
-  abSourceA.start(0, offset);
-  abSourceB.start(0, offset);
+    abSourceA.start(0, offset);
+    abSourceB.start(0, offset);
 
-  const activeSrc = slot === 'a' ? abSourceA : abSourceB;
-  activeSrc.onended = () => {
-    if (abIsPlaying) { startABPlayback(abActiveSlot, 0); }
+    const activeSrc = slot === 'a' ? abSourceA : abSourceB;
+    activeSrc.onended = () => {
+      if (abIsPlaying) { startABPlayback(abActiveSlot, 0); }
+    };
   };
+
+  if (audioCtx.state === 'running') {
+    launch();
+  } else {
+    audioCtx.resume().then(launch).catch(e => console.warn('AB resume failed:', e));
+  }
 }
 
 function getABCurrentTime() {
@@ -2195,6 +2206,9 @@ function toggleABMode() {
 
 function setABSlot(slot, gi, event) {
   event.stopPropagation();
+  // Säkerställ att AudioContext skapas och resumeas synkront inifrån click-handler.
+  // Utan detta kan iOS suspenda kontexten innan buffertarna hinner laddas och starta.
+  ensureAudioGraph();
   if (slot === 'a') {
     if (abB === gi) abB = null;
     if (abA === gi) {
