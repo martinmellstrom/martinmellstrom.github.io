@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.24-debug</strong> — Loggar bounding rect för alla GAIN-labels för att identifiera vilket element som syns. <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.25-debug</strong> — Debugpanel uppgraderad: dropdown, kopieringsknapp, 50 rader, scrollbar. <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -469,8 +469,17 @@
   <div class="exp-handle-bar"></div>
   <!-- A/B expanded content -->
   <div id="ab-expanded-content">
-    <!-- DEBUG PANEL (staging only) -->
-    <div id="ab-debug" style="display:none;font-family:monospace;font-size:9px;line-height:1.5;padding:6px 16px;background:rgba(200,0,0,0.15);color:#ff6666;flex-shrink:0;white-space:pre;"></div>
+    <!-- DEBUG PANEL (staging only) — se docs/debug-panel.md -->
+    <div id="ab-debug-wrap" style="display:none;flex-shrink:0;border-bottom:1px solid rgba(255,68,68,0.2);">
+      <div onclick="abDebugToggle()" style="display:flex;align-items:center;justify-content:space-between;padding:5px 12px;cursor:pointer;font-family:'Space Mono',monospace;font-size:9px;color:#ff8888;letter-spacing:0.1em;text-transform:uppercase;background:rgba(200,0,0,0.2);user-select:none;-webkit-user-select:none;">
+        <span>DEBUG ▸ <span id="ab-debug-count">0</span> rader</span>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <button onclick="event.stopPropagation();abDebugCopy(this)" style="font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.1em;padding:2px 8px;border:1px solid rgba(255,100,100,0.4);background:rgba(255,68,68,0.1);color:#ff8888;border-radius:3px;cursor:pointer;-webkit-tap-highlight-color:transparent;">COPY</button>
+          <span id="ab-debug-arrow">▼</span>
+        </div>
+      </div>
+      <div id="ab-debug" style="display:none;font-family:monospace;font-size:9px;line-height:1.5;padding:6px 16px;color:#ff6666;white-space:pre;overflow-y:auto;max-height:160px;"></div>
+    </div>
     <div class="ab-section" id="ab-section-a" onclick="handleABSectionClick(event,'a')">
       <div class="ab-section-header">
         <span class="ab-badge">A</span>
@@ -1941,13 +1950,37 @@ function drawOneABCanvas(slot) {
   }
 }
 
+// ── DEBUG PANEL (staging only) — se docs/debug-panel.md ──
 function abDebug(msg) {
-  const d = document.getElementById('ab-debug');
-  if (!d) return;
-  d.style.display = 'block';
-  d.textContent = (d.textContent ? d.textContent + '\n' : '') + new Date().toISOString().slice(11,23) + ' ' + msg;
+  const wrap = document.getElementById('ab-debug-wrap');
+  const d    = document.getElementById('ab-debug');
+  const cnt  = document.getElementById('ab-debug-count');
+  if (!d || !wrap) return;
+  wrap.style.display = 'block';
+  const line = new Date().toISOString().slice(11, 23) + ' ' + msg;
+  d.textContent = (d.textContent ? d.textContent + '\n' : '') + line;
   const lines = d.textContent.split('\n');
-  if (lines.length > 8) d.textContent = lines.slice(-8).join('\n');
+  if (lines.length > 50) d.textContent = lines.slice(-50).join('\n');
+  if (cnt) cnt.textContent = d.textContent.split('\n').length;
+  if (d.style.display !== 'none') d.scrollTop = d.scrollHeight;
+}
+function abDebugToggle() {
+  const d     = document.getElementById('ab-debug');
+  const arrow = document.getElementById('ab-debug-arrow');
+  if (!d) return;
+  const open = d.style.display !== 'none';
+  d.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▼' : '▲';
+  if (!open) d.scrollTop = d.scrollHeight;
+}
+function abDebugCopy(btn) {
+  const d = document.getElementById('ab-debug');
+  if (!d || !d.textContent.trim()) return;
+  navigator.clipboard.writeText(d.textContent.trim()).then(() => {
+    if (btn) { const t = btn.textContent; btn.textContent = 'KOPIERAT'; setTimeout(() => { btn.textContent = t; }, 1500); }
+  }).catch(() => {
+    if (btn) { const t = btn.textContent; btn.textContent = 'FEL'; setTimeout(() => { btn.textContent = t; }, 1500); }
+  });
 }
 
 function handleABSectionClick(e, slot) {
