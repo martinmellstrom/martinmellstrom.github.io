@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.21</strong> — Inaktiv A/B-gain: visibility:hidden (ej opacity) — oberoende av iOS opacity-komposit. <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.22-debug</strong> — Loggar nu även exp-gain-row.display för att identifiera vilket element som syns. <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -1883,7 +1883,8 @@ function updateABExpandedUI() {
   // debug
   const _grB = document.querySelector('#ab-section-b .ab-gain-row');
   const _secB = document.getElementById('ab-section-b');
-  abDebug(`updateABExpandedUI: slot=${abActiveSlot} | secB.inactive=${_secB?.classList.contains('ab-inactive')} | grB.visibility="${_grB?.style.visibility}" | sliderB.disabled=${abGainSliderB.disabled}`);
+  const _expGR = document.getElementById('exp-gain-row');
+  abDebug(`updateABExpandedUI: slot=${abActiveSlot} | secB.inactive=${_secB?.classList.contains('ab-inactive')} | grB.visibility="${_grB?.style.visibility}" | sliderB.disabled=${abGainSliderB.disabled} | expGainRow.display="${_expGR?.style.display}"`);
 }
 
 function drawABWaveforms() {
