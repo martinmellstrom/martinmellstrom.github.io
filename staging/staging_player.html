@@ -818,6 +818,9 @@ async function loadABBuffer(gi) {
 
 function startABPlayback(slot, offsetSeconds) {
   ensureAudioGraph();
+  // Nolla onended innan stop — annars triggar ended-callbacken och återstartar från 0
+  if (abSourceA) abSourceA.onended = null;
+  if (abSourceB) abSourceB.onended = null;
   [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
   abSourceA = null; abSourceB = null;
 
