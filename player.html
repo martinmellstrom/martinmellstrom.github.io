@@ -211,7 +211,7 @@
   .exp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .exp-cover .cover-placeholder { font-size: 72px; color: var(--gold-dim); opacity: 0.35; }
 
-  .exp-meta { padding: 12px 24px 4px; text-align: center; flex-shrink: 0; }
+  .exp-meta { padding: 2px 24px 4px; text-align: center; flex-shrink: 0; }
   .exp-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: var(--text); line-height: 1.1; }
   .exp-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.06em; }
 
@@ -220,14 +220,10 @@
   #waveform-canvas { width: 100%; height: 56px; display: block; border-radius: 4px; }
   .exp-time-row { display: flex; justify-content: space-between; padding: 0 20px; font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; letter-spacing: 0.03em; flex-shrink: 0; }
 
-  /* Seek bar inside expanded */
-  .exp-seek-wrap { position: relative; height: 6px; background: var(--border); cursor: pointer; margin: 6px 20px 0; border-radius: 3px; flex-shrink: 0; }
-  .exp-seek-wrap:hover { height: 10px; margin-top: 2px; }
-  .exp-seek-fill { height: 100%; background: var(--gold); width: 0%; border-radius: 3px; pointer-events: none; position: relative; transition: width 0.25s linear; }
-  .exp-seek-fill::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background: var(--gold); border-radius: 50%; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
-  .exp-seek-wrap:hover .exp-seek-fill::after { opacity: 1; }
+  /* Seek bar inside expanded — hidden in normal mode (waveform serves this purpose) */
+  .exp-seek-wrap { display: none; }
 
-  .exp-controls { display: flex; align-items: center; justify-content: center; padding: 10px 8px 8px; flex-shrink: 0; }
+  .exp-controls { display: flex; align-items: center; justify-content: center; padding: 20px 8px 8px; flex-shrink: 0; }
   .exp-controls .ctrl { width: 56px; height: 48px; }
   .exp-controls #play-btn-exp { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0 4px; -webkit-tap-highlight-color: transparent; }
   .exp-controls #play-btn-exp svg { width: 20px; height: 20px; fill: currentColor; }
@@ -258,19 +254,76 @@
   .track-ab-btn.ab-sel { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
   #ab-expanded-content { display: none; flex: 1; min-height: 0; flex-direction: column; }
   #ab-expanded-content.ab-visible { display: flex; }
-  .ab-section { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 10px 20px 14px; cursor: pointer; transition: opacity 0.25s; }
+  .ab-section { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 10px 20px 14px; cursor: pointer; }
   .ab-section.ab-inactive { opacity: 0.35; }
   .ab-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .ab-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--gold); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; line-height: 1.5; }
   .ab-section.ab-inactive .ab-badge { background: var(--gold-dim); }
+  .ab-section.ab-inactive .ab-gain-row { display: none; }
   .ab-section-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
   .ab-canvas { width: 100%; height: 60px; display: block; border-radius: 4px; }
   .ab-divider { height: 1px; background: var(--border); margin: 0 20px; flex-shrink: 0; }
   .np-ab-badge { font-size: 9px; font-weight: 700; background: var(--gold); color: var(--bg); border-radius: 3px; padding: 1px 5px; margin-left: 4px; letter-spacing: 0.1em; display: none; flex-shrink: 0; vertical-align: middle; }
   .np-ab-badge.ab-visible { display: inline-block; }
+
+  /* ── GAIN CONTROL ── */
+  .exp-gain-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 20px 4px;
+    flex-shrink: 0;
+  }
+  .exp-gain-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    width: 34px;
+    flex-shrink: 0;
+    font-family: 'Space Mono', monospace;
+  }
+  .exp-gain-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    accent-color: var(--gold);
+    touch-action: pan-x;
+  }
+  .exp-gain-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: none;
+  }
+  .exp-gain-slider:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+  .exp-gain-value {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--gold);
+    width: 52px;
+    text-align: right;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .ab-gain-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0 2px;
+    margin-top: 18px;
+  }
 </style>
 </head>
 <body>
+
 
 <!-- APP -->
 <div id="app">
@@ -416,6 +469,12 @@
         <span class="ab-section-name" id="ab-name-a">—</span>
       </div>
       <canvas class="ab-canvas" id="ab-canvas-a"></canvas>
+      <div class="ab-gain-row">
+        <span class="exp-gain-label">GAIN</span>
+        <input type="range" class="exp-gain-slider ab-gain-slider" id="ab-gain-slider-a"
+          min="-6" max="6" step="0.5" value="0">
+        <span class="exp-gain-value" id="ab-gain-value-a" style="visibility:hidden;">0.0 dB</span>
+      </div>
     </div>
     <div class="ab-divider"></div>
     <div class="ab-section" id="ab-section-b" onclick="handleABSectionClick(event,'b')">
@@ -424,6 +483,12 @@
         <span class="ab-section-name" id="ab-name-b">—</span>
       </div>
       <canvas class="ab-canvas" id="ab-canvas-b"></canvas>
+      <div class="ab-gain-row">
+        <span class="exp-gain-label">GAIN</span>
+        <input type="range" class="exp-gain-slider ab-gain-slider" id="ab-gain-slider-b"
+          min="-6" max="6" step="0.5" value="0">
+        <span class="exp-gain-value" id="ab-gain-value-b" style="visibility:hidden;">0.0 dB</span>
+      </div>
     </div>
   </div>
   <div class="exp-cover-wrap" id="exp-cover-wrap">
@@ -444,6 +509,12 @@
   </div>
   <div class="exp-seek-wrap" id="exp-seek-wrap">
     <div class="exp-seek-fill" id="exp-seek-fill"></div>
+  </div>
+  <div class="exp-gain-row" id="exp-gain-row">
+    <label class="exp-gain-label">GAIN</label>
+    <input type="range" class="exp-gain-slider" id="exp-gain-slider"
+      min="-6" max="6" step="0.5" value="0">
+    <span class="exp-gain-value" id="exp-gain-value" style="visibility:hidden;">0.0 dB</span>
   </div>
   <div class="exp-controls">
     <button class="ctrl" id="prev-btn-exp">
@@ -488,54 +559,6 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-// ═══════════════════════════════════════════════
-//  ARCHITECTURE MAP — update when adding/removing globals or functions
-//
-//  STATE (globals)
-//    Playback:   currentIdx, isPlaying, repeatMode, shuffle, shuffleQueue
-//    Library:    tracks, activePkg, syncedPaths, coverPathMap, coverUrlMap,
-//                allSongsCoverUrl, linkCache, activeObjUrl
-//    Position:   restoredPosition, lastSavedPosition
-//    Cache:      durationCache, waveformCache
-//    A/B mode:   abMode, abA, abB, abActiveSlot, waveformDataA, waveformDataB
-//    Waveform:   waveformData, waveformPath
-//    Config:     config (token, folder, exts)
-//    Constants:  LS_KEY, LS_DUR_KEY, LS_WAVE_KEY, ALL_SONGS_COVER_PATH
-//
-//  DOM REFS (consts)
-//    audio, npName, npSub, progFill, timeDisp, playBtn, repeatBtn, shuffleBtn
-//    expPanel (expanded player root)
-//
-//  FUNCTIONS BY SECTION
-//    IndexedDB:       openIDB, idbGet, idbPut, idbDelete, idbGetAll, idbGetAllKeys
-//                     idbCoverGet, idbCoverPut
-//    State persist:   saveState, loadState
-//                     loadDurationCache, saveDurationToCache
-//                     loadWaveformCache, saveWaveformToCache, getWaveformFromCache
-//    OAuth/Auth:      startOAuthFlow, handleAuthCode, ensureAccessToken,
-//                     generatePKCE, clearOAuth, updateOAuthUI
-//    Dropbox API:     dbxCall, getTmpLink, listAllFiles, fetchTracks,
-//                     getCoverUrl, fetchAllSongsCover
-//    Sync:            syncPackage, deletePackageLocal, refreshSynced, isSynced,
-//                     setTrackSyncState
-//    Library/Nav:     renderLibrary, showPlaylist, showLibrary, refreshView,
-//                     preloadDurations
-//    Playlist:        renderTrackList, renderSearchResults, playTrackFromSearch
-//    Playback:        playTrack, nextTrack, prevTrack, togglePlay,
-//                     cycleRepeat, updateRepeatUI, toggleShuffle
-//    Expanded player: openExpandedPlayer, closeExpandedPlayer, syncExpandedMeta,
-//                     setExpandedPlayIcon
-//    Waveform:        buildWaveform, drawWaveform
-//    A/B mode:        toggleABMode, setABSlot, switchABSlot, handleABSectionClick,
-//                     showABExpandedLayout, hideABExpandedLayout, updateABExpandedUI,
-//                     drawABWaveforms, drawOneABCanvas,
-//                     preloadBWaveform, buildWaveformForB
-//    Search:          openSearch, closeSearch, toggleSearch
-//    Settings:        openSettings, closeSettings
-//    UI helpers:      setStatus, setPlayIcon, setExpandedPlayIcon,
-//                     fmtTime, escHtml, formatPkgName, closeModal
-// ═══════════════════════════════════════════════
-
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -624,6 +647,7 @@ function idbCoverPut(path, blob, rev) {
 const LS_KEY         = 'mm_player_v2';
 const LS_DUR_KEY     = 'mm_player_durations';  // { "<rev>": seconds }
 const LS_WAVE_KEY    = 'mm_player_waveforms';  // { "<rev>": Float32Array serialised as Array }
+const LS_GAIN_KEY    = 'mm_player_gains';       // { "<rev>": dB }
 let config      = { token:'', folder:'', exts:'mp3,wav,flac,aiff,m4a' };
 let tracks      = [];
 let currentIdx  = -1;
@@ -643,6 +667,15 @@ let linkCache   = {};
 let activeObjUrl= null;
 let durationCache  = {}; // rev → seconds (in-memory, backed by localStorage)
 let waveformCache  = {}; // rev → Float32Array (in-memory, backed by localStorage)
+let gainCache      = {}; // rev → dB (in-memory, backed by localStorage)
+let currentGainDb  = 0.0;
+let gainDbA        = 0.0;
+let gainDbB        = 0.0;
+
+// Web Audio API — persistent graph
+let audioCtx    = null;
+let gainNode    = null;
+let mediaSource = null;
 
 // A/B comparison mode state
 let abMode        = false;
@@ -673,6 +706,37 @@ function saveWaveformToCache(rev, peaks) {
 function getWaveformFromCache(rev) {
   if (!rev || !waveformCache[rev]) return null;
   return new Float32Array(waveformCache[rev]);
+}
+
+// ── Gain cache helpers ──
+function loadGainCache() {
+  try { gainCache = JSON.parse(localStorage.getItem(LS_GAIN_KEY) || '{}'); } catch(e) { gainCache = {}; }
+}
+function saveGainToCache(rev, db) {
+  if (!rev) return;
+  gainCache[rev] = db;
+  try { localStorage.setItem(LS_GAIN_KEY, JSON.stringify(gainCache)); } catch(e) {}
+}
+function getGainFromCache(rev) {
+  if (!rev || gainCache[rev] === undefined) return 0.0;
+  return gainCache[rev];
+}
+
+// ── Web Audio API ──
+function ensureAudioGraph() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  mediaSource = audioCtx.createMediaElementSource(audio);
+  gainNode = audioCtx.createGain();
+  mediaSource.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+}
+
+function dbToGain(db) { return Math.pow(10, db / 20); }
+
+function applyGain(db) {
+  if (!gainNode) return;
+  gainNode.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.01);
 }
 
 const audio     = document.getElementById('audio-el');
@@ -1395,6 +1459,12 @@ async function playTrack(idx) {
   lastSavedPosition = audio.currentTime || 0;
   saveState();
   currentIdx=idx;
+  if (abMode) {
+    if (idx === abA) abActiveSlot = 'a';
+    else if (idx === abB) abActiveSlot = 'b';
+    const badge = document.getElementById('np-ab-badge');
+    if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
+  }
   const t=tracks[idx];
   npName.textContent=t.name;
   npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
@@ -1418,8 +1488,12 @@ async function playTrack(idx) {
     }
     activeObjUrl=URL.createObjectURL(blob);
     audio.src=activeObjUrl;
+    ensureAudioGraph();
+    currentGainDb = getGainFromCache(t.rev);
+    applyGain(currentGainDb);
     await audio.play();
     isPlaying=true; setPlayIcon(true);
+    syncGainSlider(currentGainDb);
     updateMediaSession(t);
     if (!searchQuery) renderTrackList(pool);
     saveState();
@@ -1554,11 +1628,80 @@ function syncExpandedMeta() {
   setExpandedPlayIcon(isPlaying);
   document.getElementById('repeat-btn-exp').classList.toggle('active', repeatMode !== 'none');
   document.getElementById('shuffle-btn-exp').classList.toggle('active', shuffle);
+  syncGainSlider(currentGainDb);
 }
 
 function setExpandedPlayIcon(p) {
   document.getElementById('icon-play-exp').style.display  = p ? 'none' : 'block';
   document.getElementById('icon-pause-exp').style.display = p ? 'block' : 'none';
+}
+
+// ── Gain slider — normal mode ──
+const gainSlider   = document.getElementById('exp-gain-slider');
+const gainValueEl  = document.getElementById('exp-gain-value');
+const abGainSliderA = document.getElementById('ab-gain-slider-a');
+const abGainSliderB = document.getElementById('ab-gain-slider-b');
+const abGainValueA  = document.getElementById('ab-gain-value-a');
+const abGainValueB  = document.getElementById('ab-gain-value-b');
+
+gainSlider.addEventListener('input', () => {
+  const db = parseFloat(gainSlider.value);
+  currentGainDb = db;
+  applyGain(db);
+  gainValueEl.style.visibility = 'visible';
+  gainValueEl.textContent = (db >= 0 ? '+' : '') + db.toFixed(1) + ' dB';
+  const t = tracks[currentIdx];
+  if (t?.rev) saveGainToCache(t.rev, db);
+});
+gainSlider.addEventListener('pointerup', () => {
+  setTimeout(() => { gainValueEl.style.visibility = 'hidden'; }, 1200);
+});
+
+function syncGainSlider(db) {
+  gainSlider.value = db;
+  gainValueEl.style.visibility = 'hidden';
+  gainValueEl.textContent = (db >= 0 ? '+' : '') + db.toFixed(1) + ' dB';
+}
+
+// ── AB gain sliders ──
+[abGainSliderA, abGainSliderB, gainSlider].forEach(sl => {
+  sl.addEventListener('click', e => e.stopPropagation());
+  sl.addEventListener('pointerdown', e => e.stopPropagation());
+  sl.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+  sl.addEventListener('touchend', e => e.stopPropagation(), { passive: true });
+});
+
+abGainSliderA.addEventListener('input', () => {
+  gainDbA = parseFloat(abGainSliderA.value);
+  abGainValueA.style.visibility = 'visible';
+  abGainValueA.textContent = (gainDbA >= 0 ? '+' : '') + gainDbA.toFixed(1) + ' dB';
+  if (abActiveSlot === 'a') applyGain(gainDbA);
+  if (abA !== null && tracks[abA]?.rev) saveGainToCache(tracks[abA].rev, gainDbA);
+});
+abGainSliderA.addEventListener('pointerup', () => {
+  setTimeout(() => { abGainValueA.style.visibility = 'hidden'; }, 1200);
+});
+
+abGainSliderB.addEventListener('input', () => {
+  gainDbB = parseFloat(abGainSliderB.value);
+  abGainValueB.style.visibility = 'visible';
+  abGainValueB.textContent = (gainDbB >= 0 ? '+' : '') + gainDbB.toFixed(1) + ' dB';
+  if (abActiveSlot === 'b') applyGain(gainDbB);
+  if (abB !== null && tracks[abB]?.rev) saveGainToCache(tracks[abB].rev, gainDbB);
+});
+abGainSliderB.addEventListener('pointerup', () => {
+  setTimeout(() => { abGainValueB.style.visibility = 'hidden'; }, 1200);
+});
+
+function syncABGainSliders() {
+  const dba = abA !== null ? gainDbA : 0;
+  const dbb = abB !== null ? gainDbB : 0;
+  abGainSliderA.value = dba;
+  abGainSliderB.value = dbb;
+  abGainValueA.style.visibility = 'hidden';
+  abGainValueB.style.visibility = 'hidden';
+  abGainValueA.textContent = (dba >= 0 ? '+' : '') + dba.toFixed(1) + ' dB';
+  abGainValueB.textContent = (dbb >= 0 ? '+' : '') + dbb.toFixed(1) + ' dB';
 }
 
 document.querySelector('.player-info-row').addEventListener('click', () => {
@@ -1606,11 +1749,11 @@ async function buildWaveform(objUrl, track) {
 
   // Bygg från ljud-data
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const tempCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     const resp = await fetch(objUrl);
     const buf  = await resp.arrayBuffer();
-    const decoded = await ctx.decodeAudioData(buf);
-    ctx.close();
+    const decoded = await tempCtx.decodeAudioData(buf);
+    if (!audioCtx) tempCtx.close();
     const ch   = decoded.getChannelData(0);
     const bins = 200;
     const step = Math.floor(ch.length / bins);
@@ -1700,6 +1843,7 @@ function showABExpandedLayout() {
   document.getElementById('exp-waveform-wrap').style.display = 'none';
   document.getElementById('exp-time-row').style.display = 'none';
   document.getElementById('exp-seek-wrap').style.display = 'none';
+  document.getElementById('exp-gain-row').style.display = 'none';
 }
 function hideABExpandedLayout() {
   document.getElementById('ab-expanded-content').classList.remove('ab-visible');
@@ -1708,6 +1852,7 @@ function hideABExpandedLayout() {
   document.getElementById('exp-waveform-wrap').style.display = '';
   document.getElementById('exp-time-row').style.display = '';
   document.getElementById('exp-seek-wrap').style.display = '';
+  document.getElementById('exp-gain-row').style.display = '';
 }
 
 function updateABExpandedUI() {
@@ -1717,9 +1862,20 @@ function updateABExpandedUI() {
   document.getElementById('ab-name-b').textContent = tB ? tB.name : '—';
   document.getElementById('ab-section-a').classList.toggle('ab-inactive', abActiveSlot !== 'a');
   document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
+  const grA = document.querySelector('#ab-section-a .ab-gain-row');
+  const grB = document.querySelector('#ab-section-b .ab-gain-row');
+  if (grA) grA.style.display = abActiveSlot === 'a' ? '' : 'none';
+  if (grB) grB.style.display = abActiveSlot === 'b' ? '' : 'none';
+  abGainSliderA.disabled = abActiveSlot !== 'a';
+  abGainSliderB.disabled = abActiveSlot !== 'b';
   const badge = document.getElementById('np-ab-badge');
   if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
   drawABWaveforms();
+  syncABGainSliders();
+  // debug
+  const _grB = document.querySelector('#ab-section-b .ab-gain-row');
+  const _secB = document.getElementById('ab-section-b');
+  const _expGR = document.getElementById('exp-gain-row');
 }
 
 function drawABWaveforms() {
@@ -1771,6 +1927,7 @@ function drawOneABCanvas(slot) {
   }
 }
 
+
 function handleABSectionClick(e, slot) {
   if (slot !== abActiveSlot) {
     switchABSlot(slot);
@@ -1789,11 +1946,15 @@ async function switchABSlot(slot) {
   const targetIdx = slot === 'a' ? abA : abB;
   if (targetIdx === null) return;
   abActiveSlot = slot;
+  updateABExpandedUI();          // omedelbar UI-uppdatering innan laddning
+  void document.getElementById('ab-expanded-content').offsetHeight; // tvinga iOS Safari repaint
   await playTrack(targetIdx);
+  applyGain(slot === 'a' ? gainDbA : gainDbB);
   if (isFinite(savedTime) && savedTime > 0 && audio.duration) {
     audio.currentTime = Math.min(savedTime, audio.duration);
   }
   updateABExpandedUI();
+  void document.getElementById('ab-expanded-content').offsetHeight; // tvinga iOS Safari repaint
 }
 
 function toggleABMode() {
@@ -1816,11 +1977,11 @@ function setABSlot(slot, gi, event) {
   if (slot === 'a') {
     if (abB === gi) abB = null;
     if (abA === gi) { abA = null; }
-    else { abA = gi; abActiveSlot = 'a'; playTrack(gi); }
+    else { abA = gi; abActiveSlot = 'a'; gainDbA = getGainFromCache(tracks[gi].rev); playTrack(gi); }
   } else {
     if (abA === gi) abA = null;
     if (abB === gi) { abB = null; }
-    else { abB = gi; preloadBWaveform(gi); }
+    else { abB = gi; gainDbB = getGainFromCache(tracks[gi].rev); preloadBWaveform(gi); }
   }
   if (abA !== null && abB !== null) {
     if (!expOpen) openExpandedPlayer();
@@ -1988,6 +2149,7 @@ openIDB().then(async()=>{
   loadState();
   loadDurationCache();
   loadWaveformCache();
+  loadGainCache();
   for (const t of tracks) {
     if (!t.duration && t.rev && durationCache[t.rev]) {
       t.duration = durationCache[t.rev];
