@@ -133,7 +133,10 @@ const PLAYER_VERSION = 42;
 **Rules — apply on every player.html deploy:**
 
 1. Read `PLAYER_VERSION` from the live `player.html` before building staging.
-2. Increment by 1. Use this value for the entire deploy (staging + live).
+2. **Every push increments the build number by 1** — staging and live are separate builds:
+   - Staging push → live build + 1
+   - Live push (promotion) → staging build + 1
+   - Example: live = 42 → staging gets 43 → live promotion gets 44
 3. **Staging banner** must include the build number:
    ```
    ⚠ STAGING — build 43 — Detta är en förhandsvisning.
@@ -142,7 +145,7 @@ const PLAYER_VERSION = 42;
    > "Deployat till staging — build 43"
 5. **Git commit message** when promoting to live:
    ```
-   Deploy player.html build 43
+   Deploy player.html build 44
    ```
 6. **Notion changelog** entry (when logged): include build number.
 7. The constant exists in live code but is **never shown in the player UI**.
