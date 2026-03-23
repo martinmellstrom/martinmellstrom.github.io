@@ -264,7 +264,7 @@
   .ab-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .ab-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--gold); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; line-height: 1.5; }
   .ab-section.ab-inactive .ab-badge { background: var(--gold-dim); }
-  .ab-section.ab-inactive .ab-gain-row { opacity: 0.25; }
+  .ab-section.ab-inactive .ab-gain-row { visibility: hidden; }
   .ab-section-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
   .ab-canvas { width: 100%; height: 60px; display: block; border-radius: 4px; }
   .ab-divider { height: 1px; background: var(--border); margin: 0 20px; flex-shrink: 0; }
@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.20</strong> — Inaktiv A/B-gain: opacity 0 (ej 0.25) på gain-row; debugpanel kvar. <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.21</strong> — Inaktiv A/B-gain: visibility:hidden (ej opacity) — oberoende av iOS opacity-komposit. <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -1872,8 +1872,8 @@ function updateABExpandedUI() {
   document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
   const grA = document.querySelector('#ab-section-a .ab-gain-row');
   const grB = document.querySelector('#ab-section-b .ab-gain-row');
-  if (grA) grA.style.opacity = abActiveSlot === 'a' ? '' : '0';
-  if (grB) grB.style.opacity = abActiveSlot === 'b' ? '' : '0';
+  if (grA) grA.style.visibility = abActiveSlot === 'a' ? '' : 'hidden';
+  if (grB) grB.style.visibility = abActiveSlot === 'b' ? '' : 'hidden';
   abGainSliderA.disabled = abActiveSlot !== 'a';
   abGainSliderB.disabled = abActiveSlot !== 'b';
   const badge = document.getElementById('np-ab-badge');
@@ -1883,7 +1883,7 @@ function updateABExpandedUI() {
   // debug
   const _grB = document.querySelector('#ab-section-b .ab-gain-row');
   const _secB = document.getElementById('ab-section-b');
-  abDebug(`updateABExpandedUI: slot=${abActiveSlot} | secB.inactive=${_secB?.classList.contains('ab-inactive')} | grB.style.opacity="${_grB?.style.opacity}" | sliderB.disabled=${abGainSliderB.disabled}`);
+  abDebug(`updateABExpandedUI: slot=${abActiveSlot} | secB.inactive=${_secB?.classList.contains('ab-inactive')} | grB.visibility="${_grB?.style.visibility}" | sliderB.disabled=${abGainSliderB.disabled}`);
 }
 
 function drawABWaveforms() {
