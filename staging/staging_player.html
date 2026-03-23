@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 4 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 5 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 4;
+const PLAYER_VERSION = 5;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -817,19 +817,21 @@ function startABPlayback(slot, offsetSeconds) {
   if (!bufA || !bufB) return;
 
   ensureAudioGraph();
-  // Säkerställ att vanlig uppspelning stoppas — förhindrar simultant ljud
-  if (!audio.paused) { audio.pause(); }
+  // Stoppa alltid audio-elementet — även om det redan är pausat behövs detta
+  // på Safari för att frigöra audio-sessionen för AudioBufferSourceNode
+  audio.pause();
   // Nolla onended innan stop — annars triggar ended-callbacken och återstartar från 0
   if (abSourceA) abSourceA.onended = null;
   if (abSourceB) abSourceB.onended = null;
   [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
   abSourceA = null; abSourceB = null;
 
-  if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(gainNode); }
-  if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(gainNode); }
-
-  abGainNodeA.gain.setValueAtTime(slot === 'a' ? dbToGain(gainDbA) : 0, audioCtx.currentTime);
-  abGainNodeB.gain.setValueAtTime(slot === 'b' ? dbToGain(gainDbB) : 0, audioCtx.currentTime);
+  // Koppla abGainNodeA/B direkt till audioCtx.destination (ej via gainNode).
+  // gainNode skapades med createMediaElementSource(audio) — på Safari kan ett tomt
+  // audio.src orsaka att gainNode tystar allt som passerar det. Direktkoppling
+  // isolerar A/B-uppspelningen helt från audio-elementets tillstånd.
+  if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(audioCtx.destination); }
+  if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(audioCtx.destination); }
 
   abSourceA = audioCtx.createBufferSource();
   abSourceA.buffer = bufA;
@@ -840,9 +842,12 @@ function startABPlayback(slot, offsetSeconds) {
   abSourceB.connect(abGainNodeB);
 
   // Starta källorna först efter att kontexten garanterat är igång.
-  // audioCtx.resume() är asynkron — utan await kan .start() anropas mot en
-  // fortfarande suspended kontext (vanligt på iOS utan tidigare audio.play()).
+  // Flytta även gain.value-sättning hit — setValueAtTime(val, 0) är opålitlig
+  // på Safari när audioCtx.currentTime=0 (nyligen skapad kontext).
   const launch = () => {
+    abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
+    abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
+
     const offset = Math.max(0, Math.min(offsetSeconds, bufA.duration, bufB.duration));
     abStartOffset = offset;
     abStartContextTime = audioCtx.currentTime;
