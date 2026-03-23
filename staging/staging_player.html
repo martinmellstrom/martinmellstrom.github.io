@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.19</strong> — Inaktiv A/B-gain: updateABExpandedUI körs omedelbart vid slotbyte (ej bara efter await playTrack); null-guard på querySelector. <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.19-debug</strong> — Inaktiv A/B-gain: debugpanel tillagd (röd text i expanded player A/B). <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -469,6 +469,8 @@
   <div class="exp-handle-bar"></div>
   <!-- A/B expanded content -->
   <div id="ab-expanded-content">
+    <!-- DEBUG PANEL (staging only) -->
+    <div id="ab-debug" style="display:none;font-family:monospace;font-size:9px;line-height:1.5;padding:6px 16px;background:rgba(200,0,0,0.15);color:#ff6666;flex-shrink:0;white-space:pre;"></div>
     <div class="ab-section" id="ab-section-a" onclick="handleABSectionClick(event,'a')">
       <div class="ab-section-header">
         <span class="ab-badge">A</span>
@@ -1878,6 +1880,10 @@ function updateABExpandedUI() {
   if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
   drawABWaveforms();
   syncABGainSliders();
+  // debug
+  const _grB = document.querySelector('#ab-section-b .ab-gain-row');
+  const _secB = document.getElementById('ab-section-b');
+  abDebug(`updateABExpandedUI: slot=${abActiveSlot} | secB.inactive=${_secB?.classList.contains('ab-inactive')} | grB.style.opacity="${_grB?.style.opacity}" | sliderB.disabled=${abGainSliderB.disabled}`);
 }
 
 function drawABWaveforms() {
@@ -1929,7 +1935,17 @@ function drawOneABCanvas(slot) {
   }
 }
 
+function abDebug(msg) {
+  const d = document.getElementById('ab-debug');
+  if (!d) return;
+  d.style.display = 'block';
+  d.textContent = (d.textContent ? d.textContent + '\n' : '') + new Date().toISOString().slice(11,23) + ' ' + msg;
+  const lines = d.textContent.split('\n');
+  if (lines.length > 8) d.textContent = lines.slice(-8).join('\n');
+}
+
 function handleABSectionClick(e, slot) {
+  abDebug(`CLICK slot=${slot} abActiveSlot=${abActiveSlot}`);
   if (slot !== abActiveSlot) {
     switchABSlot(slot);
   } else {
