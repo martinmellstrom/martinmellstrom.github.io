@@ -777,12 +777,14 @@ function getGainFromCache(rev) {
 
 // ── Web Audio API ──
 function ensureAudioGraph() {
-  if (audioCtx) return;
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  mediaSource = audioCtx.createMediaElementSource(audio);
-  gainNode = audioCtx.createGain();
-  mediaSource.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    mediaSource = audioCtx.createMediaElementSource(audio);
+    gainNode = audioCtx.createGain();
+    mediaSource.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 function dbToGain(db) { return Math.pow(10, db / 20); }
