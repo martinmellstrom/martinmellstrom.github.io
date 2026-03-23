@@ -259,7 +259,7 @@
   .track-ab-btn.ab-sel { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
   #ab-expanded-content { display: none; flex: 1; min-height: 0; flex-direction: column; }
   #ab-expanded-content.ab-visible { display: flex; }
-  .ab-section { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 10px 20px 14px; cursor: pointer; transition: opacity 0.25s; }
+  .ab-section { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 10px 20px 14px; cursor: pointer; }
   .ab-section.ab-inactive { opacity: 0.35; }
   .ab-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .ab-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--gold); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; line-height: 1.5; }
@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.26-debug</strong> — Fix: iOS Safari repaint-bugg vid slot-byte (offsetHeight-flush efter updateABExpandedUI). <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.27-debug</strong> — Fix: ta bort opacity-transition på .ab-section (orsakade iOS compositor-caching som dolde display:none). <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
