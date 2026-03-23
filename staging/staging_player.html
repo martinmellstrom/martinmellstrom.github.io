@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
 <title>[STAGING] Martin Mellström — Music Player</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -32,7 +32,19 @@
     font-family: 'Space Mono', monospace; font-size: 13px;
     min-height: 100dvh; display: flex; flex-direction: column;
     overflow-x: hidden; max-width: 100vw;
+    padding-top: 36px;
   }
+  #staging-banner {
+    position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999;
+    background: repeating-linear-gradient(
+      -45deg,
+      #c00 0px, #c00 10px,
+      #000 10px, #000 20px
+    );
+    color: #fff; font-size: 11px; font-weight: bold; letter-spacing: 0.05em;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+  #staging-banner a { color: #fff; text-decoration: underline; }
 
   body::before {
     content: ''; position: fixed; inset: 0;
@@ -321,28 +333,10 @@
     padding: 6px 0 2px;
     margin-top: 18px;
   }
-
-  /* ── STAGING BANNER ── */
-  #staging-banner {
-    position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
-    color: #fff; text-decoration: none;
-    background-color: #c0392b;
-    background-image: repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 6px,
-      rgba(0,0,0,0.15) 6px,
-      rgba(0,0,0,0.15) 12px
-    );
-    letter-spacing: 0.05em;
-  }
 </style>
 </head>
-<body style="padding-top: 36px;">
-<a id="staging-banner" href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 1 — Detta är en förhandsvisning.</a>
-
+<body>
+<div id="staging-banner">⚠ STAGING — build 2 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -578,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 1;
+const PLAYER_VERSION = 2;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -662,6 +656,32 @@ function idbCoverPut(path, blob, rev) {
 }
 
 // ═══════════════════════════════════════════════
+//  ARCHITECTURE MAP
+// ═══════════════════════════════════════════════
+// STATE:
+//   tracks, currentIdx, isPlaying, repeatMode, shuffle, shuffleQueue, activePkg
+//   syncedPaths, restoredPosition, lastSavedPosition
+//   coverPathMap, coverUrlMap, allSongsCoverUrl
+//   linkCache, activeObjUrl
+//   durationCache, waveformCache, gainCache
+//   currentGainDb, gainDbA, gainDbB
+//   audioCtx, gainNode, mediaSource
+//   abMode, abA, abB, abActiveSlot, waveformDataA, waveformDataB
+//   abAudioBufA, abAudioBufB, abSourceA, abSourceB
+//   abGainNodeA, abGainNodeB, abStartContextTime, abStartOffset
+//   abIsPlaying, abPausedOffset, abRafId
+// Constants: LS_KEY, LS_DUR_KEY, LS_WAVE_KEY, LS_GAIN_KEY
+// FUNCTIONS:
+//   Gain: loadGainCache, saveGainToCache, getGainFromCache, applyGain, dbToGain
+//         ensureAudioGraph, syncGainSlider, syncABGainSliders
+//   A/B buffered playback: loadABBuffer, startABPlayback, switchABSlot (ersatt),
+//         getABCurrentTime, applyABGain, startABRaf, stopABRaf
+//   Waveform: buildWaveform, buildWaveformForA, buildWaveformForB,
+//             preloadAWaveform, preloadBWaveform
+//   Playback: playTrack, togglePlay, nextTrack, prevTrack
+//   A/B mode: setABSlot, toggleABMode, updateABExpandedUI, drawABWaveforms,
+//             drawOneABCanvas, handleABSectionClick
+// ═══════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════
 const LS_KEY         = 'mm_player_v2';
@@ -704,6 +724,19 @@ let abB           = null;   // global track index for slot B, or null
 let abActiveSlot  = 'a';   // 'a' or 'b' — which slot is currently playing
 let waveformDataA = null;   // Float32Array of peaks for slot A
 let waveformDataB = null;   // Float32Array of peaks for slot B
+
+// A/B parallel buffered playback (zero-latency switching)
+let abAudioBufA      = null;   // AudioBuffer för slot A
+let abAudioBufB      = null;   // AudioBuffer för slot B
+let abSourceA        = null;   // Aktiv AudioBufferSourceNode för A
+let abSourceB        = null;   // Aktiv AudioBufferSourceNode för B
+let abGainNodeA      = null;   // GainNode för slot A
+let abGainNodeB      = null;   // GainNode för slot B
+let abStartContextTime = 0;    // audioCtx.currentTime när uppspelning startade
+let abStartOffset    = 0;      // offset i bufferten vid start (sekunder)
+let abIsPlaying      = false;  // om A/B-uppspelning pågår
+let abPausedOffset   = 0;      // position vid paus
+let abRafId          = null;   // requestAnimationFrame-ID för tiduppdateringsloop
 
 function loadDurationCache() {
   try { durationCache = JSON.parse(localStorage.getItem(LS_DUR_KEY)||'{}'); } catch(e){ durationCache={}; }
@@ -757,6 +790,100 @@ function dbToGain(db) { return Math.pow(10, db / 20); }
 function applyGain(db) {
   if (!gainNode) return;
   gainNode.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.01);
+}
+
+// ── A/B parallel buffered playback ──
+async function loadABBuffer(gi) {
+  const t = tracks[gi];
+  let url, shouldRevoke = false;
+  const stored = await idbGet(t.path);
+  const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+  if (stored && revMatch) { url = URL.createObjectURL(stored.blob); shouldRevoke = true; }
+  else { url = await getTmpLink(t.path); }
+  const resp = await fetch(url);
+  const buf = await resp.arrayBuffer();
+  ensureAudioGraph();
+  const decoded = await audioCtx.decodeAudioData(buf);
+  if (shouldRevoke) URL.revokeObjectURL(url);
+  return decoded;
+}
+
+function startABPlayback(slot, offsetSeconds) {
+  // Kolla buffertarna FÖRST — stoppa ingenting om de inte finns (race vid snabbt spårbyte)
+  const bufA = abAudioBufA;
+  const bufB = abAudioBufB;
+  if (!bufA || !bufB) return;
+
+  ensureAudioGraph();
+  // Säkerställ att vanlig uppspelning stoppas — förhindrar simultant ljud
+  if (!audio.paused) { audio.pause(); }
+  // Nolla onended innan stop — annars triggar ended-callbacken och återstartar från 0
+  if (abSourceA) abSourceA.onended = null;
+  if (abSourceB) abSourceB.onended = null;
+  [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+  abSourceA = null; abSourceB = null;
+
+  if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(gainNode); }
+  if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(gainNode); }
+
+  abGainNodeA.gain.setValueAtTime(slot === 'a' ? dbToGain(gainDbA) : 0, audioCtx.currentTime);
+  abGainNodeB.gain.setValueAtTime(slot === 'b' ? dbToGain(gainDbB) : 0, audioCtx.currentTime);
+
+  abSourceA = audioCtx.createBufferSource();
+  abSourceA.buffer = bufA;
+  abSourceA.connect(abGainNodeA);
+
+  abSourceB = audioCtx.createBufferSource();
+  abSourceB.buffer = bufB;
+  abSourceB.connect(abGainNodeB);
+
+  const offset = Math.max(0, Math.min(offsetSeconds, bufA.duration, bufB.duration));
+  abStartOffset = offset;
+  abStartContextTime = audioCtx.currentTime;
+  abIsPlaying = true;
+
+  abSourceA.start(0, offset);
+  abSourceB.start(0, offset);
+
+  const activeSrc = slot === 'a' ? abSourceA : abSourceB;
+  activeSrc.onended = () => {
+    if (abIsPlaying) { startABPlayback(abActiveSlot, 0); }
+  };
+}
+
+function getABCurrentTime() {
+  if (!abIsPlaying || !audioCtx) return abPausedOffset;
+  return abStartOffset + (audioCtx.currentTime - abStartContextTime);
+}
+
+function applyABGain(slot, db) {
+  const node = slot === 'a' ? abGainNodeA : abGainNodeB;
+  if (!node) return;
+  node.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.01);
+}
+
+function startABRaf() {
+  if (abRafId) return;
+  function tick() {
+    if (!abIsPlaying) { abRafId = null; return; }
+    const ct = getABCurrentTime();
+    const buf = abActiveSlot === 'a' ? abAudioBufA : abAudioBufB;
+    const dur = buf ? buf.duration : 0;
+    if (dur) {
+      const pct = (ct / dur * 100) + '%';
+      progFill.style.width = pct;
+      timeDisp.textContent = `${fmtTime(ct)} / ${fmtTime(dur)}`;
+      expSeekFill.style.width = pct;
+      expTimeCur.textContent = fmtTime(ct);
+    }
+    if (expOpen) drawABWaveforms();
+    abRafId = requestAnimationFrame(tick);
+  }
+  abRafId = requestAnimationFrame(tick);
+}
+
+function stopABRaf() {
+  if (abRafId) { cancelAnimationFrame(abRafId); abRafId = null; }
 }
 
 const audio     = document.getElementById('audio-el');
@@ -1526,6 +1653,21 @@ async function playTrack(idx) {
 function getPool(){return !activePkg||activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg);}
 
 function togglePlay(){
+  if (abMode && abAudioBufA && abAudioBufB) {
+    if (abIsPlaying) {
+      abPausedOffset = getABCurrentTime();
+      [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+      abSourceA = null; abSourceB = null;
+      abIsPlaying = false;
+      isPlaying = false; setPlayIcon(false);
+      stopABRaf();
+    } else {
+      startABPlayback(abActiveSlot, abPausedOffset);
+      isPlaying = true; setPlayIcon(true);
+      startABRaf();
+    }
+    return;
+  }
   if (currentIdx<0&&tracks.length){playTrack(0);return;}
   if (audio.paused){audio.play();isPlaying=true;setPlayIcon(true);}
   else{audio.pause();isPlaying=false;setPlayIcon(false);}
@@ -1695,7 +1837,7 @@ abGainSliderA.addEventListener('input', () => {
   gainDbA = parseFloat(abGainSliderA.value);
   abGainValueA.style.visibility = 'visible';
   abGainValueA.textContent = (gainDbA >= 0 ? '+' : '') + gainDbA.toFixed(1) + ' dB';
-  if (abActiveSlot === 'a') applyGain(gainDbA);
+  applyABGain('a', gainDbA);
   if (abA !== null && tracks[abA]?.rev) saveGainToCache(tracks[abA].rev, gainDbA);
 });
 abGainSliderA.addEventListener('pointerup', () => {
@@ -1706,7 +1848,7 @@ abGainSliderB.addEventListener('input', () => {
   gainDbB = parseFloat(abGainSliderB.value);
   abGainValueB.style.visibility = 'visible';
   abGainValueB.textContent = (gainDbB >= 0 ? '+' : '') + gainDbB.toFixed(1) + ' dB';
-  if (abActiveSlot === 'b') applyGain(gainDbB);
+  applyABGain('b', gainDbB);
   if (abB !== null && tracks[abB]?.rev) saveGainToCache(tracks[abB].rev, gainDbB);
 });
 abGainSliderB.addEventListener('pointerup', () => {
@@ -1919,7 +2061,8 @@ function drawOneABCanvas(slot) {
   const bins = data ? data.length : 200;
   const barW = Math.max(1, (W / bins) - 0.5);
   const gap  = (W / bins) - barW;
-  const prog = (isActive && audio.duration) ? (audio.currentTime / audio.duration) : 0;
+  const dur = slot === 'a' ? abAudioBufA?.duration : abAudioBufB?.duration;
+  const prog = (isActive && dur) ? (getABCurrentTime() / dur) : 0;
   const progX = prog * W;
   const gold    = '#c9a84c';
   const goldDim = isActive ? 'rgba(201,168,76,0.28)' : 'rgba(201,168,76,0.14)';
@@ -1935,7 +2078,7 @@ function drawOneABCanvas(slot) {
     else ctx.rect(x, midLine - barH, barW, barH * 2);
     ctx.fill();
   }
-  if (isActive && audio.duration) {
+  if (isActive && dur) {
     ctx.strokeStyle = gold;
     ctx.globalAlpha = 0.9;
     ctx.lineWidth   = 1.5;
@@ -1952,39 +2095,95 @@ function handleABSectionClick(e, slot) {
   if (slot !== abActiveSlot) {
     switchABSlot(slot);
   } else {
-    if (!audio.duration) return;
+    const buf = slot === 'a' ? abAudioBufA : abAudioBufB;
+    if (!buf) return;
     const canvas = document.getElementById(`ab-canvas-${slot}`);
     if (!canvas) return;
     const r = canvas.getBoundingClientRect();
-    audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+    const seekTime = ((e.clientX - r.left) / r.width) * buf.duration;
+    if (abIsPlaying) {
+      startABPlayback(abActiveSlot, seekTime);
+    } else {
+      abPausedOffset = seekTime;
+    }
   }
 }
 
-async function switchABSlot(slot) {
+// Söker framåt i bufferten efter nästa negativ→positiv nollgenomgång.
+// Max söktid 5 ms — ger bara några samples extra fördröjning vid byte.
+function findNextZeroCrossing(audioBuffer, fromSeconds) {
+  const ch = audioBuffer.getChannelData(0);
+  const sr = audioBuffer.sampleRate;
+  const start = Math.floor(fromSeconds * sr);
+  const limit = Math.min(start + Math.floor(0.005 * sr), ch.length - 1);
+  for (let i = start; i < limit; i++) {
+    if (ch[i] <= 0 && ch[i + 1] > 0) return (i + 1) / sr;
+  }
+  return fromSeconds; // fallback om ingen crossing hittas inom 5 ms
+}
+
+function switchABSlot(slot) {
   if (slot === abActiveSlot) return;
-  const savedTime = audio.currentTime;
-  const targetIdx = slot === 'a' ? abA : abB;
-  if (targetIdx === null) return;
+  const FADE = 0.04; // 40 ms cross-fade
+  ensureAudioGraph();
+  const now = audioCtx.currentTime;
+  const currentOffset = abStartOffset + (now - abStartContextTime);
+
+  // Hitta nästa nollgenomgång i utgående buffert (max 5 ms framåt)
+  const outBuf = abActiveSlot === 'a' ? abAudioBufA : abAudioBufB;
+  const zcOffset = outBuf ? findNextZeroCrossing(outBuf, currentOffset) : currentOffset;
+  const fadeStart = now + Math.max(0, zcOffset - currentOffset);
+
   abActiveSlot = slot;
-  updateABExpandedUI();          // omedelbar UI-uppdatering innan laddning
-  void document.getElementById('ab-expanded-content').offsetHeight; // tvinga iOS Safari repaint
-  await playTrack(targetIdx);
-  applyGain(slot === 'a' ? gainDbA : gainDbB);
-  if (isFinite(savedTime) && savedTime > 0 && audio.duration) {
-    audio.currentTime = Math.min(savedTime, audio.duration);
+  // Cross-fade: aktiv slot fadear in, inaktiv ut.
+  // setValueAtTime förankrar startvärdet — krävs för korrekt linearRamp i alla browsers.
+  if (abGainNodeA) {
+    abGainNodeA.gain.cancelScheduledValues(now);
+    abGainNodeA.gain.setValueAtTime(abGainNodeA.gain.value, now);
+    abGainNodeA.gain.linearRampToValueAtTime(slot === 'a' ? dbToGain(gainDbA) : 0, fadeStart + FADE);
+  }
+  if (abGainNodeB) {
+    abGainNodeB.gain.cancelScheduledValues(now);
+    abGainNodeB.gain.setValueAtTime(abGainNodeB.gain.value, now);
+    abGainNodeB.gain.linearRampToValueAtTime(slot === 'b' ? dbToGain(gainDbB) : 0, fadeStart + FADE);
+  }
+  // Uppdatera currentIdx och mini-player UI
+  const targetIdx = slot === 'a' ? abA : abB;
+  if (targetIdx !== null) {
+    currentIdx = targetIdx;
+    const t = tracks[targetIdx];
+    npName.textContent = t.name;
+    npSub.textContent = t.package ? formatPkgName(t.package) : 'Alla låtar';
+    const badge = document.getElementById('np-ab-badge');
+    if (badge) { badge.textContent = slot.toUpperCase(); }
+    updateMediaSession(t);
   }
   updateABExpandedUI();
-  void document.getElementById('ab-expanded-content').offsetHeight; // tvinga iOS Safari repaint
 }
 
 function toggleABMode() {
   abMode = !abMode;
   const btn = document.getElementById('ab-mode-btn');
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
-  if (!abMode) {
+  if (abMode) {
+    // Neutralisera gainNode — all gain-styrning sker via abGainNodeA/B
+    ensureAudioGraph();
+    gainNode.gain.setValueAtTime(1.0, audioCtx.currentTime);
+  } else {
+    // Städning — stoppa sources och frigör resurser
+    stopABRaf();
+    [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+    abSourceA = null; abSourceB = null;
+    abAudioBufA = null; abAudioBufB = null;
+    abGainNodeA?.disconnect(); abGainNodeA = null;
+    abGainNodeB?.disconnect(); abGainNodeB = null;
+    abIsPlaying = false;
+    abPausedOffset = 0;
     abA = null; abB = null;
     waveformDataA = null; waveformDataB = null;
     abActiveSlot = 'a';
+    // Återställ gainNode till aktuell gain
+    if (gainNode && audioCtx) gainNode.gain.setValueAtTime(dbToGain(currentGainDb), audioCtx.currentTime);
     const badge = document.getElementById('np-ab-badge');
     if (badge) badge.classList.remove('ab-visible');
     if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
@@ -1996,12 +2195,52 @@ function setABSlot(slot, gi, event) {
   event.stopPropagation();
   if (slot === 'a') {
     if (abB === gi) abB = null;
-    if (abA === gi) { abA = null; }
-    else { abA = gi; abActiveSlot = 'a'; gainDbA = getGainFromCache(tracks[gi].rev); playTrack(gi); }
+    if (abA === gi) {
+      abA = null;
+      abAudioBufA = null;
+    } else {
+      abA = gi;
+      abActiveSlot = 'a';
+      gainDbA = getGainFromCache(tracks[gi].rev);
+      // Uppdatera UI direkt utan playTrack
+      currentIdx = gi;
+      const t = tracks[gi];
+      npName.textContent = t.name;
+      npSub.textContent = t.package ? formatPkgName(t.package) : 'Alla låtar';
+      const badge = document.getElementById('np-ab-badge');
+      if (badge) { badge.textContent = 'A'; badge.classList.add('ab-visible'); }
+      preloadAWaveform(gi);
+      abAudioBufA = null;
+      loadABBuffer(gi).then(buf => {
+        abAudioBufA = buf;
+        if (abAudioBufA && abAudioBufB) {
+          stopABRaf();
+          startABPlayback(abActiveSlot, 0);
+          isPlaying = true; setPlayIcon(true);
+          startABRaf();
+        }
+      });
+    }
   } else {
     if (abA === gi) abA = null;
-    if (abB === gi) { abB = null; }
-    else { abB = gi; gainDbB = getGainFromCache(tracks[gi].rev); preloadBWaveform(gi); }
+    if (abB === gi) {
+      abB = null;
+      abAudioBufB = null;
+    } else {
+      abB = gi;
+      gainDbB = getGainFromCache(tracks[gi].rev);
+      preloadBWaveform(gi);
+      abAudioBufB = null;
+      loadABBuffer(gi).then(buf => {
+        abAudioBufB = buf;
+        if (abAudioBufA && abAudioBufB) {
+          stopABRaf();
+          startABPlayback(abActiveSlot, 0);
+          isPlaying = true; setPlayIcon(true);
+          startABRaf();
+        }
+      });
+    }
   }
   if (abA !== null && abB !== null) {
     if (!expOpen) openExpandedPlayer();
@@ -2013,6 +2252,53 @@ function setABSlot(slot, gi, event) {
   }
   const pool = activePkg === 'all' || activePkg === null ? tracks : tracks.filter(t => t.package === activePkg);
   renderTrackList(pool);
+}
+
+async function preloadAWaveform(gi) {
+  const t = tracks[gi];
+  if (!t) return;
+  if (t.rev) {
+    const cached = getWaveformFromCache(t.rev);
+    if (cached) { waveformDataA = cached; if (expOpen && abMode) drawABWaveforms(); return; }
+  }
+  try {
+    let url, shouldRevoke = false;
+    const stored = await idbGet(t.path);
+    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+    if (stored && revMatch) { url = URL.createObjectURL(stored.blob); shouldRevoke = true; }
+    else { url = await getTmpLink(t.path); }
+    await buildWaveformForA(url, t);
+    if (shouldRevoke) URL.revokeObjectURL(url);
+  } catch(e) {}
+}
+
+async function buildWaveformForA(objUrl, track) {
+  const rev = track?.rev || null;
+  if (rev) {
+    const cached = getWaveformFromCache(rev);
+    if (cached) { waveformDataA = cached; if (expOpen && abMode) drawABWaveforms(); return; }
+  }
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const resp = await fetch(objUrl);
+    const buf  = await resp.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(buf);
+    ctx.close();
+    const ch   = decoded.getChannelData(0);
+    const bins = 200;
+    const step = Math.floor(ch.length / bins);
+    const peaks = new Float32Array(bins);
+    for (let i = 0; i < bins; i++) {
+      let max = 0;
+      for (let j = 0; j < step; j++) { const v = Math.abs(ch[i * step + j] || 0); if (v > max) max = v; }
+      peaks[i] = max;
+    }
+    const maxPeak = Math.max(...peaks, 0.001);
+    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
+    waveformDataA = peaks;
+    if (rev) saveWaveformToCache(rev, peaks);
+    if (expOpen && abMode) drawABWaveforms();
+  } catch(e) {}
 }
 
 async function preloadBWaveform(gi) {
