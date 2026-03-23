@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 5 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 6 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 5;
+const PLAYER_VERSION = 6;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -817,9 +817,6 @@ function startABPlayback(slot, offsetSeconds) {
   if (!bufA || !bufB) return;
 
   ensureAudioGraph();
-  // Stoppa alltid audio-elementet — även om det redan är pausat behövs detta
-  // på Safari för att frigöra audio-sessionen för AudioBufferSourceNode
-  audio.pause();
   // Nolla onended innan stop — annars triggar ended-callbacken och återstartar från 0
   if (abSourceA) abSourceA.onended = null;
   if (abSourceB) abSourceB.onended = null;
@@ -842,9 +839,12 @@ function startABPlayback(slot, offsetSeconds) {
   abSourceB.connect(abGainNodeB);
 
   // Starta källorna först efter att kontexten garanterat är igång.
-  // Flytta även gain.value-sättning hit — setValueAtTime(val, 0) är opålitlig
-  // på Safari när audioCtx.currentTime=0 (nyligen skapad kontext).
+  // gain.value sätts här (ej setValueAtTime vid tid=0 — opålitlig på Safari).
+  // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
+  // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
+    audio.pause();      // stoppa audio-elementet; pause-eventet ignoreras via guard
+    audio.muted = false;
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
 
@@ -855,6 +855,9 @@ function startABPlayback(slot, offsetSeconds) {
 
     abSourceA.start(0, offset);
     abSourceB.start(0, offset);
+
+    isPlaying = true; setPlayIcon(true);
+    startABRaf();
 
     const activeSrc = slot === 'a' ? abSourceA : abSourceB;
     activeSrc.onended = () => {
@@ -1746,10 +1749,12 @@ audio.addEventListener('timeupdate',()=>{
 });
 audio.addEventListener('ended',()=>{ if(abMode){audio.currentTime=0;audio.play();return;} nextTrack(true); });
 audio.addEventListener('play', ()=>{
+  if (abIsPlaying) return; // A/B spelar — audio-elementets play-event ska inte styra UI
   isPlaying=true; setPlayIcon(true);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
 });
 audio.addEventListener('pause',()=>{
+  if (abIsPlaying) return; // A/B spelar — audio-elementets pause-event ska inte styra UI
   isPlaying=false;setPlayIcon(false);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
 });
@@ -2211,9 +2216,12 @@ function toggleABMode() {
 
 function setABSlot(slot, gi, event) {
   event.stopPropagation();
-  // Säkerställ att AudioContext skapas och resumeas synkront inifrån click-handler.
-  // Utan detta kan iOS suspenda kontexten innan buffertarna hinner laddas och starta.
   ensureAudioGraph();
+  // iOS-unlock: audio.play() måste anropas synkront i click-handler för att
+  // aktivera iOS audio-sessionen. Utan detta är AudioBufferSourceNode tyst
+  // även om AudioContext är running. Mutar elementet för att undvika hörbart brus.
+  audio.muted = true;
+  audio.play().catch(() => {});
   if (slot === 'a') {
     if (abB === gi) abB = null;
     if (abA === gi) {
@@ -2234,12 +2242,7 @@ function setABSlot(slot, gi, event) {
       abAudioBufA = null;
       loadABBuffer(gi).then(buf => {
         abAudioBufA = buf;
-        if (abAudioBufA && abAudioBufB) {
-          stopABRaf();
-          startABPlayback(abActiveSlot, 0);
-          isPlaying = true; setPlayIcon(true);
-          startABRaf();
-        }
+        if (abAudioBufA && abAudioBufB) { stopABRaf(); startABPlayback(abActiveSlot, 0); }
       });
     }
   } else {
@@ -2254,12 +2257,7 @@ function setABSlot(slot, gi, event) {
       abAudioBufB = null;
       loadABBuffer(gi).then(buf => {
         abAudioBufB = buf;
-        if (abAudioBufA && abAudioBufB) {
-          stopABRaf();
-          startABPlayback(abActiveSlot, 0);
-          isPlaying = true; setPlayIcon(true);
-          startABRaf();
-        }
+        if (abAudioBufA && abAudioBufB) { stopABRaf(); startABPlayback(abActiveSlot, 0); }
       });
     }
   }
