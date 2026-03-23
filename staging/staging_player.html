@@ -809,6 +809,11 @@ async function loadABBuffer(gi) {
 }
 
 function startABPlayback(slot, offsetSeconds) {
+  // Kolla buffertarna FÖRST — stoppa ingenting om de inte finns (race vid snabbt spårbyte)
+  const bufA = abAudioBufA;
+  const bufB = abAudioBufB;
+  if (!bufA || !bufB) return;
+
   ensureAudioGraph();
   // Säkerställ att vanlig uppspelning stoppas — förhindrar simultant ljud
   if (!audio.paused) { audio.pause(); }
@@ -817,10 +822,6 @@ function startABPlayback(slot, offsetSeconds) {
   if (abSourceB) abSourceB.onended = null;
   [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
   abSourceA = null; abSourceB = null;
-
-  const bufA = abAudioBufA;
-  const bufB = abAudioBufB;
-  if (!bufA || !bufB) return;
 
   if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(gainNode); }
   if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(gainNode); }
