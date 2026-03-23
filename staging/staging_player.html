@@ -329,7 +329,7 @@
 </head>
 <body>
 
-<div class="staging-banner"><strong>⚠ STAGING v2.19-debug</strong> — Inaktiv A/B-gain: debugpanel tillagd (röd text i expanded player A/B). <a href="/player.html">Gå till live →</a></div>
+<div class="staging-banner"><strong>⚠ STAGING v2.20</strong> — Inaktiv A/B-gain: opacity 0 (ej 0.25) på gain-row; debugpanel kvar. <a href="/player.html">Gå till live →</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -1872,8 +1872,8 @@ function updateABExpandedUI() {
   document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
   const grA = document.querySelector('#ab-section-a .ab-gain-row');
   const grB = document.querySelector('#ab-section-b .ab-gain-row');
-  if (grA) grA.style.opacity = abActiveSlot === 'a' ? '' : '0.25';
-  if (grB) grB.style.opacity = abActiveSlot === 'b' ? '' : '0.25';
+  if (grA) grA.style.opacity = abActiveSlot === 'a' ? '' : '0';
+  if (grB) grB.style.opacity = abActiveSlot === 'b' ? '' : '0';
   abGainSliderA.disabled = abActiveSlot !== 'a';
   abGainSliderB.disabled = abActiveSlot !== 'b';
   const badge = document.getElementById('np-ab-badge');
