@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 20 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 21 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 20;
+const PLAYER_VERSION = 21;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -862,6 +862,9 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
+    // Tysta audio-elementets Web Audio-gren atomärt precis innan BufferSourcerna startar.
+    // Hårdvaran har varit varm (gainNode=1.0) fram till hit — undviker iOS cold-start-buggen.
+    if (gainNode) gainNode.gain.value = 0;
     console.log('[AB launch] ctx.state=' + audioCtx.state +
       ' slot=' + slot +
       ' gainA=' + (slot==='a' ? dbToGain(gainDbA) : 0).toFixed(3) +
@@ -2235,15 +2238,12 @@ function toggleABMode() {
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
     ensureAudioCtx();
-    // Tysta audio-elementets Web Audio-gren (om gainNode redan skapats via normalt spel).
-    // A/B-källor kopplar direkt till destination förbi gainNode.
-    if (gainNode) gainNode.gain.value = 0;
-    // VIKTIGT: pausa INTE audio-elementet här. Håll det flödande tyst
-    // (gainNode=0) som keepalive medan A/B-buffertarna laddas asynkront.
-    // Om vi pausar nu laddar iOS ur audio-hårdvaran direkt — och när launch()
-    // sedan kallar .start() på BufferSource-noderna är hårdvaran kall och
-    // ger inget ljud, oavsett att AudioContext.state är 'running'.
-    // audio.pause() sker istället i launch() precis innan .start().
+    // VIKTIGT: sätt INTE gainNode.gain = 0 här.
+    // gainNode hålls aktiv (gain=1.0) tills launch() körs — det håller iOS
+    // audio-hårdvaran varm med ett riktigt audiosignal.
+    // Om gain sätts till 0 nu kan iOS stänga av hårdvaruutgången, och
+    // BufferSource-noderna ger sedan inget ljud trots att ctx.state='running'.
+    // gainNode.gain = 0 sätts istället atomärt inuti launch() precis innan .start().
   } else {
     // Städning — stoppa sources, audio-elementet och frigör resurser
     audio.muted = false;
