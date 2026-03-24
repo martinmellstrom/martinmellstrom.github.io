@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 15 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 16 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 15;
+const PLAYER_VERSION = 16;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -846,8 +846,7 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    audio.muted = false; // återställ muted-state som sattes i toggleABMode
-    audio.pause(); // stoppa audio-elementet; pause-eventet ignoreras av abMode-guard
+    audio.muted = false;
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
 
@@ -2205,21 +2204,18 @@ function toggleABMode() {
     // Tysta audio-elementets Web Audio-gren. A/B-källor kopplar direkt till
     // destination förbi gainNode och påverkas inte av denna nollning.
     gainNode.gain.value = 0;
-    // iOS Safari: AudioContext.resume() ensam räcker inte för att låsa upp
-    // audio-hårdvaran. Standard-fix: spela en tyst 1-frame BufferSource
-    // synkront i user-gesture-handleren. Fungerar även på fresh start (ingen
-    // giltig audio.src behövs). Efterföljande A/B BufferSource-noder hörs.
+    // Stoppa audio-elementet SYNKRONT i user-gesture-handleren — om detta
+    // sker asynkront (i launch() efter bufferladdning) hinner iOS suspendera
+    // AudioContext som svar på pausen, och user-gesture-fönstret är stängt.
+    audio.pause();
+    // iOS Safari: play silent 1-frame BufferSource för att låsa upp
+    // audio-hårdvaran. Måste ske efter audio.pause() men fortfarande synkront
+    // i user-gesture-handleren så att iOS känner igen gestyren.
     const silentBuf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
     const silentSrc = audioCtx.createBufferSource();
     silentSrc.buffer = silentBuf;
     silentSrc.connect(audioCtx.destination);
     silentSrc.start(0);
-    // Om en låt redan spelats normalt: pausa audio-elementet tyst tills
-    // launch() startar A/B-källorna (förhindrar att det spelas parallellt).
-    if (audio.src && audio.src !== window.location.href) {
-      audio.muted = true;
-      audio.play().catch(() => {});
-    }
   } else {
     // Städning — stoppa sources, audio-elementet och frigör resurser
     audio.muted = false;
