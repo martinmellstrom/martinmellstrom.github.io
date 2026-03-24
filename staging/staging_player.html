@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 9 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 10 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 9;
+const PLAYER_VERSION = 10;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -1628,10 +1628,15 @@ async function playTrack(idx) {
   saveState();
   currentIdx=idx;
   if (abMode) {
-    if (idx === abA) abActiveSlot = 'a';
-    else if (idx === abB) abActiveSlot = 'b';
-    const badge = document.getElementById('np-ab-badge');
-    if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
+    if (idx !== abA && idx !== abB) {
+      // Låt utanför A/B klickad — avsluta A/B-läget och spela normalt
+      toggleABMode();
+    } else {
+      if (idx === abA) abActiveSlot = 'a';
+      else if (idx === abB) abActiveSlot = 'b';
+      const badge = document.getElementById('np-ab-badge');
+      if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
+    }
   }
   const t=tracks[idx];
   npName.textContent=t.name;
