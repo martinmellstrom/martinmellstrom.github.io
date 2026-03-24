@@ -2,9 +2,9 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>[STAGING] Martin Mellström — Music Player</title>
-<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -32,20 +32,7 @@
     font-family: 'Space Mono', monospace; font-size: 13px;
     min-height: 100dvh; display: flex; flex-direction: column;
     overflow-x: hidden; max-width: 100vw;
-    padding-top: 36px;
   }
-  #staging-banner {
-    position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999;
-    background: repeating-linear-gradient(
-      -45deg,
-      #c00 0px, #c00 10px,
-      #000 10px, #000 20px
-    );
-    color: #fff; font-size: 11px; font-weight: bold; letter-spacing: 0.05em;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-  }
-  #staging-banner a { color: #fff; text-decoration: underline; }
-
   body::before {
     content: ''; position: fixed; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
@@ -336,7 +323,8 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 23 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner" style="position:fixed;top:0;left:0;right:0;height:36px;z-index:99999;background:repeating-linear-gradient(-45deg,#c00,#c00 10px,#900 10px,#900 20px);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:bold;letter-spacing:0.05em;">⚠ STAGING — build 25 — Detta är en förhandsvisning. &nbsp;<a href="https://martinmellstrom.com/player.html" style="color:#fff;text-decoration:underline;">Gå till live</a></div>
+<style>#staging-banner~* nav,nav{top:36px!important;}body{padding-top:36px!important;}</style>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +560,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 23;
+const PLAYER_VERSION = 25;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -1742,8 +1730,10 @@ function prevTrack(){
 function nextTrack(fromEnded=false){
   if (repeatMode==='one'&&fromEnded){audio.currentTime=0;audio.play();return;}
   const pool=getPool();
-  if (shuffle&&fromEnded){
-    if (!shuffleQueue.length) shuffleQueue=pool.map((_,i)=>i).sort(()=>Math.random()-0.5);
+  if (shuffle){
+    const ci=pool.indexOf(tracks[currentIdx]);
+    if(!shuffleQueue.length){shuffleQueue=pool.map((_,i)=>i).filter(i=>i!==ci).sort(()=>Math.random()-0.5);}
+    if(!shuffleQueue.length){playTrack(tracks.indexOf(pool[ci]));return;}
     playTrack(tracks.indexOf(pool[shuffleQueue.shift()]));return;
   }
   const ci=pool.indexOf(tracks[currentIdx]),ni=(ci+1)%pool.length;
