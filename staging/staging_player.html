@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 11 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 12 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 11;
+const PLAYER_VERSION = 12;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -2203,10 +2203,17 @@ function toggleABMode() {
     // låter det förbli "spelande" ur iOS audio-sessionens perspektiv.
     // A/B-källor kopplar direkt till destination och påverkas inte av gainNode.
     gainNode.gain.value = 0;
-    // iOS-unlock: audio.play() håller sessionen aktiv tills launch() startar A/B-källorna.
-    // audio.muted=true förhindrar det ~3ms-läckage som annars hörs när gainNode-nollningen
-    // inte hinner slå igenom före första audio-renderingskvantum.
-    // Muted spelar ändå in sessionen ur iOS perspektiv — det är play()-anropet som räknas.
+    // iOS-unlock: AudioContext måste låsas upp med faktisk ljudutmatning under
+    // en användargest — annars förblir den suspenderad och A/B-källorna startar aldrig.
+    // Vi spelar ett 1-samples tyst ljud direkt via WebAudio-grafen (ej via audio-elementet)
+    // så att upplåsningen fungerar även på fresh start när audio.src är tom.
+    // audio.play() körs också som fallback för att hålla iOS-sessionen aktiv om en låt
+    // redan är laddad; muted=true förhindrar ~3ms-läckage från gainNode-nollningen.
+    const silentBuf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+    const silentSrc = audioCtx.createBufferSource();
+    silentSrc.buffer = silentBuf;
+    silentSrc.connect(audioCtx.destination);
+    silentSrc.start(0);
     audio.muted = true;
     audio.play().catch(() => {});
   } else {
