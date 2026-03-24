@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 10 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 11 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 10;
+const PLAYER_VERSION = 11;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -1628,15 +1628,10 @@ async function playTrack(idx) {
   saveState();
   currentIdx=idx;
   if (abMode) {
-    if (idx !== abA && idx !== abB) {
-      // Låt utanför A/B klickad — avsluta A/B-läget och spela normalt
-      toggleABMode();
-    } else {
-      if (idx === abA) abActiveSlot = 'a';
-      else if (idx === abB) abActiveSlot = 'b';
-      const badge = document.getElementById('np-ab-badge');
-      if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
-    }
+    // Klick på valfri låt i spellistan inaktiverar alltid A/B-läget —
+    // oavsett om låten är A, B eller annan. Förhindrar att audio-elementet
+    // startar parallellt med pågående A/B WebAudio-källor.
+    toggleABMode();
   }
   const t=tracks[idx];
   npName.textContent=t.name;
@@ -1796,6 +1791,15 @@ function openExpandedPlayer() {
 function closeExpandedPlayer() {
   expPanel.classList.remove('open');
   expOpen = false;
+  if (abMode && abIsPlaying) {
+    // A/B kan bara spelas i expanded player — pausa när den stängs
+    abPausedOffset = getABCurrentTime();
+    [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+    abSourceA = null; abSourceB = null;
+    abIsPlaying = false;
+    isPlaying = false; setPlayIcon(false);
+    stopABRaf();
+  }
 }
 
 function syncExpandedMeta() {
