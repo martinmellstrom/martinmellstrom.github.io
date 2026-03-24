@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 19 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 20 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 19;
+const PLAYER_VERSION = 20;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -780,11 +780,16 @@ function ensureAudioCtx() {
   // Skapar AudioContext och kallar resume() — men INGA noder.
   // Måste anropas synkront i gesture-handleren (innan await) för att iOS Safari
   // ska acceptera unlock av Web Audio-hårdvaran.
+  const created = !audioCtx;
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
-  if (audioCtx.state === 'suspended') {
+  const wasSuspended = audioCtx.state === 'suspended';
+  if (wasSuspended) {
     audioCtx.resume();
+  }
+  if (created || wasSuspended) {
+    console.log('[ensureAudioCtx] created=' + created + ' resumed=' + wasSuspended + ' state=' + audioCtx.state);
   }
 }
 
@@ -857,10 +862,15 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    // Pausa audio-elementet precis innan A/B-källorna startar.
-    // Hårdvaran är fortfarande varm (audio flödade tyst via gainNode=0),
-    // och BufferSource-noderna tar vid omedelbart — iOS ser kontinuerlig
-    // audio-aktivitet och suspenderar inte kontexten.
+    console.log('[AB launch] ctx.state=' + audioCtx.state +
+      ' slot=' + slot +
+      ' gainA=' + (slot==='a' ? dbToGain(gainDbA) : 0).toFixed(3) +
+      ' gainB=' + (slot==='b' ? dbToGain(gainDbB) : 0).toFixed(3) +
+      ' bufA.dur=' + bufA.duration.toFixed(2) +
+      ' bufB.dur=' + bufB.duration.toFixed(2) +
+      ' audio.paused=' + audio.paused +
+      ' audio.src=' + (audio.src ? 'set' : 'empty') +
+      ' gainNode=' + (gainNode ? gainNode.gain.value.toFixed(3) : 'null'));
     audio.pause();
     audio.muted = false;
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
@@ -873,6 +883,7 @@ function startABPlayback(slot, offsetSeconds) {
 
     abSourceA.start(0, offset);
     abSourceB.start(0, offset);
+    console.log('[AB launch] start() called. ctx.currentTime=' + audioCtx.currentTime.toFixed(3));
 
     isPlaying = true; setPlayIcon(true);
     startABRaf();
@@ -883,6 +894,7 @@ function startABPlayback(slot, offsetSeconds) {
     };
   };
 
+  console.log('[AB startABPlayback] ctx.state=' + audioCtx.state + ' slot=' + slot);
   if (audioCtx.state === 'running') {
     launch();
   } else {
