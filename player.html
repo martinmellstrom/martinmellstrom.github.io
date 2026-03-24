@@ -557,7 +557,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 24;
+const PLAYER_VERSION = 26;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -1725,7 +1725,7 @@ function prevTrack(){
 }
 
 function nextTrack(fromEnded=false){
-  if (repeatMode==='one'&&fromEnded){audio.currentTime=0;audio.play();return;}
+  if (repeatMode==='one'&&fromEnded){playTrack(currentIdx);return;}
   const pool=getPool();
   if (shuffle&&fromEnded){
     if (!shuffleQueue.length) shuffleQueue=pool.map((_,i)=>i).sort(()=>Math.random()-0.5);
