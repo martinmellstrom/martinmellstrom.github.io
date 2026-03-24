@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 16 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 17 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 16;
+const PLAYER_VERSION = 17;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -1659,6 +1659,12 @@ async function playTrack(idx) {
     activeObjUrl=URL.createObjectURL(blob);
     audio.src=activeObjUrl;
     ensureAudioGraph();
+    // iOS Safari: audio.play() måste anropas med en KÖRANDE AudioContext.
+    // Om kontexten är suspended när play() anropas skapar iOS en audio-session
+    // för media-elementet utan att koppla in AudioContext-outputen — A/B
+    // BufferSource-noder får ingen ljudutgång. Await resume() säkerställer att
+    // kontexten är igång innan play() anropas, redan vid första spelet.
+    if (audioCtx && audioCtx.state !== 'running') await audioCtx.resume();
     currentGainDb = getGainFromCache(t.rev);
     applyGain(currentGainDb);
     await audio.play();
