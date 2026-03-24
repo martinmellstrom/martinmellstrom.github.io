@@ -8,6 +8,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+
+  /* ── STAGING BANNER ── */
+  #staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; background: repeating-linear-gradient(45deg, #c00 0, #c00 10px, #900 10px, #900 20px); display: flex; align-items: center; justify-content: center; }
+  #staging-banner a { color: #fff; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-decoration: none; }
+
   :root {
     --bg:        #0a0d0b;
     --surface:   #111510;
@@ -26,10 +31,6 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  /* ── STAGING BANNER ── */
-  #staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; background: repeating-linear-gradient(45deg, #c00 0, #c00 10px, #900 10px, #900 20px); display: flex; align-items: center; justify-content: center; }
-  #staging-banner a { color: #fff; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-decoration: none; }
 
   body {
     background: var(--bg); color: var(--text);
@@ -283,7 +284,7 @@
     font-size: 10px;
     letter-spacing: 0.1em;
     color: var(--text-dim);
-    width: 34px;
+    width: 52px;
     flex-shrink: 0;
     font-family: 'Space Mono', monospace;
   }
@@ -328,9 +329,9 @@
 </style>
 </head>
 <body>
+<div id="staging-banner"><a href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 29 — Detta är en förhandsvisning. → Live</a></div>
 
 <!-- APP -->
-<div id="staging-banner"><a href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 27 — Detta är en förhandsvisning.</a></div>
 <div id="app">
 
 <header>
@@ -564,7 +565,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 27;
+const PLAYER_VERSION = 29;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
