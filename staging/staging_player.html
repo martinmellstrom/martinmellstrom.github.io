@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 18 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 19 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 18;
+const PLAYER_VERSION = 19;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -776,17 +776,28 @@ function getGainFromCache(rev) {
 }
 
 // ── Web Audio API ──
-function ensureAudioGraph() {
+function ensureAudioCtx() {
+  // Skapar AudioContext och kallar resume() — men INGA noder.
+  // Måste anropas synkront i gesture-handleren (innan await) för att iOS Safari
+  // ska acceptera unlock av Web Audio-hårdvaran.
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function ensureAudioGraph() {
+  // Komplettera grafen med MediaElementSource + gainNode efter att audio.src satts.
+  // Anropas från playTrack efter async-laddning — gesture-unlock sker redan i ensureAudioCtx().
+  ensureAudioCtx();
+  if (!mediaSource) {
     mediaSource = audioCtx.createMediaElementSource(audio);
     gainNode = audioCtx.createGain();
     gainNode.gain.value = dbToGain(currentGainDb);
     mediaSource.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
   }
 }
 
@@ -807,7 +818,7 @@ async function loadABBuffer(gi) {
   else { url = await getTmpLink(t.path); }
   const resp = await fetch(url);
   const buf = await resp.arrayBuffer();
-  ensureAudioGraph();
+  ensureAudioCtx();
   const decoded = await audioCtx.decodeAudioData(buf);
   if (shouldRevoke) URL.revokeObjectURL(url);
   return decoded;
@@ -819,7 +830,7 @@ function startABPlayback(slot, offsetSeconds) {
   const bufB = abAudioBufB;
   if (!bufA || !bufB) return;
 
-  ensureAudioGraph();
+  ensureAudioCtx();
   // Nolla onended innan stop — annars triggar ended-callbacken och återstartar från 0
   if (abSourceA) abSourceA.onended = null;
   if (abSourceB) abSourceB.onended = null;
@@ -1631,6 +1642,12 @@ function updateMediaSession(t) {
 // ═══════════════════════════════════════════════
 async function playTrack(idx) {
   if (idx<0||idx>=tracks.length) return;
+  // iOS Safari: AudioContext.resume() måste anropas synkront i gesture-handleren
+  // — INNAN några await-steg. Om resume() anropas senare (t.ex. i ensureAudioGraph()
+  // efter idbGet/fetch) hinner iOS stänga gesture-fönstret och nekar unlock.
+  // Resultat utan detta: AudioContext körs men Web Audio-noder (A/B) ger inget ljud
+  // tills playTrack anropats minst två gånger.
+  ensureAudioCtx();
   lastSavedPosition = audio.currentTime || 0;
   saveState();
   currentIdx=idx;
@@ -2164,7 +2181,7 @@ function findNextZeroCrossing(audioBuffer, fromSeconds) {
 function switchABSlot(slot) {
   if (slot === abActiveSlot) return;
   const FADE = 0.04; // 40 ms cross-fade
-  ensureAudioGraph();
+  ensureAudioCtx();
   const now = audioCtx.currentTime;
   const currentOffset = abStartOffset + (now - abStartContextTime);
 
@@ -2205,10 +2222,10 @@ function toggleABMode() {
   const btn = document.getElementById('ab-mode-btn');
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
-    ensureAudioGraph();
-    // Tysta audio-elementets Web Audio-gren. A/B-källor kopplar direkt till
-    // destination förbi gainNode och påverkas inte av denna nollning.
-    gainNode.gain.value = 0;
+    ensureAudioCtx();
+    // Tysta audio-elementets Web Audio-gren (om gainNode redan skapats via normalt spel).
+    // A/B-källor kopplar direkt till destination förbi gainNode.
+    if (gainNode) gainNode.gain.value = 0;
     // VIKTIGT: pausa INTE audio-elementet här. Håll det flödande tyst
     // (gainNode=0) som keepalive medan A/B-buffertarna laddas asynkront.
     // Om vi pausar nu laddar iOS ur audio-hårdvaran direkt — och när launch()
@@ -2241,7 +2258,7 @@ function toggleABMode() {
 
 function setABSlot(slot, gi, event) {
   event.stopPropagation();
-  ensureAudioGraph();
+  ensureAudioCtx();
   if (slot === 'a') {
     if (abB === gi) abB = null;
     if (abA === gi) {
