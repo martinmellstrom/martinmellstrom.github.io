@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 21 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 22 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 21;
+const PLAYER_VERSION = 22;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -862,8 +862,9 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    // Tysta audio-elementets Web Audio-gren atomärt precis innan BufferSourcerna startar.
-    // Hårdvaran har varit varm (gainNode=1.0) fram till hit — undviker iOS cold-start-buggen.
+    // Tysta audio-elementet via gainNode=0 men PAUSA INTE — audio.pause() stänger
+    // iOS hardware-utgången och dödar destinationen även för abGainNodeA/B som
+    // kopplar direkt. Elementet fortsätter "spela" tyst som keepalive.
     if (gainNode) gainNode.gain.value = 0;
     console.log('[AB launch] ctx.state=' + audioCtx.state +
       ' slot=' + slot +
@@ -874,8 +875,7 @@ function startABPlayback(slot, offsetSeconds) {
       ' audio.paused=' + audio.paused +
       ' audio.src=' + (audio.src ? 'set' : 'empty') +
       ' gainNode=' + (gainNode ? gainNode.gain.value.toFixed(3) : 'null'));
-    audio.pause();
-    audio.muted = false;
+    // audio.pause() borttagen — se kommentar ovan
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
 
