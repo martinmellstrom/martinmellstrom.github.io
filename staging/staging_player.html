@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 14 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 15 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 14;
+const PLAYER_VERSION = 15;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -779,21 +779,14 @@ function getGainFromCache(rev) {
 function ensureAudioGraph() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    console.log('[AB] AudioContext created, state:', audioCtx.state);
-  }
-  // createMediaElementSource kopplar audio-elementet till AudioContext-grafen.
-  // På iOS Safari: om audio.src är tomt när detta anropas tystas hela audioCtx.destination —
-  // även A/B-källor som kopplar direkt förbi gainNode. Vänta därför tills src är satt.
-  if (!gainNode && audio.src && audio.src !== window.location.href) {
     mediaSource = audioCtx.createMediaElementSource(audio);
     gainNode = audioCtx.createGain();
+    gainNode.gain.value = dbToGain(currentGainDb);
     mediaSource.connect(gainNode);
     gainNode.connect(audioCtx.destination);
   }
   if (audioCtx.state === 'suspended') {
-    console.log('[AB] audioCtx suspended — calling resume()');
-    audioCtx.resume().then(() => console.log('[AB] resume() resolved, state:', audioCtx.state))
-                     .catch(e => console.warn('[AB] resume() failed:', e));
+    audioCtx.resume();
   }
 }
 
@@ -2209,13 +2202,20 @@ function toggleABMode() {
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
     ensureAudioGraph();
-    // gainNode.gain = 0 tystar audio-elementet i Web Audio-grafen men
-    // låter det förbli "spelande" ur iOS audio-sessionens perspektiv.
-    // A/B-källor kopplar direkt till destination och påverkas inte av gainNode.
-    if (gainNode) gainNode.gain.value = 0;
-    // iOS-unlock: audio.play() håller sessionen aktiv tills launch() startar A/B-källorna.
-    // audio.muted=true förhindrar ~3ms-läckage från gainNode-nollningen.
-    // Fungerar bara om audio.src är satt — på fresh start hoppar vi över detta.
+    // Tysta audio-elementets Web Audio-gren. A/B-källor kopplar direkt till
+    // destination förbi gainNode och påverkas inte av denna nollning.
+    gainNode.gain.value = 0;
+    // iOS Safari: AudioContext.resume() ensam räcker inte för att låsa upp
+    // audio-hårdvaran. Standard-fix: spela en tyst 1-frame BufferSource
+    // synkront i user-gesture-handleren. Fungerar även på fresh start (ingen
+    // giltig audio.src behövs). Efterföljande A/B BufferSource-noder hörs.
+    const silentBuf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+    const silentSrc = audioCtx.createBufferSource();
+    silentSrc.buffer = silentBuf;
+    silentSrc.connect(audioCtx.destination);
+    silentSrc.start(0);
+    // Om en låt redan spelats normalt: pausa audio-elementet tyst tills
+    // launch() startar A/B-källorna (förhindrar att det spelas parallellt).
     if (audio.src && audio.src !== window.location.href) {
       audio.muted = true;
       audio.play().catch(() => {});
