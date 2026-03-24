@@ -336,7 +336,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner">⚠ STAGING — build 13 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
+<div id="staging-banner">⚠ STAGING — build 14 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">Gå till live</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -572,7 +572,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 13;
+const PLAYER_VERSION = 14;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -779,11 +779,16 @@ function getGainFromCache(rev) {
 function ensureAudioGraph() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    console.log('[AB] AudioContext created, state:', audioCtx.state);
+  }
+  // createMediaElementSource kopplar audio-elementet till AudioContext-grafen.
+  // På iOS Safari: om audio.src är tomt när detta anropas tystas hela audioCtx.destination —
+  // även A/B-källor som kopplar direkt förbi gainNode. Vänta därför tills src är satt.
+  if (!gainNode && audio.src && audio.src !== window.location.href) {
     mediaSource = audioCtx.createMediaElementSource(audio);
     gainNode = audioCtx.createGain();
     mediaSource.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    console.log('[AB] AudioContext created, state:', audioCtx.state);
   }
   if (audioCtx.state === 'suspended') {
     console.log('[AB] audioCtx suspended — calling resume()');
@@ -848,12 +853,10 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    console.log('[AB] launch() — audioCtx.state:', audioCtx.state, '| gainA:', abGainNodeA?.gain.value, 'gainB:', abGainNodeB?.gain.value);
     audio.muted = false; // återställ muted-state som sattes i toggleABMode
     audio.pause(); // stoppa audio-elementet; pause-eventet ignoreras av abMode-guard
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
-    console.log('[AB] sources starting — gainA after set:', abGainNodeA.gain.value, '| gainB after set:', abGainNodeB.gain.value);
 
     const offset = Math.max(0, Math.min(offsetSeconds, bufA.duration, bufB.duration));
     abStartOffset = offset;
@@ -872,13 +875,10 @@ function startABPlayback(slot, offsetSeconds) {
     };
   };
 
-  console.log('[AB] startABPlayback — audioCtx.state:', audioCtx.state, '| slot:', slot, '| gainA:', gainDbA, 'gainB:', gainDbB);
   if (audioCtx.state === 'running') {
     launch();
   } else {
-    console.warn('[AB] context not running — calling resume() from async context (may fail on iOS)');
-    audioCtx.resume().then(() => { console.log('[AB] async resume resolved'); launch(); })
-                     .catch(e => console.warn('[AB] async resume failed:', e));
+    audioCtx.resume().then(launch).catch(e => console.warn('AB resume failed:', e));
   }
 }
 
@@ -2212,14 +2212,14 @@ function toggleABMode() {
     // gainNode.gain = 0 tystar audio-elementet i Web Audio-grafen men
     // låter det förbli "spelande" ur iOS audio-sessionens perspektiv.
     // A/B-källor kopplar direkt till destination och påverkas inte av gainNode.
-    gainNode.gain.value = 0;
+    if (gainNode) gainNode.gain.value = 0;
     // iOS-unlock: audio.play() håller sessionen aktiv tills launch() startar A/B-källorna.
     // audio.muted=true förhindrar ~3ms-läckage från gainNode-nollningen.
-    // OBS: fungerar bara om audio.src är satt (dvs. en låt spelats normalt).
-    // På fresh start misslyckas play() — se konsollloggar för diagnos.
-    console.log('[AB] toggleABMode ON — audio.src:', audio.src ? 'set' : 'empty', '| audioCtx.state:', audioCtx.state);
-    audio.muted = true;
-    audio.play().catch(e => console.warn('[AB] audio.play() failed in toggleABMode:', e.message));
+    // Fungerar bara om audio.src är satt — på fresh start hoppar vi över detta.
+    if (audio.src && audio.src !== window.location.href) {
+      audio.muted = true;
+      audio.play().catch(() => {});
+    }
   } else {
     // Städning — stoppa sources, audio-elementet och frigör resurser
     audio.muted = false;
