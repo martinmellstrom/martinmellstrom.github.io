@@ -1655,11 +1655,9 @@ function updateMediaSession(t) {
   });
 }
 
-=======
 // Uppdaterar CarPlay-progressbaren med exakt position.
 // Utan detta kan CarPlay tappa bort positionen och skicka seekto-events för att
 // synka om — de avbrotten hörs som crackling i trådlöst CarPlay.
->>>>>>> origin/main
 function syncPositionState() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (!audio.duration || !isFinite(audio.duration) || audio.duration <= 0) return;
