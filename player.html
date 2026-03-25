@@ -205,17 +205,17 @@
 
   .exp-handle-bar { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
 
-  .exp-cover-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 16px 32px 8px; }
+  .exp-cover-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 16px 32px 3px; }
   .exp-cover { width: 100%; max-width: 280px; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); flex-shrink: 0; }
   .exp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .exp-cover .cover-placeholder { font-size: 72px; color: var(--gold-dim); opacity: 0.35; }
 
-  .exp-meta { padding: 2px 24px 4px; text-align: center; flex-shrink: 0; }
+  .exp-meta { padding: 2px 24px 1px; text-align: center; flex-shrink: 0; }
   .exp-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: var(--text); line-height: 1.1; }
   .exp-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.06em; }
 
   /* Waveform */
-  .exp-waveform-wrap { padding: 8px 20px 4px; flex-shrink: 0; position: relative; cursor: pointer; }
+  .exp-waveform-wrap { padding: 4px 20px 2px; flex-shrink: 0; position: relative; cursor: pointer; }
   #waveform-canvas { width: 100%; height: 56px; display: block; border-radius: 4px; }
   .exp-time-row { display: flex; justify-content: space-between; padding: 0 20px; font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; letter-spacing: 0.03em; flex-shrink: 0; }
 
@@ -270,7 +270,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 6px 20px 4px;
+    padding: 3px 20px 4px;
     flex-shrink: 0;
   }
   .exp-gain-label {
@@ -557,7 +557,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 30;
+const PLAYER_VERSION = 33;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -1810,6 +1810,7 @@ function openExpandedPlayer() {
     hideABExpandedLayout();
     syncExpandedMeta();
     drawWaveform();
+    adjustExpandedSpacing();
   }
 }
 function closeExpandedPlayer() {
@@ -1825,6 +1826,36 @@ function closeExpandedPlayer() {
     stopABRaf();
   }
 }
+function adjustExpandedSpacing() {
+  const cover   = document.getElementById('exp-cover');
+  const meta    = document.getElementById('exp-meta');
+  const wave    = document.getElementById('exp-waveform-wrap');
+  const timeRow = document.getElementById('exp-time-row');
+  const gain    = document.getElementById('exp-gain-row');
+  if (!cover || !meta) return;
+  meta.style.marginTop = '';
+  wave.style.marginTop = '';
+  gain.style.marginTop = '';
+  requestAnimationFrame(() => {
+    const gap = meta.getBoundingClientRect().top - cover.getBoundingClientRect().bottom;
+    if (gap <= 0) return;
+    const pull = gap / 2;
+    meta.style.marginTop = `-${pull}px`;
+    requestAnimationFrame(() => {
+      const waveGap = wave.getBoundingClientRect().top  - meta.getBoundingClientRect().bottom;
+      const gainGap = gain.getBoundingClientRect().top  - timeRow.getBoundingClientRect().bottom;
+      if (pull > waveGap) wave.style.marginTop = `${pull - waveGap}px`;
+      if (pull > gainGap) gain.style.marginTop = `${pull - gainGap}px`;
+    });
+  });
+}
+let _adjResizeTimer = null;
+window.addEventListener('resize', () => {
+  if (!expOpen || abMode) return;
+  clearTimeout(_adjResizeTimer);
+  _adjResizeTimer = setTimeout(adjustExpandedSpacing, 100);
+});
+
 
 function syncExpandedMeta() {
   if (!expOpen) return;
@@ -2055,6 +2086,8 @@ document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
 //  A/B COMPARISON MODE
 // ═══════════════════════════════════════════════
 function showABExpandedLayout() {
+  const _m = document.getElementById('exp-meta'), _w = document.getElementById('exp-waveform-wrap'), _g = document.getElementById('exp-gain-row');
+  if (_m) _m.style.marginTop = ''; if (_w) _w.style.marginTop = ''; if (_g) _g.style.marginTop = '';
   document.getElementById('ab-expanded-content').classList.add('ab-visible');
   document.getElementById('exp-cover-wrap').style.display = 'none';
   document.getElementById('exp-meta').style.display = 'none';
@@ -2071,6 +2104,7 @@ function hideABExpandedLayout() {
   document.getElementById('exp-time-row').style.display = '';
   document.getElementById('exp-seek-wrap').style.display = '';
   document.getElementById('exp-gain-row').style.display = '';
+  adjustExpandedSpacing();
 }
 
 function updateABExpandedUI() {
@@ -2305,6 +2339,7 @@ function setABSlot(slot, gi, event) {
     hideABExpandedLayout();
     syncExpandedMeta();
     drawWaveform();
+    adjustExpandedSpacing();
   }
   const pool = activePkg === 'all' || activePkg === null ? tracks : tracks.filter(t => t.package === activePkg);
   renderTrackList(pool);
