@@ -800,6 +800,13 @@ function ensureAudioGraph() {
   // audioCtx.destination som inte alltid följer med iOS audio-route-byten →
   // tyst ljud eller snabb ms-loop vid AirPlay/CarPlay.
   ensureAudioCtx();
+  if (!mediaSource) {
+    mediaSource = audioCtx.createMediaElementSource(audio);
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = dbToGain(currentGainDb);
+    mediaSource.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+  }
 }
 
 function dbToGain(db) { return Math.pow(10, db / 20); }
@@ -858,10 +865,10 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    // Tysta audio-elementet via volume=0 men PAUSA INTE — audio.pause() stänger
+    // Tysta audio-elementet via gainNode=0 men PAUSA INTE — audio.pause() stänger
     // iOS hardware-utgången och dödar destinationen även för abGainNodeA/B som
     // kopplar direkt. Elementet fortsätter "spela" tyst som keepalive.
-    audio.volume = 0;
+    if (gainNode) gainNode.gain.value = 0;
     console.log('[AB launch] ctx.state=' + audioCtx.state +
       ' slot=' + slot +
       ' gainA=' + (slot==='a' ? dbToGain(gainDbA) : 0).toFixed(3) +
@@ -870,7 +877,7 @@ function startABPlayback(slot, offsetSeconds) {
       ' bufB.dur=' + bufB.duration.toFixed(2) +
       ' audio.paused=' + audio.paused +
       ' audio.src=' + (audio.src ? 'set' : 'empty') +
-      ' audio.volume=' + audio.volume.toFixed(3));
+      ' gainNode=' + (gainNode ? gainNode.gain.value.toFixed(3) : 'null'));
     // audio.pause() borttagen — se kommentar ovan
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
@@ -1648,6 +1655,11 @@ function updateMediaSession(t) {
   });
 }
 
+=======
+// Uppdaterar CarPlay-progressbaren med exakt position.
+// Utan detta kan CarPlay tappa bort positionen och skicka seekto-events för att
+// synka om — de avbrotten hörs som crackling i trådlöst CarPlay.
+>>>>>>> origin/main
 function syncPositionState() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (!audio.duration || !isFinite(audio.duration) || audio.duration <= 0) return;
@@ -1794,6 +1806,7 @@ audio.addEventListener('timeupdate',()=>{
     lastSavedPosition = audio.currentTime;
     saveState();
   }
+  // Throttlad position-sync för CarPlay (max 1 gång/sek)
   const _now = Date.now();
   if (_now - lastPositionStateUpdate >= 1000) {
     lastPositionStateUpdate = _now;
@@ -2288,12 +2301,12 @@ function toggleABMode() {
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
     ensureAudioCtx();
-    // VIKTIGT: sätt INTE audio.volume = 0 här.
-    // audio-elementet hålls aktivt (volume=1.0) tills launch() körs — det håller iOS
+    // VIKTIGT: sätt INTE gainNode.gain = 0 här.
+    // gainNode hålls aktiv (gain=1.0) tills launch() körs — det håller iOS
     // audio-hårdvaran varm med ett riktigt audiosignal.
-    // Om volume sätts till 0 nu kan iOS stänga av hårdvaruutgången, och
+    // Om gain sätts till 0 nu kan iOS stänga av hårdvaruutgången, och
     // BufferSource-noderna ger sedan inget ljud trots att ctx.state='running'.
-    // audio.volume = 0 sätts istället atomärt inuti launch() precis innan .start().
+    // gainNode.gain = 0 sätts istället atomärt inuti launch() precis innan .start().
   } else {
     // Spara aktivt spårindex innan städning — används för att återuppta normal uppspelning
     const exitIdx = abActiveSlot === 'a' ? abA : abB;
@@ -2310,8 +2323,8 @@ function toggleABMode() {
     abA = null; abB = null;
     waveformDataA = null; waveformDataB = null;
     abActiveSlot = 'a';
-    // Återställ audio.volume till aktuell gain (sattes till 0 vid AB-aktivering)
-    audio.volume = Math.min(1, Math.max(0, dbToGain(currentGainDb)));
+    // Återställ gainNode till aktuell gain (sattes till 0 vid AB-aktivering)
+    if (gainNode && audioCtx) gainNode.gain.value = dbToGain(currentGainDb);
     const badge = document.getElementById('np-ab-badge');
     if (badge) badge.classList.remove('ab-visible');
     if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
