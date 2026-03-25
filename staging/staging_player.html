@@ -328,7 +328,7 @@ body { padding-top: 36px !important; }
 </style>
 </head>
 <body>
-<div id="staging-banner"><a href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 37 — Detta är en förhandsvisning. Klicka för live-versionen.</a></div>
+<div id="staging-banner"><a href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 38 — Detta är en förhandsvisning. Klicka för live-versionen.</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -564,7 +564,7 @@ body { padding-top: 36px !important; }
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 37;
+const PLAYER_VERSION = 38;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -770,9 +770,11 @@ function getGainFromCache(rev) {
 
 // ── Web Audio API ──
 function ensureAudioCtx() {
-  // Skapar AudioContext och kallar resume() — men INGA noder.
-  // Måste anropas synkront i gesture-handleren (innan await) för att iOS Safari
-  // ska acceptera unlock av Web Audio-hårdvaran.
+  // Skapar AudioContext och kallar resume().
+  // Anropas BARA från A/B-läget och buildWaveform — ALDRIG under normal uppspelning.
+  // En öppen AudioContext håller iOS audio-sessionen vid sin skapade sample rate
+  // (44100 Hz). Om CarPlay/AirPlay presenterar 48000 Hz får WebKit fel rate →
+  // crackling. Lösning: AudioContext existerar inte under normal uppspelning.
   const created = !audioCtx;
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
@@ -793,27 +795,18 @@ function ensureAudioCtx() {
 }
 
 function ensureAudioGraph() {
-  // createMediaElementSource används INTE — regular playback routas direkt av iOS
-  // till vald audio-output (AirPlay, CarPlay etc) via det inhemska audio-elementet.
-  // Web Audio (AudioContext) används bara för A/B-läget och waveform-dekodning.
-  // Bakgrund: createMediaElementSource kopplar audio-elementet exklusivt till
-  // audioCtx.destination som inte alltid följer med iOS audio-route-byten →
-  // tyst ljud eller snabb ms-loop vid AirPlay/CarPlay.
-  ensureAudioCtx();
-  if (!mediaSource) {
-    mediaSource = audioCtx.createMediaElementSource(audio);
-    gainNode = audioCtx.createGain();
-    gainNode.gain.value = dbToGain(currentGainDb);
-    mediaSource.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-  }
+  // Avsiktligt tom — createMediaElementSource används inte.
+  // Normal uppspelning routas direkt av iOS (audio-elementet → AirPlay/CarPlay/högtalar).
+  // createMediaElementSource blockerar AirPlay-routing och skapar sample-rate-konflikter
+  // med trådlöst CarPlay → crackling (WebKit Bug #154538, #221334).
+  // AudioContext skapas BARA i setABSlot/loadABBuffer (A/B) och buildWaveform.
 }
 
 function dbToGain(db) { return Math.pow(10, db / 20); }
 
 function applyGain(db) {
-  // audio.volume 0–1 (max 0 dB utan Web Audio). Boost-positioner på slidern
-  // (> 0 dB) clampar tyst till 1.0 — slidern behåller sin range för A/B.
+  // audio.volume 0–1 (max 0 dB utan Web Audio-förstärkning).
+  // Boost-positioner (> 0 dB) clampar tyst till 1.0.
   audio.volume = Math.min(1, Math.max(0, dbToGain(db)));
 }
 
@@ -847,7 +840,7 @@ function startABPlayback(slot, offsetSeconds) {
   abSourceA = null; abSourceB = null;
 
   // Koppla abGainNodeA/B direkt till audioCtx.destination.
-  // audio.volume sätts till 0 som keepalive — abGainNodeA/B är separata från
+  // audio.volume=0 används som keepalive — abGainNodeA/B är separata från
   // audio-elementet och påverkas inte av dess volume.
   if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(audioCtx.destination); }
   if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(audioCtx.destination); }
@@ -865,10 +858,10 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    // Tysta audio-elementet via gainNode=0 men PAUSA INTE — audio.pause() stänger
+    // Tysta audio-elementet via volume=0 men PAUSA INTE — audio.pause() stänger
     // iOS hardware-utgången och dödar destinationen även för abGainNodeA/B som
     // kopplar direkt. Elementet fortsätter "spela" tyst som keepalive.
-    if (gainNode) gainNode.gain.value = 0;
+    audio.volume = 0;
     console.log('[AB launch] ctx.state=' + audioCtx.state +
       ' slot=' + slot +
       ' gainA=' + (slot==='a' ? dbToGain(gainDbA) : 0).toFixed(3) +
@@ -877,7 +870,7 @@ function startABPlayback(slot, offsetSeconds) {
       ' bufB.dur=' + bufB.duration.toFixed(2) +
       ' audio.paused=' + audio.paused +
       ' audio.src=' + (audio.src ? 'set' : 'empty') +
-      ' gainNode=' + (gainNode ? gainNode.gain.value.toFixed(3) : 'null'));
+      ' audio.volume=' + audio.volume.toFixed(3));
     // audio.pause() borttagen — se kommentar ovan
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
@@ -1655,9 +1648,9 @@ function updateMediaSession(t) {
   });
 }
 
-// Uppdaterar CarPlay-progressbaren med exakt position.
-// Utan detta kan CarPlay tappa bort positionen och skicka seekto-events för att
-// synka om — de avbrotten hörs som crackling i trådlöst CarPlay.
+// Rapporterar exakt position till CarPlay/AirPlay-progressbar.
+// Utan detta kan CarPlay/AirPlay skicka seekto-events för att synka —
+// de avbrotten bidrar till crackling.
 function syncPositionState() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (!audio.duration || !isFinite(audio.duration) || audio.duration <= 0) return;
@@ -1675,12 +1668,10 @@ function syncPositionState() {
 // ═══════════════════════════════════════════════
 async function playTrack(idx) {
   if (idx<0||idx>=tracks.length) return;
-  // iOS Safari: AudioContext.resume() måste anropas synkront i gesture-handleren
-  // — INNAN några await-steg. Om resume() anropas senare (t.ex. i ensureAudioGraph()
-  // efter idbGet/fetch) hinner iOS stänga gesture-fönstret och nekar unlock.
-  // Resultat utan detta: AudioContext körs men Web Audio-noder (A/B) ger inget ljud
-  // tills playTrack anropats minst två gånger.
-  ensureAudioCtx();
+  // ensureAudioCtx() anropas INTE här — AudioContext ska inte existera under normal
+  // uppspelning (orsakar sample-rate-konflikt med CarPlay/AirPlay → crackling).
+  // A/B-läget skapar AudioContext via ensureAudioCtx() i setABSlot, som alltid
+  // anropas synkront från en gesture-handler.
   lastSavedPosition = audio.currentTime || 0;
   saveState();
   currentIdx=idx;
@@ -1804,7 +1795,6 @@ audio.addEventListener('timeupdate',()=>{
     lastSavedPosition = audio.currentTime;
     saveState();
   }
-  // Throttlad position-sync för CarPlay (max 1 gång/sek)
   const _now = Date.now();
   if (_now - lastPositionStateUpdate >= 1000) {
     lastPositionStateUpdate = _now;
@@ -2299,12 +2289,12 @@ function toggleABMode() {
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
     ensureAudioCtx();
-    // VIKTIGT: sätt INTE gainNode.gain = 0 här.
-    // gainNode hålls aktiv (gain=1.0) tills launch() körs — det håller iOS
+    // VIKTIGT: sätt INTE audio.volume = 0 här.
+    // audio-elementet hålls aktivt (volume=1.0) tills launch() körs — det håller iOS
     // audio-hårdvaran varm med ett riktigt audiosignal.
-    // Om gain sätts till 0 nu kan iOS stänga av hårdvaruutgången, och
+    // Om volume sätts till 0 nu kan iOS stänga av hårdvaruutgången, och
     // BufferSource-noderna ger sedan inget ljud trots att ctx.state='running'.
-    // gainNode.gain = 0 sätts istället atomärt inuti launch() precis innan .start().
+    // audio.volume = 0 sätts istället atomärt inuti launch() precis innan .start().
   } else {
     // Spara aktivt spårindex innan städning — används för att återuppta normal uppspelning
     const exitIdx = abActiveSlot === 'a' ? abA : abB;
@@ -2321,8 +2311,8 @@ function toggleABMode() {
     abA = null; abB = null;
     waveformDataA = null; waveformDataB = null;
     abActiveSlot = 'a';
-    // Återställ gainNode till aktuell gain (sattes till 0 vid AB-aktivering)
-    if (gainNode && audioCtx) gainNode.gain.value = dbToGain(currentGainDb);
+    // Återställ audio.volume till aktuell gain (sattes till 0 vid AB-aktivering)
+    audio.volume = Math.min(1, Math.max(0, dbToGain(currentGainDb)));
     const badge = document.getElementById('np-ab-badge');
     if (badge) badge.classList.remove('ab-visible');
     if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
