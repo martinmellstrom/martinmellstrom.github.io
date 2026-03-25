@@ -328,7 +328,7 @@ body { padding-top: 36px !important; }
 </style>
 </head>
 <body>
-<div id="staging-banner"><a href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 36 — Detta är en förhandsvisning. Klicka för live-versionen.</a></div>
+<div id="staging-banner"><a href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 37 — Detta är en förhandsvisning. Klicka för live-versionen.</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -564,7 +564,7 @@ body { padding-top: 36px !important; }
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 36;
+const PLAYER_VERSION = 37;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -775,12 +775,7 @@ function ensureAudioCtx() {
   // ska acceptera unlock av Web Audio-hårdvaran.
   const created = !audioCtx;
   if (!audioCtx) {
-    // latencyHint: 'playback' ger större buffertar vilket minskar audio-underruns
-    // vid trådlöst CarPlay (ljud går via WiFi och tål inte minsta hicka i tidsserien).
     audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'playback' });
-    // Lyssna på state-ändringar — trådlöst CarPlay kan avbryta audio-routen och
-    // suspendera kontexten mitt i uppspelning. Auto-resume återstartar utan att
-    // användaren behöver trycka på play igen.
     audioCtx.onstatechange = () => {
       console.log('[audioCtx.onstatechange] state=' + audioCtx.state);
       if (audioCtx.state === 'suspended') {
@@ -798,8 +793,12 @@ function ensureAudioCtx() {
 }
 
 function ensureAudioGraph() {
-  // Komplettera grafen med MediaElementSource + gainNode efter att audio.src satts.
-  // Anropas från playTrack efter async-laddning — gesture-unlock sker redan i ensureAudioCtx().
+  // createMediaElementSource används INTE — regular playback routas direkt av iOS
+  // till vald audio-output (AirPlay, CarPlay etc) via det inhemska audio-elementet.
+  // Web Audio (AudioContext) används bara för A/B-läget och waveform-dekodning.
+  // Bakgrund: createMediaElementSource kopplar audio-elementet exklusivt till
+  // audioCtx.destination som inte alltid följer med iOS audio-route-byten →
+  // tyst ljud eller snabb ms-loop vid AirPlay/CarPlay.
   ensureAudioCtx();
   if (!mediaSource) {
     mediaSource = audioCtx.createMediaElementSource(audio);
@@ -813,8 +812,9 @@ function ensureAudioGraph() {
 function dbToGain(db) { return Math.pow(10, db / 20); }
 
 function applyGain(db) {
-  if (!gainNode) return;
-  gainNode.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.01);
+  // audio.volume 0–1 (max 0 dB utan Web Audio). Boost-positioner på slidern
+  // (> 0 dB) clampar tyst till 1.0 — slidern behåller sin range för A/B.
+  audio.volume = Math.min(1, Math.max(0, dbToGain(db)));
 }
 
 // ── A/B parallel buffered playback ──
@@ -846,10 +846,9 @@ function startABPlayback(slot, offsetSeconds) {
   [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
   abSourceA = null; abSourceB = null;
 
-  // Koppla abGainNodeA/B direkt till audioCtx.destination (ej via gainNode).
-  // gainNode skapades med createMediaElementSource(audio) — på Safari kan ett tomt
-  // audio.src orsaka att gainNode tystar allt som passerar det. Direktkoppling
-  // isolerar A/B-uppspelningen helt från audio-elementets tillstånd.
+  // Koppla abGainNodeA/B direkt till audioCtx.destination.
+  // audio.volume sätts till 0 som keepalive — abGainNodeA/B är separata från
+  // audio-elementet och påverkas inte av dess volume.
   if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(audioCtx.destination); }
   if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(audioCtx.destination); }
 
@@ -1656,9 +1655,11 @@ function updateMediaSession(t) {
   });
 }
 
+=======
 // Uppdaterar CarPlay-progressbaren med exakt position.
 // Utan detta kan CarPlay tappa bort positionen och skicka seekto-events för att
 // synka om — de avbrotten hörs som crackling i trådlöst CarPlay.
+>>>>>>> origin/main
 function syncPositionState() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (!audio.duration || !isFinite(audio.duration) || audio.duration <= 0) return;
@@ -1721,7 +1722,7 @@ async function playTrack(idx) {
     isPlaying=true; setPlayIcon(true);
     syncGainSlider(currentGainDb);
     updateMediaSession(t);
-    lastPositionStateUpdate = 0; // Tvinga omedelbar position-sync vid spårstart
+    lastPositionStateUpdate = 0;
     if (!searchQuery) renderTrackList(pool);
     saveState();
     if (expOpen) syncExpandedMeta();
@@ -1814,13 +1815,13 @@ audio.addEventListener('timeupdate',()=>{
 });
 audio.addEventListener('ended',()=>{ if(abMode){audio.currentTime=0;audio.play();return;} nextTrack(true); });
 audio.addEventListener('play', ()=>{
-  if (abMode) return; // I A/B-läge styr audio-elementets events inte play-ikonen
+  if (abMode) return;
   isPlaying=true; setPlayIcon(true);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
   syncPositionState();
 });
 audio.addEventListener('pause',()=>{
-  if (abMode) return; // I A/B-läge styr audio-elementets events inte play-ikonen
+  if (abMode) return;
   isPlaying=false;setPlayIcon(false);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
   syncPositionState();
