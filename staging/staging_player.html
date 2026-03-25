@@ -328,7 +328,7 @@ body { padding-top: 36px !important; }
 </style>
 </head>
 <body>
-<div id="staging-banner"><a href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 35 — Detta är en förhandsvisning. Klicka för live-versionen.</a></div>
+<div id="staging-banner"><a href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 36 — Detta är en förhandsvisning. Klicka för live-versionen.</a></div>
 
 <!-- APP -->
 <div id="app">
@@ -518,7 +518,7 @@ body { padding-top: 36px !important; }
   <div class="exp-gain-row" id="exp-gain-row">
     <label class="exp-gain-label">GAIN</label>
     <input type="range" class="exp-gain-slider" id="exp-gain-slider"
-      min="-6" max="0" step="0.5" value="0">
+      min="-6" max="6" step="0.5" value="0">
     <span class="exp-gain-value" id="exp-gain-value" style="visibility:hidden;">0.0 dB</span>
   </div>
   <div class="exp-controls">
@@ -564,7 +564,7 @@ body { padding-top: 36px !important; }
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 35;
+const PLAYER_VERSION = 36;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -691,6 +691,7 @@ let activePkg   = null; // null = library, 'all' or pkg name = playlist
 let syncedPaths = new Map();
 let restoredPosition = 0;
 let lastSavedPosition = 0;
+let lastPositionStateUpdate = 0;
 let coverPathMap= {}; // pkg → { path, rev }
 let coverUrlMap = {}; // dropbox path → objectURL
 let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
@@ -797,17 +798,23 @@ function ensureAudioCtx() {
 }
 
 function ensureAudioGraph() {
-  // createMediaElementSource är borttagen — regular playback använder audio.volume direkt.
-  // Detta undviker Web Audio-routing-overhead som kan orsaka crackling på trådlöst CarPlay.
-  // AudioContext behövs fortfarande för A/B-läget (AudioBufferSourceNode) och waveform-dekodning.
+  // Komplettera grafen med MediaElementSource + gainNode efter att audio.src satts.
+  // Anropas från playTrack efter async-laddning — gesture-unlock sker redan i ensureAudioCtx().
   ensureAudioCtx();
+  if (!mediaSource) {
+    mediaSource = audioCtx.createMediaElementSource(audio);
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = dbToGain(currentGainDb);
+    mediaSource.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+  }
 }
 
 function dbToGain(db) { return Math.pow(10, db / 20); }
 
 function applyGain(db) {
-  // audio.volume ersätter gainNode — accepterar 0–1 (max 0 dB), clamp för säkerhets skull.
-  audio.volume = Math.min(1, Math.max(0, dbToGain(db)));
+  if (!gainNode) return;
+  gainNode.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.01);
 }
 
 // ── A/B parallel buffered playback ──
@@ -839,9 +846,10 @@ function startABPlayback(slot, offsetSeconds) {
   [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
   abSourceA = null; abSourceB = null;
 
-  // Koppla abGainNodeA/B direkt till audioCtx.destination.
-  // audio-elementets volume sätts till 0 som keepalive — abGainNodeA/B är helt
-  // separata från audio-elementet och påverkas inte av dess volume.
+  // Koppla abGainNodeA/B direkt till audioCtx.destination (ej via gainNode).
+  // gainNode skapades med createMediaElementSource(audio) — på Safari kan ett tomt
+  // audio.src orsaka att gainNode tystar allt som passerar det. Direktkoppling
+  // isolerar A/B-uppspelningen helt från audio-elementets tillstånd.
   if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(audioCtx.destination); }
   if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(audioCtx.destination); }
 
@@ -858,10 +866,10 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    // Tysta audio-elementet via volume=0 men PAUSA INTE — audio.pause() stänger
+    // Tysta audio-elementet via gainNode=0 men PAUSA INTE — audio.pause() stänger
     // iOS hardware-utgången och dödar destinationen även för abGainNodeA/B som
     // kopplar direkt. Elementet fortsätter "spela" tyst som keepalive.
-    audio.volume = 0;
+    if (gainNode) gainNode.gain.value = 0;
     console.log('[AB launch] ctx.state=' + audioCtx.state +
       ' slot=' + slot +
       ' gainA=' + (slot==='a' ? dbToGain(gainDbA) : 0).toFixed(3) +
@@ -870,7 +878,7 @@ function startABPlayback(slot, offsetSeconds) {
       ' bufB.dur=' + bufB.duration.toFixed(2) +
       ' audio.paused=' + audio.paused +
       ' audio.src=' + (audio.src ? 'set' : 'empty') +
-      ' audio.volume=' + audio.volume.toFixed(3));
+      ' gainNode=' + (gainNode ? gainNode.gain.value.toFixed(3) : 'null'));
     // audio.pause() borttagen — se kommentar ovan
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
@@ -1648,6 +1656,21 @@ function updateMediaSession(t) {
   });
 }
 
+// Uppdaterar CarPlay-progressbaren med exakt position.
+// Utan detta kan CarPlay tappa bort positionen och skicka seekto-events för att
+// synka om — de avbrotten hörs som crackling i trådlöst CarPlay.
+function syncPositionState() {
+  if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+  if (!audio.duration || !isFinite(audio.duration) || audio.duration <= 0) return;
+  try {
+    navigator.mediaSession.setPositionState({
+      duration: audio.duration,
+      playbackRate: audio.playbackRate || 1,
+      position: Math.min(audio.currentTime, audio.duration),
+    });
+  } catch(e) {}
+}
+
 // ═══════════════════════════════════════════════
 //  PLAYBACK
 // ═══════════════════════════════════════════════
@@ -1692,12 +1715,13 @@ async function playTrack(idx) {
     activeObjUrl=URL.createObjectURL(blob);
     audio.src=activeObjUrl;
     ensureAudioGraph();
-    currentGainDb = Math.min(0, getGainFromCache(t.rev));  // clamp: audio.volume maxar vid 0 dB
+    currentGainDb = getGainFromCache(t.rev);
     applyGain(currentGainDb);
     await audio.play();
     isPlaying=true; setPlayIcon(true);
     syncGainSlider(currentGainDb);
     updateMediaSession(t);
+    lastPositionStateUpdate = 0; // Tvinga omedelbar position-sync vid spårstart
     if (!searchQuery) renderTrackList(pool);
     saveState();
     if (expOpen) syncExpandedMeta();
@@ -1781,17 +1805,25 @@ audio.addEventListener('timeupdate',()=>{
     lastSavedPosition = audio.currentTime;
     saveState();
   }
+  // Throttlad position-sync för CarPlay (max 1 gång/sek)
+  const _now = Date.now();
+  if (_now - lastPositionStateUpdate >= 1000) {
+    lastPositionStateUpdate = _now;
+    syncPositionState();
+  }
 });
 audio.addEventListener('ended',()=>{ if(abMode){audio.currentTime=0;audio.play();return;} nextTrack(true); });
 audio.addEventListener('play', ()=>{
   if (abMode) return; // I A/B-läge styr audio-elementets events inte play-ikonen
   isPlaying=true; setPlayIcon(true);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+  syncPositionState();
 });
 audio.addEventListener('pause',()=>{
   if (abMode) return; // I A/B-läge styr audio-elementets events inte play-ikonen
   isPlaying=false;setPlayIcon(false);
   if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+  syncPositionState();
 });
 document.getElementById('progress-wrap').addEventListener('click',e=>{
   if(!audio.duration)return;
@@ -2268,12 +2300,12 @@ function toggleABMode() {
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
     ensureAudioCtx();
-    // VIKTIGT: sätt INTE audio.volume = 0 här.
-    // audio-elementet hålls aktivt (volume=1.0) tills launch() körs — det håller iOS
+    // VIKTIGT: sätt INTE gainNode.gain = 0 här.
+    // gainNode hålls aktiv (gain=1.0) tills launch() körs — det håller iOS
     // audio-hårdvaran varm med ett riktigt audiosignal.
-    // Om volume sätts till 0 nu kan iOS stänga av hårdvaruutgången, och
+    // Om gain sätts till 0 nu kan iOS stänga av hårdvaruutgången, och
     // BufferSource-noderna ger sedan inget ljud trots att ctx.state='running'.
-    // audio.volume = 0 sätts istället atomärt inuti launch() precis innan .start().
+    // gainNode.gain = 0 sätts istället atomärt inuti launch() precis innan .start().
   } else {
     // Spara aktivt spårindex innan städning — används för att återuppta normal uppspelning
     const exitIdx = abActiveSlot === 'a' ? abA : abB;
@@ -2290,8 +2322,8 @@ function toggleABMode() {
     abA = null; abB = null;
     waveformDataA = null; waveformDataB = null;
     abActiveSlot = 'a';
-    // Återställ audio.volume till aktuell gain (sattes till 0 vid AB-aktivering)
-    audio.volume = Math.min(1, Math.max(0, dbToGain(currentGainDb)));
+    // Återställ gainNode till aktuell gain (sattes till 0 vid AB-aktivering)
+    if (gainNode && audioCtx) gainNode.gain.value = dbToGain(currentGainDb);
     const badge = document.getElementById('np-ab-badge');
     if (badge) badge.classList.remove('ab-visible');
     if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
