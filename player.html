@@ -557,7 +557,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 40;
+const PLAYER_VERSION = 42;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -566,6 +566,12 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .catch(err => console.warn('SW registration failed:', err));
   });
+}
+
+// iOS audio session — signal music player mode (WebKit 2023+/iOS 17+)
+// Tillåter AudioContext att fortsätta köra i bakgrunden utan suspension.
+if ('audioSession' in navigator) {
+  navigator.audioSession.type = 'playback';
 }
 
 // ═══════════════════════════════════════════════
@@ -770,6 +776,19 @@ function getGainFromCache(rev) {
   return gainCache[rev];
 }
 
+// ── iOS audio hardware unlock ──
+// Engångs tyst play vid första användargest — priomar iOS att routa
+// AudioBufferSourceNode-uppspelning till den inbyggda högtalaren.
+// Löser: inget ljud via inbyggd högtalare utan tillbehör kopplat.
+let audioHardwareUnlocked = false;
+function unlockAudioHardware() {
+  if (audioHardwareUnlocked) return;
+  audioHardwareUnlocked = true;
+  // Minimal tyst WAV (1 frame, 44100 Hz, 16-bit mono)
+  const tmp = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+  tmp.play().catch(() => {});
+}
+
 // ── Web Audio API ──
 function ensureAudioCtx() {
   // Skapar AudioContext och kallar resume() — men INGA noder.
@@ -779,6 +798,7 @@ function ensureAudioCtx() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
+  unlockAudioHardware();
   const wasSuspended = audioCtx.state === 'suspended';
   if (wasSuspended) {
     audioCtx.resume();
@@ -2657,6 +2677,14 @@ document.addEventListener('keydown',e=>{
   if(e.code==='ArrowLeft')prevTrack();
   if(e.code==='KeyR')cycleRepeat();
   if(e.code==='KeyS')toggleShuffle();
+});
+
+// Sätt gain=0 synkront vid siddöd — ramp-anrop hinner inte genomföras
+// innan iOS river ner AudioContext. Förhindrar klikket vid stängning.
+window.addEventListener('pagehide', () => {
+  if (regularGainNode) regularGainNode.gain.value = 0;
+  if (abGainNodeA)     abGainNodeA.gain.value = 0;
+  if (abGainNodeB)     abGainNodeB.gain.value = 0;
 });
 
 function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;}
