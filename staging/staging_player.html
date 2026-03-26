@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Martin Mellström — Music Player</title>
+<title>[STAGING] Martin Mellström — Music Player</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -27,11 +27,28 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* ── STAGING BANNER ── */
+  .staging-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 36px;
+    background: repeating-linear-gradient(
+      45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px
+    );
+    border-bottom: 2px solid #ff4444;
+    padding: 8px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
+    text-transform: uppercase; color: #ff8888;
+  }
+  .staging-banner strong { color: #ff4444; font-weight: 700; }
+  .staging-banner a { color: #ff8888; text-decoration: underline; }
+
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Space Mono', monospace; font-size: 13px;
     min-height: 100dvh; display: flex; flex-direction: column;
     overflow-x: hidden; max-width: 100vw;
+    padding-top: 36px;
   }
   body::before {
     content: ''; position: fixed; inset: 0;
@@ -321,19 +338,11 @@
     margin-top: 18px;
   }
 </style>
-
-<style>
-#staging-banner{position:fixed;top:0;left:0;width:100%;height:36px;z-index:9999;
-  background:repeating-linear-gradient(-45deg,#c00 0,#c00 10px,#900 10px,#900 20px);
-  display:flex;align-items:center;justify-content:center;gap:16px;
-  font:bold 13px/1 system-ui,sans-serif;color:#fff;letter-spacing:.04em;}
-#staging-banner a{color:#fff;text-decoration:underline;}
-</style>
 </head>
-<body style="padding-top:36px">
-<div id="staging-banner">
-  ⚠ STAGING — build 39 — Detta är en förhandsvisning.
-  <a href="https://martinmellstrom.github.io/player.html">→ Live</a>
+<body>
+<div class="staging-banner">
+  <strong>⚠ STAGING</strong> — build 41 — Detta är en förhandsvisning.
+  <a href="/player.html">Gå till live-sidan →</a>
 </div>
 
 <!-- APP -->
@@ -570,7 +579,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 39;
+const PLAYER_VERSION = 41;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -579,6 +588,12 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .catch(err => console.warn('SW registration failed:', err));
   });
+}
+
+// iOS audio session — signal music player mode (WebKit 2023+/iOS 17+)
+// Tillåter AudioContext att fortsätta köra i bakgrunden utan suspension.
+if ('audioSession' in navigator) {
+  navigator.audioSession.type = 'playback';
 }
 
 // ═══════════════════════════════════════════════
@@ -737,14 +752,14 @@ let abPausedOffset   = 0;      // position vid paus
 let abRafId          = null;   // requestAnimationFrame-ID för tiduppdateringsloop
 
 // ── Regular buffered playback state ──
-let regularBuf              = null;   // AudioBuffer för aktuell låt
-let regularSource           = null;   // AudioBufferSourceNode
-let regularGainNode         = null;   // GainNode → audioCtx.destination
-let regularStartContextTime = 0;      // audioCtx.currentTime vid start
-let regularStartOffset      = 0;      // position i bufferten vid start (sekunder)
-let regularIsPlaying        = false;  // om regular-uppspelning pågår
-let regularPausedOffset     = 0;      // position vid paus
-let regularRafId            = null;   // requestAnimationFrame-ID
+let regularBuf              = null;
+let regularSource           = null;
+let regularGainNode         = null;
+let regularStartContextTime = 0;
+let regularStartOffset      = 0;
+let regularIsPlaying        = false;
+let regularPausedOffset     = 0;
+let regularRafId            = null;
 
 function loadDurationCache() {
   try { durationCache = JSON.parse(localStorage.getItem(LS_DUR_KEY)||'{}'); } catch(e){ durationCache={}; }
@@ -783,6 +798,19 @@ function getGainFromCache(rev) {
   return gainCache[rev];
 }
 
+// ── iOS audio hardware unlock ──
+// Engångs tyst play vid första användargest — priomar iOS att routa
+// AudioBufferSourceNode-uppspelning till den inbyggda högtalaren.
+// Löser: inget ljud via inbyggd högtalare utan tillbehör kopplat.
+let audioHardwareUnlocked = false;
+function unlockAudioHardware() {
+  if (audioHardwareUnlocked) return;
+  audioHardwareUnlocked = true;
+  // Minimal tyst WAV (1 frame, 44100 Hz, 16-bit mono)
+  const tmp = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+  tmp.play().catch(() => {});
+}
+
 // ── Web Audio API ──
 function ensureAudioCtx() {
   // Skapar AudioContext och kallar resume() — men INGA noder.
@@ -792,6 +820,7 @@ function ensureAudioCtx() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
+  unlockAudioHardware();
   const wasSuspended = audioCtx.state === 'suspended';
   if (wasSuspended) {
     audioCtx.resume();
@@ -802,8 +831,6 @@ function ensureAudioCtx() {
 }
 
 function ensureAudioGraph() {
-  // Kopplar regularGainNode direkt till audioCtx.destination — ingen createMediaElementSource.
-  // createMediaElementSource blockerar AirPlay-routing på iOS (WebKit Bug #239696).
   if (!regularGainNode) {
     regularGainNode = audioCtx.createGain();
     regularGainNode.gain.value = dbToGain(currentGainDb);
@@ -1916,7 +1943,6 @@ function toggleShuffle(){shuffle=!shuffle;shuffleQueue=[];shuffleBtn.classList.t
 //  AUDIO EVENTS
 // ═══════════════════════════════════════════════
 // Audio element events ersatta av RAF-loop i startRegularRaf() + startABRaf().
-// Sparning sker i startRegularRaf (var 5:e sekund via lastSavedPosition).
 document.getElementById('progress-wrap').addEventListener('click',e=>{
   if(!regularBuf)return;
   const r=e.currentTarget.getBoundingClientRect();
@@ -2119,7 +2145,6 @@ let waveformPath = null;
 async function buildWaveform(audioBufferOrUrl, track) {
   const rev = track?.rev || null;
 
-  // Kolla cache först — om rev finns och cachat data finns, använd det direkt
   if (rev) {
     const cached = getWaveformFromCache(rev);
     if (cached) {
@@ -2131,14 +2156,11 @@ async function buildWaveform(audioBufferOrUrl, track) {
     }
   }
 
-  // Bygg från ljud-data
   try {
     let decoded;
     if (audioBufferOrUrl instanceof AudioBuffer) {
-      // Redan dekodad (reguljärt läge) — använd direkt
       decoded = audioBufferOrUrl;
     } else {
-      // Objekt-URL (A/B-läge) — hämta och avkoda
       const tempCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
       const resp = await fetch(audioBufferOrUrl);
       const buf  = await resp.arrayBuffer();
@@ -2679,6 +2701,14 @@ document.addEventListener('keydown',e=>{
   if(e.code==='KeyS')toggleShuffle();
 });
 
+// Sätt gain=0 synkront vid siddöd — ramp-anrop hinner inte genomföras
+// innan iOS river ner AudioContext. Förhindrar klikket vid stängning.
+window.addEventListener('pagehide', () => {
+  if (regularGainNode) regularGainNode.gain.value = 0;
+  if (abGainNodeA)     abGainNodeA.gain.value = 0;
+  if (abGainNodeB)     abGainNodeB.gain.value = 0;
+});
+
 function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;}
 
 // ═══════════════════════════════════════════════
@@ -2715,10 +2745,7 @@ openIDB().then(async()=>{
       npName.textContent=t.name;
       npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
       if (restoredPosition > 0) {
-        // Sätt pauspositionen — spelas upp när användaren trycker play
         regularPausedOffset = restoredPosition;
-        const pct = '0%';
-        progFill.style.width = pct;
         if (t.duration) {
           timeDisp.textContent = fmtTime(restoredPosition) + ' / ' + fmtTime(t.duration);
           expSeekFill.style.width = (restoredPosition / t.duration * 100) + '%';
