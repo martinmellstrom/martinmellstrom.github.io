@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
@@ -577,7 +576,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 48;
+const PLAYER_VERSION = 51;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -829,10 +828,14 @@ function ensureAudioCtx() {
 }
 
 function ensureAudioGraph() {
+  if (!mediaSource) {
+    mediaSource = audioCtx.createMediaElementSource(audio);
+  }
   if (!regularGainNode) {
     regularGainNode = audioCtx.createGain();
     regularGainNode.gain.value = dbToGain(currentGainDb);
     regularGainNode.connect(audioCtx.destination);
+    mediaSource.connect(regularGainNode);
   }
 }
 
@@ -972,31 +975,22 @@ function stopABRaf() {
 
 // ── Regular buffered playback ──
 function startRegularPlayback(offsetSeconds) {
-  if (!regularBuf || !audioCtx) return;
-  if (regularSource) {
-    regularSource.onended = null;
-    try { regularSource.stop(); } catch(e) {}
-    regularSource = null;
-  }
+  if (!audioCtx) return;
   stopRegularRaf();
   ensureAudioGraph();
-  regularSource = audioCtx.createBufferSource();
-  regularSource.buffer = regularBuf;
-  regularSource.connect(regularGainNode);
-  const offset = Math.max(0, Math.min(offsetSeconds, regularBuf.duration));
-  regularStartOffset = offset;
-  regularStartContextTime = audioCtx.currentTime;
-  regularIsPlaying = true;
+  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+  const offset = Math.max(0, dur ? Math.min(offsetSeconds, dur) : offsetSeconds);
+  regularPausedOffset = offset;
   const launch = () => {
-    regularGainNode.gain.value = dbToGain(currentGainDb);
-    regularSource.start(0, offset);
+    if (regularGainNode) regularGainNode.gain.value = dbToGain(currentGainDb);
+    audio.loop = false;
+    audio.currentTime = offset;
+    audio.play().catch(e => console.warn('[regular] audio.play() failed:', e));
+    regularIsPlaying = true;
     isPlaying = true; setPlayIcon(true);
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
     syncPositionState();
     startRegularRaf();
-    regularSource.onended = () => {
-      if (regularIsPlaying) { regularIsPlaying = false; nextTrack(true); }
-    };
   };
   if (audioCtx.state === 'running') {
     launch();
@@ -1006,18 +1000,14 @@ function startRegularPlayback(offsetSeconds) {
 }
 
 function getRegularCurrentTime() {
-  if (!regularIsPlaying || !audioCtx) return regularPausedOffset;
-  return regularStartOffset + (audioCtx.currentTime - regularStartContextTime);
+  if (!regularIsPlaying) return regularPausedOffset;
+  return audio.currentTime;
 }
 
 function pauseRegular() {
   if (!regularIsPlaying) return;
-  regularPausedOffset = getRegularCurrentTime();
-  if (regularSource) {
-    regularSource.onended = null;
-    try { regularSource.stop(); } catch(e) {}
-    regularSource = null;
-  }
+  regularPausedOffset = audio.currentTime;
+  audio.pause();
   regularIsPlaying = false;
   stopRegularRaf();
   isPlaying = false; setPlayIcon(false);
@@ -1030,32 +1020,28 @@ function pauseRegular() {
 function seekRegular(time) {
   const wasPlaying = regularIsPlaying;
   if (regularIsPlaying) {
-    if (regularSource) {
-      regularSource.onended = null;
-      try { regularSource.stop(); } catch(e) {}
-      regularSource = null;
-    }
+    audio.pause();
     regularIsPlaying = false;
     stopRegularRaf();
   }
   regularPausedOffset = Math.max(0, time);
+  audio.currentTime = regularPausedOffset;
   if (wasPlaying) {
     startRegularPlayback(regularPausedOffset);
-  } else if (regularBuf) {
-    const pct = (regularPausedOffset / regularBuf.duration * 100) + '%';
-    progFill.style.width = pct;
-    timeDisp.textContent = fmtTime(regularPausedOffset) + ' / ' + fmtTime(regularBuf.duration);
-    expSeekFill.style.width = pct;
-    expTimeCur.textContent = fmtTime(regularPausedOffset);
+  } else {
+    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+    if (dur) {
+      const pct = (regularPausedOffset / dur * 100) + '%';
+      progFill.style.width = pct;
+      timeDisp.textContent = fmtTime(regularPausedOffset) + ' / ' + fmtTime(dur);
+      expSeekFill.style.width = pct;
+      expTimeCur.textContent = fmtTime(regularPausedOffset);
+    }
   }
 }
 
 function stopRegular() {
-  if (regularSource) {
-    regularSource.onended = null;
-    try { regularSource.stop(); } catch(e) {}
-    regularSource = null;
-  }
+  audio.pause();
   regularIsPlaying = false;
   regularBuf = null;
   regularPausedOffset = 0;
@@ -1064,10 +1050,11 @@ function stopRegular() {
 
 function startRegularRaf() {
   if (regularRafId) return;
+  let lastPositionSyncTime = 0;
   function tick() {
     if (!regularIsPlaying) { regularRafId = null; return; }
-    const ct = getRegularCurrentTime();
-    const dur = regularBuf ? regularBuf.duration : 0;
+    const ct = audio.currentTime;
+    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
     if (dur) {
       const pct = (ct / dur * 100) + '%';
       progFill.style.width = pct;
@@ -1076,10 +1063,14 @@ function startRegularRaf() {
       expTimeCur.textContent = fmtTime(ct);
     }
     if (expOpen) drawWaveform();
-    const _ct = getRegularCurrentTime();
-    if (Math.abs(_ct - lastSavedPosition) >= 5) {
-      lastSavedPosition = _ct;
+    if (Math.abs(ct - lastSavedPosition) >= 5) {
+      lastSavedPosition = ct;
       saveState();
+    }
+    const now = performance.now();
+    if (now - lastPositionSyncTime >= 1000) {
+      lastPositionSyncTime = now;
+      syncPositionState();
     }
     regularRafId = requestAnimationFrame(tick);
   }
@@ -1093,15 +1084,18 @@ function stopRegularRaf() {
 function syncPositionState() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (abMode) return;
-  const dur = regularBuf ? regularBuf.duration : 0;
+  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
   if (!dur || !isFinite(dur)) return;
-  const pos = Math.min(getRegularCurrentTime(), dur);
+  const pos = Math.min(Math.max(audio.currentTime, 0), dur);
   try {
     navigator.mediaSession.setPositionState({ duration: dur, playbackRate: 1, position: pos });
   } catch(e) {}
 }
 
 const audio     = document.getElementById('audio-el');
+audio.addEventListener('ended', () => {
+  if (regularIsPlaying) { regularIsPlaying = false; nextTrack(true); }
+});
 const npName    = document.getElementById('np-name');
 const npSub     = document.getElementById('np-sub');
 const progFill  = document.getElementById('progress-fill');
@@ -1815,6 +1809,14 @@ function updateMediaSession(t) {
   navigator.mediaSession.setActionHandler('seekto', details => {
     if (details.seekTime !== undefined) seekRegular(details.seekTime);
   });
+  try {
+    navigator.mediaSession.setActionHandler('seekforward', details => {
+      seekRegular(audio.currentTime + (details.seekOffset || 10));
+    });
+    navigator.mediaSession.setActionHandler('seekbackward', details => {
+      seekRegular(Math.max(0, audio.currentTime - (details.seekOffset || 10)));
+    });
+  } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════
@@ -1860,6 +1862,10 @@ async function playTrack(idx) {
     }
     stopRegular();
     ensureAudioCtx();
+    if (activeObjUrl) { URL.revokeObjectURL(activeObjUrl); }
+    activeObjUrl = URL.createObjectURL(blob);
+    audio.loop = false;
+    audio.src = activeObjUrl;
     setStatus('loading', 'Avkodar…');
     const _arrBuf = await blob.arrayBuffer();
     regularBuf = await audioCtx.decodeAudioData(_arrBuf);
