@@ -27,26 +27,11 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── STAGING BANNER ── */
-  .staging-banner {
-    position: fixed; top: 0; left: 0; right: 0; height: 36px;
-    background: repeating-linear-gradient(
-      -45deg,
-      rgba(180,0,0,0.85) 0px, rgba(180,0,0,0.85) 10px,
-      rgba(120,0,0,0.85) 10px, rgba(120,0,0,0.85) 20px
-    );
-    color: #fff; font-size: 11px; letter-spacing: 0.06em;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; font-family: 'Space Mono', monospace;
-  }
-  .staging-banner strong { color: #ff4444; font-weight: 700; }
-  .staging-banner a { color: #ff8888; text-decoration: underline; }
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Space Mono', monospace; font-size: 13px;
     min-height: 100dvh; display: flex; flex-direction: column;
     overflow-x: hidden; max-width: 100vw;
-    padding-top: 36px;
   }
   body::before {
     content: ''; position: fixed; inset: 0;
@@ -349,14 +334,17 @@
     padding: 6px 0 2px;
     margin-top: 18px;
   }
-  /* Push close button below staging banner */
-  .exp-close-btn { top: 64px; }
+
+/* STAGING BANNER */
+#staging-banner { position: fixed; top: 0; left: 0; width: 100%; height: 36px; z-index: 9999; background: repeating-linear-gradient(135deg, #c00 0px, #c00 10px, #900 10px, #900 20px); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #fff; letter-spacing: 0.08em; text-transform: uppercase; }
+#staging-banner a { color: #fff; text-decoration: underline; }
+body { padding-top: 36px !important; }
+nav { top: 36px !important; }
 </style>
 </head>
 <body>
-<div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 45 — Detta är en förhandsvisning.
-</div>
+<div id="staging-banner">⚠ STAGING — build 47 — Detta är en förhandsvisning. &nbsp;<a href="https://www.martinmellstrom.com/player.html">→ Live</a></div>
+
 
 <!-- APP -->
 <div id="app">
@@ -598,7 +586,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 45;
+const PLAYER_VERSION = 47;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -2439,6 +2427,7 @@ function toggleABMode() {
   const btn = document.getElementById('ab-mode-btn');
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
+    pauseRegular();
     ensureAudioCtx();
     // VIKTIGT: sätt INTE gainNode.gain = 0 här.
     // gainNode hålls aktiv (gain=1.0) tills launch() körs — det håller iOS
@@ -2447,8 +2436,6 @@ function toggleABMode() {
     // BufferSource-noderna ger sedan inget ljud trots att ctx.state='running'.
     // gainNode.gain = 0 sätts istället atomärt inuti launch() precis innan .start().
   } else {
-    // Spara aktivt spårindex innan städning — används för att återuppta normal uppspelning
-    const exitIdx = abActiveSlot === 'a' ? abA : abB;
     // Städning — stoppa sources och frigör resurser
     audio.pause();
     stopABRaf();
@@ -2467,8 +2454,7 @@ function toggleABMode() {
     const badge = document.getElementById('np-ab-badge');
     if (badge) badge.classList.remove('ab-visible');
     if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
-    // Starta normal uppspelning med det spår som var aktivt i A/B
-    if (exitIdx !== null && exitIdx !== undefined) playTrack(exitIdx);
+    // Uppspelning stoppas — ingen automatisk återupptagning
   }
   refreshView();
 }
