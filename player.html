@@ -577,7 +577,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 46;
+const PLAYER_VERSION = 48;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -2418,6 +2418,7 @@ function toggleABMode() {
   const btn = document.getElementById('ab-mode-btn');
   if (btn) btn.classList.toggle('btn-ab-active', abMode);
   if (abMode) {
+    pauseRegular();
     ensureAudioCtx();
     // VIKTIGT: sätt INTE gainNode.gain = 0 här.
     // gainNode hålls aktiv (gain=1.0) tills launch() körs — det håller iOS
@@ -2426,8 +2427,6 @@ function toggleABMode() {
     // BufferSource-noderna ger sedan inget ljud trots att ctx.state='running'.
     // gainNode.gain = 0 sätts istället atomärt inuti launch() precis innan .start().
   } else {
-    // Spara aktivt spårindex innan städning — används för att återuppta normal uppspelning
-    const exitIdx = abActiveSlot === 'a' ? abA : abB;
     // Städning — stoppa sources och frigör resurser
     audio.pause();
     stopABRaf();
@@ -2446,8 +2445,7 @@ function toggleABMode() {
     const badge = document.getElementById('np-ab-badge');
     if (badge) badge.classList.remove('ab-visible');
     if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
-    // Starta normal uppspelning med det spår som var aktivt i A/B
-    if (exitIdx !== null && exitIdx !== undefined) playTrack(exitIdx);
+    // Uppspelning stoppas — ingen automatisk återupptagning
   }
   refreshView();
 }
