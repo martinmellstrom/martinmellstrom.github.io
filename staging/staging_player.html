@@ -351,7 +351,7 @@ nav { top: 36px !important; }
 </style>
 </head>
 <body>
-<a id="staging-banner" href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 49 — Detta är en förhandsvisning. Klicka för live.</a>
+<a id="staging-banner" href="https://www.martinmellstrom.com/player.html">⚠ STAGING — build 50 — Detta är en förhandsvisning. Klicka för live.</a>
 
 <!-- APP -->
 <div id="app">
@@ -593,7 +593,7 @@ nav { top: 36px !important; }
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 49;
+const PLAYER_VERSION = 50;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -820,14 +820,9 @@ let audioHardwareUnlocked = false;
 function unlockAudioHardware() {
   if (audioHardwareUnlocked) return;
   audioHardwareUnlocked = true;
-  // Spela tyst loop på audio-el — iOS kräver ett riktigt <audio>-element som
-  // "spelar" för att (a) koppla låsskärmens mediakontroller till rätt flik och
-  // (b) anropa Media Session action handlers tillförlitligt.
-  const silentWav = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
-  audio.src = silentWav;
-  audio.loop = true;
-  audio.volume = 0;
-  audio.play().catch(() => {});
+  // Minimal tyst WAV (1 frame, 44100 Hz, 16-bit mono)
+  const tmp = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+  tmp.play().catch(() => {});
 }
 
 // ── Web Audio API ──
@@ -850,10 +845,16 @@ function ensureAudioCtx() {
 }
 
 function ensureAudioGraph() {
+  if (!mediaSource) {
+    // Kopplar audio-el till AudioContext — iOS kräver detta för att lock screen-
+    // kontrollerna ska fungera och kunna läsa position via audio.currentTime.
+    mediaSource = audioCtx.createMediaElementSource(audio);
+  }
   if (!regularGainNode) {
     regularGainNode = audioCtx.createGain();
     regularGainNode.gain.value = dbToGain(currentGainDb);
     regularGainNode.connect(audioCtx.destination);
+    mediaSource.connect(regularGainNode);
   }
 }
 
@@ -993,31 +994,23 @@ function stopABRaf() {
 
 // ── Regular buffered playback ──
 function startRegularPlayback(offsetSeconds) {
-  if (!regularBuf || !audioCtx) return;
-  if (regularSource) {
-    regularSource.onended = null;
-    try { regularSource.stop(); } catch(e) {}
-    regularSource = null;
-  }
+  if (!audioCtx) return;
   stopRegularRaf();
   ensureAudioGraph();
-  regularSource = audioCtx.createBufferSource();
-  regularSource.buffer = regularBuf;
-  regularSource.connect(regularGainNode);
-  const offset = Math.max(0, Math.min(offsetSeconds, regularBuf.duration));
-  regularStartOffset = offset;
-  regularStartContextTime = audioCtx.currentTime;
-  regularIsPlaying = true;
+  // Beräkna säker offset
+  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+  const offset = Math.max(0, dur ? Math.min(offsetSeconds, dur) : offsetSeconds);
+  regularPausedOffset = offset;
   const launch = () => {
-    regularGainNode.gain.value = dbToGain(currentGainDb);
-    regularSource.start(0, offset);
+    if (regularGainNode) regularGainNode.gain.value = dbToGain(currentGainDb);
+    audio.loop = false;
+    audio.currentTime = offset;
+    audio.play().catch(e => console.warn('[regular] audio.play() failed:', e));
+    regularIsPlaying = true;
     isPlaying = true; setPlayIcon(true);
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
     syncPositionState();
     startRegularRaf();
-    regularSource.onended = () => {
-      if (regularIsPlaying) { regularIsPlaying = false; nextTrack(true); }
-    };
   };
   if (audioCtx.state === 'running') {
     launch();
@@ -1027,18 +1020,14 @@ function startRegularPlayback(offsetSeconds) {
 }
 
 function getRegularCurrentTime() {
-  if (!regularIsPlaying || !audioCtx) return regularPausedOffset;
-  return regularStartOffset + (audioCtx.currentTime - regularStartContextTime);
+  if (!regularIsPlaying) return regularPausedOffset;
+  return audio.currentTime;
 }
 
 function pauseRegular() {
   if (!regularIsPlaying) return;
-  regularPausedOffset = getRegularCurrentTime();
-  if (regularSource) {
-    regularSource.onended = null;
-    try { regularSource.stop(); } catch(e) {}
-    regularSource = null;
-  }
+  regularPausedOffset = audio.currentTime;
+  audio.pause();
   regularIsPlaying = false;
   stopRegularRaf();
   isPlaying = false; setPlayIcon(false);
@@ -1051,32 +1040,28 @@ function pauseRegular() {
 function seekRegular(time) {
   const wasPlaying = regularIsPlaying;
   if (regularIsPlaying) {
-    if (regularSource) {
-      regularSource.onended = null;
-      try { regularSource.stop(); } catch(e) {}
-      regularSource = null;
-    }
+    audio.pause();
     regularIsPlaying = false;
     stopRegularRaf();
   }
   regularPausedOffset = Math.max(0, time);
+  audio.currentTime = regularPausedOffset;
   if (wasPlaying) {
     startRegularPlayback(regularPausedOffset);
-  } else if (regularBuf) {
-    const pct = (regularPausedOffset / regularBuf.duration * 100) + '%';
-    progFill.style.width = pct;
-    timeDisp.textContent = fmtTime(regularPausedOffset) + ' / ' + fmtTime(regularBuf.duration);
-    expSeekFill.style.width = pct;
-    expTimeCur.textContent = fmtTime(regularPausedOffset);
+  } else {
+    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+    if (dur) {
+      const pct = (regularPausedOffset / dur * 100) + '%';
+      progFill.style.width = pct;
+      timeDisp.textContent = fmtTime(regularPausedOffset) + ' / ' + fmtTime(dur);
+      expSeekFill.style.width = pct;
+      expTimeCur.textContent = fmtTime(regularPausedOffset);
+    }
   }
 }
 
 function stopRegular() {
-  if (regularSource) {
-    regularSource.onended = null;
-    try { regularSource.stop(); } catch(e) {}
-    regularSource = null;
-  }
+  audio.pause();
   regularIsPlaying = false;
   regularBuf = null;
   regularPausedOffset = 0;
@@ -1088,8 +1073,8 @@ function startRegularRaf() {
   let lastPositionSyncTime = 0;
   function tick() {
     if (!regularIsPlaying) { regularRafId = null; return; }
-    const ct = getRegularCurrentTime();
-    const dur = regularBuf ? regularBuf.duration : 0;
+    const ct = audio.currentTime;
+    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
     if (dur) {
       const pct = (ct / dur * 100) + '%';
       progFill.style.width = pct;
@@ -1098,9 +1083,8 @@ function startRegularRaf() {
       expTimeCur.textContent = fmtTime(ct);
     }
     if (expOpen) drawWaveform();
-    const _ct = getRegularCurrentTime();
-    if (Math.abs(_ct - lastSavedPosition) >= 5) {
-      lastSavedPosition = _ct;
+    if (Math.abs(ct - lastSavedPosition) >= 5) {
+      lastSavedPosition = ct;
       saveState();
     }
     const now = performance.now();
@@ -1120,15 +1104,18 @@ function stopRegularRaf() {
 function syncPositionState() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (abMode) return;
-  const dur = regularBuf ? regularBuf.duration : 0;
+  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
   if (!dur || !isFinite(dur)) return;
-  const pos = Math.min(getRegularCurrentTime(), dur);
+  const pos = Math.min(Math.max(audio.currentTime, 0), dur);
   try {
     navigator.mediaSession.setPositionState({ duration: dur, playbackRate: 1, position: pos });
   } catch(e) {}
 }
 
 const audio     = document.getElementById('audio-el');
+audio.addEventListener('ended', () => {
+  if (regularIsPlaying) { regularIsPlaying = false; nextTrack(true); }
+});
 const npName    = document.getElementById('np-name');
 const npSub     = document.getElementById('np-sub');
 const progFill  = document.getElementById('progress-fill');
@@ -1842,14 +1829,14 @@ function updateMediaSession(t) {
   navigator.mediaSession.setActionHandler('seekto', details => {
     if (details.seekTime !== undefined) seekRegular(details.seekTime);
   });
-  navigator.mediaSession.setActionHandler('seekforward', details => {
-    const skip = details.seekOffset || 10;
-    seekRegular(Math.min(getRegularCurrentTime() + skip, regularBuf ? regularBuf.duration : 0));
-  });
-  navigator.mediaSession.setActionHandler('seekbackward', details => {
-    const skip = details.seekOffset || 10;
-    seekRegular(Math.max(getRegularCurrentTime() - skip, 0));
-  });
+  try {
+    navigator.mediaSession.setActionHandler('seekforward', details => {
+      seekRegular(audio.currentTime + (details.seekOffset || 10));
+    });
+    navigator.mediaSession.setActionHandler('seekbackward', details => {
+      seekRegular(Math.max(0, audio.currentTime - (details.seekOffset || 10)));
+    });
+  } catch(e) {}
 }
 
 // ═══════════════════════════════════════════════
@@ -1895,6 +1882,12 @@ async function playTrack(idx) {
     }
     stopRegular();
     ensureAudioCtx();
+    // Sätt audio-el src — krävs för iOS lock screen integration
+    if (activeObjUrl) { URL.revokeObjectURL(activeObjUrl); }
+    activeObjUrl = URL.createObjectURL(blob);
+    audio.loop = false;
+    audio.src = activeObjUrl;
+    // Dekoda audio för varaktighet och waveform
     setStatus('loading', 'Avkodar…');
     const _arrBuf = await blob.arrayBuffer();
     regularBuf = await audioCtx.decodeAudioData(_arrBuf);
