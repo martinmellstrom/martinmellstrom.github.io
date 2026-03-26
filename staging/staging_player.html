@@ -2,8 +2,8 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>[STAGING] Martin Mellström — Music Player</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -29,16 +29,15 @@
 
   /* ── STAGING BANNER ── */
   .staging-banner {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-    height: 36px;
+    position: fixed; top: 0; left: 0; right: 0; height: 36px;
     background: repeating-linear-gradient(
-      45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px
+      -45deg,
+      rgba(180,0,0,0.85) 0px, rgba(180,0,0,0.85) 10px,
+      rgba(120,0,0,0.85) 10px, rgba(120,0,0,0.85) 20px
     );
-    border-bottom: 2px solid #ff4444;
-    padding: 8px 16px;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
-    text-transform: uppercase; color: #ff8888;
+    color: #fff; font-size: 11px; letter-spacing: 0.06em;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; font-family: 'Space Mono', monospace;
   }
   .staging-banner strong { color: #ff4444; font-weight: 700; }
   .staging-banner a { color: #ff8888; text-decoration: underline; }
@@ -246,6 +245,20 @@
   .exp-controls #play-btn-exp svg { width: 20px; height: 20px; fill: currentColor; }
   .exp-controls #play-btn-exp:active { background: #e0bb5c; }
 
+  /* Close button for expanded player */
+  .exp-close-btn {
+    position: absolute; top: 10px; right: 14px;
+    width: 36px; height: 36px;
+    background: none; border: none;
+    color: var(--text-dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s;
+  }
+  .exp-close-btn:hover { color: var(--text); }
+  .exp-close-btn:active { color: var(--text); }
+
   /* Make info row in mini player look clickable */
   .player-info-row { cursor: pointer; }
   .player-info-row:active { opacity: 0.7; }
@@ -341,8 +354,7 @@
 </head>
 <body>
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 41 — Detta är en förhandsvisning.
-  <a href="/player.html">Gå till live-sidan →</a>
+  <strong>⚠ STAGING</strong> — build 43 — Detta är en förhandsvisning.
 </div>
 
 <!-- APP -->
@@ -480,6 +492,12 @@
 
 <!-- EXPANDED PLAYER -->
 <div id="expanded-player">
+  <button class="exp-close-btn" onclick="closeExpandedPlayer()" aria-label="Stäng">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="1" y1="1" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="15" y1="1" x2="1" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </button>
   <div class="exp-handle-bar"></div>
   <!-- A/B expanded content -->
   <div id="ab-expanded-content">
@@ -579,7 +597,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 41;
+const PLAYER_VERSION = 43;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
