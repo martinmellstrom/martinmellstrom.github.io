@@ -228,6 +228,20 @@
   .exp-controls #play-btn-exp svg { width: 20px; height: 20px; fill: currentColor; }
   .exp-controls #play-btn-exp:active { background: #e0bb5c; }
 
+  /* Close button for expanded player */
+  .exp-close-btn {
+    position: absolute; top: 10px; right: 14px;
+    width: 36px; height: 36px;
+    background: none; border: none;
+    color: var(--text-dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s;
+  }
+  .exp-close-btn:hover { color: var(--text); }
+  .exp-close-btn:active { color: var(--text); }
+
   /* Make info row in mini player look clickable */
   .player-info-row { cursor: pointer; }
   .player-info-row:active { opacity: 0.7; }
@@ -458,6 +472,12 @@
 
 <!-- EXPANDED PLAYER -->
 <div id="expanded-player">
+  <button class="exp-close-btn" onclick="closeExpandedPlayer()" aria-label="Stäng">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="1" y1="1" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="15" y1="1" x2="1" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </button>
   <div class="exp-handle-bar"></div>
   <!-- A/B expanded content -->
   <div id="ab-expanded-content">
@@ -557,7 +577,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 42;
+const PLAYER_VERSION = 46;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
