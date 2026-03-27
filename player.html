@@ -575,9 +575,10 @@
 
 </div><!-- /#app -->
 <audio id="audio-el" playsinline webkit-playsinline></audio>
+<audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 55;
+const PLAYER_VERSION = 57;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -717,7 +718,7 @@ function idbCoverPut(path, blob, rev) {
 //   linkCache, activeObjUrl
 //   durationCache, waveformCache, gainCache
 //   currentGainDb, gainDbA, gainDbB
-//   audioCtx, gainNode, mediaSource
+//   audioCtx, streamDest, airplayBridge
 //   abMode, abA, abB, abActiveSlot, waveformDataA, waveformDataB
 //   abAudioBufA, abAudioBufB, abSourceA, abSourceB
 //   abGainNodeA, abGainNodeB, abStartContextTime, abStartOffset
@@ -764,8 +765,8 @@ let gainDbB        = 0.0;
 
 // Web Audio API — persistent graph
 let audioCtx    = null;
-let gainNode    = null;
-let mediaSource = null;
+let streamDest  = null;   // MediaStreamDestination för AirPlay-bridge
+const airplayBridge = document.getElementById('airplay-bridge');
 
 // A/B comparison mode state
 let abMode        = false;
@@ -791,7 +792,6 @@ let abRafId          = null;   // requestAnimationFrame-ID för tiduppdateringsl
 // ── Regular buffered playback state ──
 let regularBuf              = null;
 let regularSource           = null;
-let regularGainNode         = null;
 let regularStartContextTime = 0;
 let regularStartOffset      = 0;
 let regularIsPlaying        = false;
@@ -842,6 +842,9 @@ function ensureAudioCtx() {
   const created = !audioCtx;
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Skapa MediaStreamDestination för att brygga Web Audio → <audio> → AirPlay
+    streamDest = audioCtx.createMediaStreamDestination();
+    airplayBridge.srcObject = streamDest.stream;
   }
   unlockAudioHardware();
   const wasSuspended = audioCtx.state === 'suspended';
@@ -853,23 +856,12 @@ function ensureAudioCtx() {
   }
 }
 
-function ensureAudioGraph() {
-  if (!mediaSource) {
-    mediaSource = audioCtx.createMediaElementSource(audio);
-  }
-  if (!regularGainNode) {
-    regularGainNode = audioCtx.createGain();
-    regularGainNode.gain.value = dbToGain(currentGainDb);
-    regularGainNode.connect(audioCtx.destination);
-    mediaSource.connect(regularGainNode);
-  }
-}
+// ensureAudioGraph() borttagen — createMediaElementSource() bort, regular playback är nu native.
 
 function dbToGain(db) { return Math.pow(10, db / 20); }
 
 function applyGain(db) {
-  if (!regularGainNode || !audioCtx) return;
-  regularGainNode.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.01);
+  // Gain är inaktiverat i regular mode — används bara av A/B-slidern
 }
 
 // ── A/B parallel buffered playback ──
@@ -901,12 +893,9 @@ function startABPlayback(slot, offsetSeconds) {
   [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
   abSourceA = null; abSourceB = null;
 
-  // Koppla abGainNodeA/B direkt till audioCtx.destination (ej via gainNode).
-  // gainNode skapades med createMediaElementSource(audio) — på Safari kan ett tomt
-  // audio.src orsaka att gainNode tystar allt som passerar det. Direktkoppling
-  // isolerar A/B-uppspelningen helt från audio-elementets tillstånd.
-  if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(audioCtx.destination); }
-  if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(audioCtx.destination); }
+  // Koppla abGainNodeA/B till streamDest (MediaStreamDestination → bridge <audio> → AirPlay)
+  if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(streamDest); }
+  if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(streamDest); }
 
   abSourceA = audioCtx.createBufferSource();
   abSourceA.buffer = bufA;
@@ -921,10 +910,9 @@ function startABPlayback(slot, offsetSeconds) {
   // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
   // skrivas över av audio-elementets asynkrona pause-event.
   const launch = () => {
-    // Tysta audio-elementet via gainNode=0 men PAUSA INTE — audio.pause() stänger
-    // iOS hardware-utgången och dödar destinationen även för abGainNodeA/B som
-    // kopplar direkt. Elementet fortsätter "spela" tyst som keepalive.
-    if (gainNode) gainNode.gain.value = 0;
+    // Tysta regular <audio> och starta bridge för AirPlay
+    audio.volume = 0;
+    airplayBridge.play().catch(() => {});
     console.log('[AB launch] ctx.state=' + audioCtx.state +
       ' slot=' + slot +
       ' gainA=' + (slot==='a' ? dbToGain(gainDbA) : 0).toFixed(3) +
@@ -932,9 +920,7 @@ function startABPlayback(slot, offsetSeconds) {
       ' bufA.dur=' + bufA.duration.toFixed(2) +
       ' bufB.dur=' + bufB.duration.toFixed(2) +
       ' audio.paused=' + audio.paused +
-      ' audio.src=' + (audio.src ? 'set' : 'empty') +
-      ' gainNode=' + (gainNode ? gainNode.gain.value.toFixed(3) : 'null'));
-    // audio.pause() borttagen — se kommentar ovan
+      ' audio.src=' + (audio.src ? 'set' : 'empty'));
     abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
     abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
 
@@ -1001,28 +987,20 @@ function stopABRaf() {
 
 // ── Regular buffered playback ──
 function startRegularPlayback(offsetSeconds) {
-  if (!audioCtx) return;
   stopRegularRaf();
-  ensureAudioGraph();
   const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
   const offset = Math.max(0, dur ? Math.min(offsetSeconds, dur) : offsetSeconds);
   regularPausedOffset = offset;
-  const launch = () => {
-    if (regularGainNode) regularGainNode.gain.value = dbToGain(currentGainDb);
-    audio.loop = false;
-    audio.currentTime = offset;
-    audio.play().catch(e => console.warn('[regular] audio.play() failed:', e));
-    regularIsPlaying = true;
-    isPlaying = true; setPlayIcon(true);
-    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-    syncPositionState();
-    startRegularRaf();
-  };
-  if (audioCtx.state === 'running') {
-    launch();
-  } else {
-    audioCtx.resume().then(launch).catch(e => console.warn('[regular] resume failed:', e));
-  }
+  // Regular mode: native <audio> playback (AirPlay-kompatibel, ingen Web Audio-routing)
+  audio.volume = 1;
+  audio.loop = false;
+  audio.currentTime = offset;
+  audio.play().catch(e => console.warn('[regular] audio.play() failed:', e));
+  regularIsPlaying = true;
+  isPlaying = true; setPlayIcon(true);
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+  syncPositionState();
+  startRegularRaf();
 }
 
 function getRegularCurrentTime() {
@@ -2033,11 +2011,9 @@ function adjustExpandedSpacing() {
   const meta    = document.getElementById('exp-meta');
   const wave    = document.getElementById('exp-waveform-wrap');
   const timeRow = document.getElementById('exp-time-row');
-  const gain    = document.getElementById('exp-gain-row');
   if (!cover || !meta) return;
   meta.style.marginTop = '';
   wave.style.marginTop = '';
-  gain.style.marginTop = '';
   requestAnimationFrame(() => {
     const gap = meta.getBoundingClientRect().top - cover.getBoundingClientRect().bottom;
     if (gap <= 0) return;
@@ -2045,9 +2021,7 @@ function adjustExpandedSpacing() {
     meta.style.marginTop = `-${pull}px`;
     requestAnimationFrame(() => {
       const waveGap = wave.getBoundingClientRect().top  - meta.getBoundingClientRect().bottom;
-      const gainGap = gain.getBoundingClientRect().top  - timeRow.getBoundingClientRect().bottom;
       if (pull > waveGap) wave.style.marginTop = `${pull - waveGap}px`;
-      if (pull > gainGap) gain.style.marginTop = `${pull - gainGap}px`;
     });
   });
 }
@@ -2309,8 +2283,7 @@ function hideABExpandedLayout() {
   document.getElementById('exp-waveform-wrap').style.display = '';
   document.getElementById('exp-time-row').style.display = '';
   document.getElementById('exp-seek-wrap').style.display = '';
-  document.getElementById('exp-gain-row').style.display = '';
-  adjustExpandedSpacing();
+  document.getElementById('exp-gain-row').style.display = 'none';  // Gain är dolt i regular mode
 }
 
 function updateABExpandedUI() {
@@ -2464,12 +2437,8 @@ function toggleABMode() {
   if (abMode) {
     pauseRegular();
     ensureAudioCtx();
-    // VIKTIGT: sätt INTE gainNode.gain = 0 här.
-    // gainNode hålls aktiv (gain=1.0) tills launch() körs — det håller iOS
-    // audio-hårdvaran varm med ett riktigt audiosignal.
-    // Om gain sätts till 0 nu kan iOS stänga av hårdvaruutgången, och
-    // BufferSource-noderna ger sedan inget ljud trots att ctx.state='running'.
-    // gainNode.gain = 0 sätts istället atomärt inuti launch() precis innan .start().
+    // A/B-läget pausar regular playback och använder Web Audio + MediaStreamDestination
+    // för AirPlay-kompatibel A/B-uppspelning.
   } else {
     // Städning — stoppa sources och frigör resurser
     audio.pause();
@@ -2484,8 +2453,9 @@ function toggleABMode() {
     abA = null; abB = null;
     waveformDataA = null; waveformDataB = null;
     abActiveSlot = 'a';
-    // Återställ gainNode till aktuell gain (sattes till 0 vid AB-aktivering)
-    if (gainNode && audioCtx) gainNode.gain.value = dbToGain(currentGainDb);
+    // Återställ audio-elementet
+    audio.volume = 1;
+    airplayBridge.pause();
     const badge = document.getElementById('np-ab-badge');
     if (badge) badge.classList.remove('ab-visible');
     if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
@@ -2744,7 +2714,6 @@ document.addEventListener('keydown',e=>{
 // Sätt gain=0 synkront vid siddöd — ramp-anrop hinner inte genomföras
 // innan iOS river ner AudioContext. Förhindrar klikket vid stängning.
 window.addEventListener('pagehide', () => {
-  if (regularGainNode) regularGainNode.gain.value = 0;
   if (abGainNodeA)     abGainNodeA.gain.value = 0;
   if (abGainNodeB)     abGainNodeB.gain.value = 0;
 });
