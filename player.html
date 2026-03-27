@@ -558,6 +558,7 @@
   <div class="modal">
     <button class="modal-close" onclick="closeModal('help-modal')">×</button>
     <div class="modal-title">Kom igång</div>
+    <div id="help-version" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-dim);margin:-10px 0 14px;letter-spacing:0.04em;">Version —</div>
     <p><strong>1. Anslut Dropbox</strong><br>
     Tryck ⚙ → <em>Anslut Dropbox</em>. En Dropbox-inloggningssida öppnas — godkänn åtkomst. Spelaren ansluter automatiskt och hämtar dina låtar. Token förnyas i bakgrunden, du behöver aldrig göra detta igen.</p>
     <p><strong>2. Mappstruktur</strong><br>
@@ -576,7 +577,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 53;
+const PLAYER_VERSION = 55;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -2796,6 +2797,9 @@ openIDB().then(async()=>{
     renderLibrary();
     setStatus('','Anslut Dropbox via ⚙ för att komma igång');
   }
+
+  const hv = document.getElementById('help-version');
+  if (hv) hv.textContent = 'Version ' + PLAYER_VERSION;
 });
 </script>
 </body>
