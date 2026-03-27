@@ -1,20 +1,30 @@
-<!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>[STAGING] Martin Mellström — Music Player</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&family=Syne:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #0a0d0b; color: #e8e0d0;
-    font-family: 'Space Mono', monospace; font-size: 13px;
-    height: 100dvh; overflow: hidden;
+  :root {
+    --bg:        #0a0d0b;
+    --surface:   #111510;
+    --card:      #161c14;
+    --border:    #2a3328;
+    --gold:      #c9a84c;
+    --gold-dim:  #7a5e28;
+    --gold-glow: rgba(201,168,76,0.15);
+    --text:      #e8e0d0;
+    --text-dim:  #7a7468;
+    --text-mid:  #a09880;
+    --green:     #4a7c59;
+    --red:       #7c4a4a;
+    --radius:    12px;
+    --player-h:  110px;
   }
-  
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   .staging-banner {
     position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
     height: 36px;
@@ -24,26 +34,2760 @@
     display: flex; align-items: center; justify-content: center; gap: 12px;
     font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
     text-transform: uppercase; color: #ff8888;
-    pointer-events: auto;
   }
   .staging-banner strong { color: #ff4444; font-weight: 700; }
   .staging-banner a { color: #ff8888; text-decoration: underline; }
 
-  .player-frame {
-    position: fixed;
-    top: 36px; left: 0; right: 0; bottom: 0;
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Space Mono', monospace; font-size: 13px;
+    min-height: 100dvh; display: flex; flex-direction: column;
+    overflow-x: hidden; max-width: 100vw;
+    padding-top: 36px;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* ── APP ── */
+  #app { display: flex; flex-direction: column; min-height: 100dvh; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; flex-wrap: nowrap; min-width: 0;
+  }
+  .header-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+  .back-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px; display: none; align-items: center; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+  .back-btn.visible { display: flex; }
+  .back-btn svg { width: 20px; height: 20px; fill: currentColor; }
+  .logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 300; letter-spacing: 0.08em; color: var(--gold); line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .logo span { font-style: italic; font-weight: 300; color: var(--text-mid); font-size: 15px; }
+  .header-controls { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+
+  /* ── BUTTONS ── */
+  .btn { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.08em; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; background: var(--card); color: var(--text-mid); white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+  .btn:active { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
+  .btn-primary { background: var(--gold); color: var(--bg); border-color: var(--gold); font-weight: 700; }
+  .btn-primary:active { background: #e0bb5c; }
+  .btn-icon { padding: 8px 10px; font-size: 14px; height: 36px; min-width: 36px; display: inline-flex; align-items: center; justify-content: center; }
+  .btn-success { border-color: var(--green); color: var(--green); background: none; }
+  .btn-success:active { background: rgba(74,124,89,0.15); }
+  .btn-danger { border-color: var(--red); color: var(--red); background: none; }
+  .btn-danger:active { background: rgba(124,74,74,0.15); }
+
+  /* ── CONFIG ── */
+  #config-panel { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 14px; position: relative; z-index: 9; animation: slideDown 0.25s ease; }
+  @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
+  .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media(min-width:500px){.config-grid{grid-template-columns:1fr 1fr 1fr}}
+  .config-field label { display: block; color: var(--text-dim); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+  .config-field input { width: 100%; background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: 'Space Mono', monospace; font-size: 12px; padding: 7px 10px; border-radius: 6px; outline: none; transition: border-color 0.2s; }
+  .config-field input:focus { border-color: var(--gold-dim); }
+  .config-field input::placeholder { color: var(--text-dim); }
+  .config-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  /* ── STATUS ── */
+  #status-bar { padding: 7px 14px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text-dim); display: flex; align-items: center; gap: 8px; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease; max-height: 48px; }
+  #status-bar.hidden { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; border-bottom-color: transparent; }
+  #status-bar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; transition: background 0.3s; }
+  #status-bar.loading .dot { background: var(--gold); animation: pulse 1s infinite; }
+  #status-bar.ok .dot { background: var(--green); }
+  #status-bar.error .dot { background: var(--red); }
+  #status-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── MAIN ── */
+  #main-content { flex: 1; overflow-y: auto; padding-bottom: calc(var(--player-h) + 16px); scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  #main-content::-webkit-scrollbar { width: 4px; }
+  #main-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── LIBRARY ── */
+  #library-view { padding: 16px 14px; }
+  #library-view.hidden { display: none; }
+  .library-section-title { font-family: 'Cormorant Garamond', serif; font-size: 11px; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); padding: 0 2px 12px; display: flex; align-items: center; gap: 8px; }
+  .library-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .pkg-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  .pkg-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.15s; -webkit-tap-highlight-color: transparent; position: relative; }
+  .pkg-card:active { border-color: var(--gold-dim); transform: scale(0.97); }
+  .pkg-card.all-songs { grid-column: 1 / -1; }
+
+  .pkg-card-cover { width: 100%; aspect-ratio: 1; background: var(--surface); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+  .pkg-card.all-songs .pkg-card-cover { aspect-ratio: 2.5 / 1; }
+  .pkg-card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover-placeholder { font-family: 'Cormorant Garamond', serif; font-size: 40px; color: var(--gold-dim); opacity: 0.35; user-select: none; }
+  .pkg-card.all-songs .cover-placeholder { font-size: 52px; }
+
+  .pkg-sync-badge { position: absolute; top: 8px; right: 8px; background: rgba(10,13,11,0.85); border-radius: 20px; padding: 3px 8px; font-size: 9px; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px; }
+  .pkg-sync-badge.synced { color: var(--green); }
+  .pkg-sync-badge.partial { color: var(--gold); }
+  .pkg-sync-badge svg { width: 10px; height: 10px; fill: currentColor; }
+
+  .pkg-card-info { padding: 10px 12px 12px; }
+  .pkg-card-name { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 400; color: var(--text); line-height: 1.2; margin-bottom: 3px; }
+  .pkg-card-meta { font-size: 10px; color: var(--text-dim); letter-spacing: 0.04em; }
+
+  /* ── PLAYLIST VIEW ── */
+  #playlist-view { display: none; }
+  #playlist-view.visible { display: block; }
+
+  .playlist-header { display: flex; gap: 14px; padding: 16px 14px 12px; border-bottom: 1px solid var(--border); }
+  .playlist-cover { width: 80px; height: 80px; flex-shrink: 0; background: var(--surface); border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+  .playlist-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .playlist-cover .cover-placeholder { font-size: 28px; }
+  .playlist-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .playlist-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; color: var(--gold); line-height: 1.1; }
+  .playlist-count { font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em; }
+  .playlist-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+  /* ── TRACK LIST ── */
+  #track-list { padding: 8px 10px 0; }
+  .pkg-section { margin-bottom: 16px; }
+
+  .track-item { display: flex; align-items: center; gap: 10px; padding: 10px 8px; border-radius: var(--radius); cursor: pointer; transition: background 0.15s; position: relative; border: 1px solid transparent; -webkit-tap-highlight-color: transparent; }
+  .track-item:active { background: var(--card); }
+  .track-item.active { background: var(--card); border-color: var(--border); }
+  .track-item.active::before { content: ''; position: absolute; left: 0; top: 10%; bottom: 10%; width: 2px; background: var(--gold); border-radius: 0 2px 2px 0; }
+
+  .track-num { font-size: 10px; color: var(--text-dim); width: 20px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .track-item.active .track-num { color: var(--gold); }
+  .track-bars { display: none; align-items: flex-end; gap: 2px; height: 14px; width: 20px; flex-shrink: 0; }
+  .track-item.active.playing .track-num { display: none; }
+  .track-item.active.playing .track-bars { display: flex; }
+  .track-bars span { width: 3px; background: var(--gold); border-radius: 1px; animation: bar 0.8s ease-in-out infinite alternate; }
+  .track-bars span:nth-child(1){animation-delay:0s} .track-bars span:nth-child(2){animation-delay:0.2s} .track-bars span:nth-child(3){animation-delay:0.4s}
+  @keyframes bar { from{height:3px} to{height:14px} }
+
+  .track-info { flex: 1; min-width: 0; }
+  .track-name { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 400; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+  .track-item.active .track-name { color: var(--gold); }
+  .track-meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.04em; }
+  .track-duration { font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+  .track-sync { flex-shrink: 0; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+  .track-sync svg { width: 14px; height: 14px; }
+  .track-sync.synced svg { fill: var(--green); }
+  .track-sync.syncing svg { fill: var(--gold); animation: pulse 1s infinite; }
+  .track-sync.unsynced svg { fill: var(--border); }
+
+  /* ── SEARCH RESULTS VIEW ── */
+  #search-results-view { display: none; padding: 0 10px 0; }
+  #search-results-view.visible { display: block; }
+  .search-results-header { font-family: 'Cormorant Garamond', serif; font-size: 11px; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold-dim); padding: 14px 2px 10px; display: flex; align-items: center; gap: 8px; }
+  .search-results-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ── PLAYER ── */
+  #player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-h); background: rgba(10,13,11,0.95); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); border-top: 1px solid var(--border); z-index: 100; display: flex; flex-direction: column; }
+  #progress-wrap { position: relative; height: 6px; background: var(--border); cursor: pointer; flex-shrink: 0; transition: height 0.15s; }
+  #progress-wrap:hover { height: 10px; }
+  #progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.25s linear; pointer-events: none; position: relative; border-radius: 0 2px 2px 0; }
+  #progress-fill::after { content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; background: var(--gold); border-radius: 50%; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+  #progress-wrap:hover #progress-fill::after { opacity: 1; }
+  .player-info-row { display: flex; align-items: center; padding: 8px 14px 2px; gap: 10px; overflow: hidden; flex-shrink: 0; }
+  .now-playing { flex: 1; min-width: 0; }
+  .np-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 400; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
+  .np-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .time-display { font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; flex-shrink: 0; letter-spacing: 0.03em; }
+  .player-controls { display: flex; align-items: center; justify-content: center; padding: 2px 8px 8px; flex-shrink: 0; }
+  .ctrl { background: none; border: none; color: var(--text-dim); width: 52px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0; -webkit-tap-highlight-color: transparent; position: relative; }
+  .ctrl svg { width: 18px; height: 18px; fill: currentColor; display: block; }
+  .ctrl:active { background: var(--card); color: var(--text); }
+  .ctrl.active { color: var(--gold); }
+  #play-btn { width: 56px; height: 40px; background: var(--gold); color: var(--bg); border-radius: 8px; margin: 0 2px; }
+  #play-btn svg { width: 16px; height: 16px; }
+  #play-btn:active { background: #e0bb5c; }
+  .repeat-one-badge { position: absolute; top: 4px; right: 6px; font-size: 8px; font-family: 'Space Mono', monospace; color: var(--gold); line-height: 1; pointer-events: none; }
+
+  /* ── EXPANDED PLAYER ── */
+  #expanded-player {
+    position: fixed; inset: 0; z-index: 150;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+    overflow: hidden;
+  }
+  #expanded-player.open { transform: translateY(0); }
+
+  .exp-handle-bar { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 12px auto 0; flex-shrink: 0; }
+
+  .exp-cover-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 16px 32px 3px; }
+  .exp-cover { width: 100%; max-width: 280px; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); flex-shrink: 0; }
+  .exp-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .exp-cover .cover-placeholder { font-size: 72px; color: var(--gold-dim); opacity: 0.35; }
+
+  .exp-meta { padding: 2px 24px 1px; text-align: center; flex-shrink: 0; }
+  .exp-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: var(--text); line-height: 1.1; }
+  .exp-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; letter-spacing: 0.06em; }
+
+  /* Waveform */
+  .exp-waveform-wrap { padding: 4px 20px 2px; flex-shrink: 0; position: relative; cursor: pointer; }
+  #waveform-canvas { width: 100%; height: 56px; display: block; border-radius: 4px; }
+  .exp-time-row { display: flex; justify-content: space-between; padding: 0 20px; font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; letter-spacing: 0.03em; flex-shrink: 0; }
+
+  /* Seek bar inside expanded — hidden in normal mode (waveform serves this purpose) */
+  .exp-seek-wrap { display: none; }
+
+  .exp-controls { display: flex; align-items: center; justify-content: center; padding: 20px 8px 8px; flex-shrink: 0; }
+  .exp-controls .ctrl { width: 56px; height: 48px; }
+  .exp-controls #play-btn-exp { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0 4px; -webkit-tap-highlight-color: transparent; }
+  .exp-controls #play-btn-exp svg { width: 20px; height: 20px; fill: currentColor; }
+  .exp-controls #play-btn-exp:active { background: #e0bb5c; }
+
+  /* Close button for expanded player */
+  .exp-close-btn {
+    position: absolute; top: 10px; right: 14px;
+    width: 36px; height: 36px;
+    background: none; border: none;
+    color: var(--text-dim); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s;
+  }
+  .exp-close-btn:hover { color: var(--text); }
+  .exp-close-btn:active { color: var(--text); }
+
+  /* Make info row in mini player look clickable */
+  .player-info-row { cursor: pointer; }
+  .player-info-row:active { opacity: 0.7; }
+
+  /* ── MODAL ── */
+  .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: flex-end; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-width: 500px; padding: 20px; animation: slideUp 0.25s ease; max-height: 80dvh; overflow-y: auto; }
+  @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:none;opacity:1} }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--gold); margin-bottom: 14px; }
+  .modal p { font-size: 12px; color: var(--text-mid); line-height: 1.7; margin-bottom: 10px; }
+  .modal code { font-family: 'Space Mono', monospace; background: var(--card); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--gold-dim); }
+  .modal-close { float: right; background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; line-height: 1; }
+
+  audio { display: none; }
+  html { scroll-behavior: smooth; }
+
+  /* ── A/B COMPARISON MODE ── */
+  .btn-ab-active { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+  .track-ab-btns { display: none; gap: 4px; flex-shrink: 0; }
+  .ab-mode-active .track-ab-btns { display: flex; }
+  .track-ab-btn { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--border); background: var(--card); color: var(--text-dim); cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; transition: all 0.15s; flex-shrink: 0; }
+  .track-ab-btn.ab-sel { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+  #ab-expanded-content { display: none; flex: 1; min-height: 0; flex-direction: column; }
+  #ab-expanded-content.ab-visible { display: flex; }
+  .ab-section { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; padding: 10px 20px 14px; cursor: pointer; }
+  .ab-section.ab-inactive { opacity: 0.35; }
+  .ab-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .ab-badge { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; color: var(--bg); background: var(--gold); border-radius: 4px; padding: 2px 7px; flex-shrink: 0; line-height: 1.5; }
+  .ab-section.ab-inactive .ab-badge { background: var(--gold-dim); }
+  .ab-section.ab-inactive .ab-gain-row { display: none; }
+  .ab-section-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+  .ab-canvas { width: 100%; height: 60px; display: block; border-radius: 4px; }
+  .ab-divider { height: 1px; background: var(--border); margin: 0 20px; flex-shrink: 0; }
+  .np-ab-badge { font-size: 9px; font-weight: 700; background: var(--gold); color: var(--bg); border-radius: 3px; padding: 1px 5px; margin-left: 4px; letter-spacing: 0.1em; display: none; flex-shrink: 0; vertical-align: middle; }
+  .np-ab-badge.ab-visible { display: inline-block; }
+
+  /* ── GAIN CONTROL ── */
+  .exp-gain-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 3px 20px 4px;
+    flex-shrink: 0;
+  }
+  .exp-gain-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    width: 52px;
+    flex-shrink: 0;
+    font-family: 'Space Mono', monospace;
+  }
+  .exp-gain-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    accent-color: var(--gold);
+    touch-action: pan-x;
+  }
+  .exp-gain-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
     border: none;
-    width: 100%;
-    height: calc(100% - 36px);
+  }
+  .exp-gain-slider:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+  .exp-gain-value {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--gold);
+    width: 52px;
+    text-align: right;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .ab-gain-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0 2px;
+    margin-top: 18px;
   }
 </style>
 </head>
 <body>
-  <div class="staging-banner">
-    <strong>⚠ STAGING</strong> — Detta är en förhandsvisning. <a href="/player.html">Gå till live-sidan →</a>
+
+<!-- APP -->
+<div class="staging-banner">
+  <strong>⚠ STAGING</strong> — build 56 — Detta är en förhandsvisning.
+  <a href="/player.html">Gå till live-sidan →</a>
+</div>
+<div id="app">
+
+<header>
+  <div class="header-left">
+    <button class="back-btn" id="back-btn">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </button>
+    <div class="logo">Martin Mellström <span>/ player</span></div>
   </div>
-  <!-- NOTE: iframe loads the live player.html for preview purposes -->
-  <!-- When staging is approved and changes exist, replace this with the full modified player.html content -->
-  <iframe class="player-frame" src="../player.html" allow="autoplay" title="Music Player (staging preview)"></iframe>
+  <div class="header-controls">
+    <button class="btn btn-icon" id="search-btn" title="Sök" style="font-size:14px;"><svg style="width:14px;height:14px;display:block;" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+    <button class="btn btn-icon" id="refresh-btn" title="Hämta från Dropbox">↻</button>
+    <button class="btn btn-icon" id="settings-btn" title="Inställningar">⚙</button>
+    <button class="btn btn-icon" id="help-btn" title="Hjälp">?</button>
+  </div>
+</header>
+
+<div id="config-panel" style="display:none">
+  <div class="config-grid">
+    <div class="config-field" style="grid-column:1/-1">
+      <label>Dropbox-anslutning</label>
+      <div id="oauth-status-row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span id="oauth-status-text" style="font-size:11px;color:var(--text-dim);flex:1;">Inte ansluten</span>
+        <button class="btn btn-primary" id="oauth-connect-btn" style="font-size:10px;padding:6px 12px;">Anslut Dropbox</button>
+        <button class="btn btn-danger" id="oauth-disconnect-btn" style="font-size:10px;padding:6px 12px;display:none;">Koppla från</button>
+      </div>
+    </div>
+    <div class="config-field">
+      <label>Mapp (lämna tomt för rot)</label>
+      <input type="text" id="cfg-folder" placeholder="">
+    </div>
+    <div class="config-field">
+      <label>Filformat</label>
+      <input type="text" id="cfg-exts" value="mp3,wav,flac,aiff,m4a">
+    </div>
+  </div>
+  <div class="config-actions">
+    <button class="btn btn-primary" id="save-config-btn">Spara &amp; hämta</button>
+    <button class="btn" id="cancel-config-btn">Avbryt</button>
+  </div>
+</div>
+
+<div id="search-panel" style="display:none">
+  <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--surface);position:relative;z-index:9;animation:slideDown 0.2s ease;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--text-dim)" style="flex-shrink:0"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <input type="text" id="search-input" placeholder="Sök bland alla låtar…" autocomplete="off" autocorrect="off" spellcheck="false" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:4px 0;">
+    <button id="search-clear-btn" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px;display:none;align-items:center;-webkit-tap-highlight-color:transparent;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="status-bar">
+  <div class="dot"></div>
+  <span id="status-text">Anslut Dropbox via ⚙ för att komma igång</span>
+</div>
+
+<div id="main-content">
+
+  <!-- LIBRARY -->
+  <div id="library-view">
+    <div style="padding: 16px 14px;">
+      <div class="library-section-title">Bibliotek</div>
+      <div class="pkg-grid" id="pkg-grid"></div>
+    </div>
+  </div>
+
+  <!-- PLAYLIST -->
+  <div id="playlist-view">
+    <div class="playlist-header">
+      <div class="playlist-cover" id="playlist-cover">
+        <span class="cover-placeholder">♩</span>
+      </div>
+      <div class="playlist-meta">
+        <div class="playlist-name" id="playlist-name">—</div>
+        <div class="playlist-count" id="playlist-count"></div>
+        <div class="playlist-actions">
+          <button class="btn btn-success" id="sync-pkg-btn" style="font-size:10px;padding:6px 10px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+            Ladda ner paket
+          </button>
+          <button class="btn btn-danger" id="delete-pkg-btn" style="font-size:10px;padding:6px 10px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            Ta bort lokalt
+          </button>
+          <button class="btn" id="ab-mode-btn" style="font-size:10px;padding:6px 10px;">A/B</button>
+        </div>
+      </div>
+    </div>
+    <div id="track-list"></div>
+  </div>
+
+  <!-- GLOBAL SEARCH RESULTS -->
+  <div id="search-results-view">
+    <div id="search-results-list"></div>
+  </div>
+
+</div>
+
+<!-- PLAYER -->
+<div id="player">
+  <div id="progress-wrap"><div id="progress-fill"></div></div>
+  <div class="player-info-row">
+    <div class="now-playing">
+      <div style="display:flex;align-items:center;overflow:hidden;">
+        <div class="np-name" id="np-name" style="flex:1;min-width:0;">Ingen låt vald</div>
+        <span class="np-ab-badge" id="np-ab-badge">A</span>
+      </div>
+      <div class="np-sub" id="np-sub">—</div>
+    </div>
+    <div class="time-display" id="time-display">0:00 / 0:00</div>
+  </div>
+  <div class="player-controls">
+    <button class="ctrl" id="prev-btn">
+      <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+    </button>
+    <button class="ctrl" id="repeat-btn">
+      <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+    </button>
+    <button class="ctrl" id="play-btn">
+      <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <button class="ctrl" id="shuffle-btn">
+      <svg viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+    </button>
+    <button class="ctrl" id="next-btn">
+      <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- EXPANDED PLAYER -->
+<div id="expanded-player">
+  <button class="exp-close-btn" onclick="closeExpandedPlayer()" aria-label="Stäng">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="1" y1="1" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="15" y1="1" x2="1" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <div class="exp-handle-bar"></div>
+  <!-- A/B expanded content -->
+  <div id="ab-expanded-content">
+    <div class="ab-section" id="ab-section-a" onclick="handleABSectionClick(event,'a')">
+      <div class="ab-section-header">
+        <span class="ab-badge">A</span>
+        <span class="ab-section-name" id="ab-name-a">—</span>
+      </div>
+      <canvas class="ab-canvas" id="ab-canvas-a"></canvas>
+      <div class="ab-gain-row">
+        <span class="exp-gain-label">GAIN</span>
+        <input type="range" class="exp-gain-slider ab-gain-slider" id="ab-gain-slider-a"
+          min="-6" max="6" step="0.5" value="0">
+        <span class="exp-gain-value" id="ab-gain-value-a" style="visibility:hidden;">0.0 dB</span>
+      </div>
+    </div>
+    <div class="ab-divider"></div>
+    <div class="ab-section" id="ab-section-b" onclick="handleABSectionClick(event,'b')">
+      <div class="ab-section-header">
+        <span class="ab-badge">B</span>
+        <span class="ab-section-name" id="ab-name-b">—</span>
+      </div>
+      <canvas class="ab-canvas" id="ab-canvas-b"></canvas>
+      <div class="ab-gain-row">
+        <span class="exp-gain-label">GAIN</span>
+        <input type="range" class="exp-gain-slider ab-gain-slider" id="ab-gain-slider-b"
+          min="-6" max="6" step="0.5" value="0">
+        <span class="exp-gain-value" id="ab-gain-value-b" style="visibility:hidden;">0.0 dB</span>
+      </div>
+    </div>
+  </div>
+  <div class="exp-cover-wrap" id="exp-cover-wrap">
+    <div class="exp-cover" id="exp-cover">
+      <span class="cover-placeholder">♬</span>
+    </div>
+  </div>
+  <div class="exp-meta" id="exp-meta">
+    <div class="exp-name" id="exp-name">Ingen låt vald</div>
+    <div class="exp-sub" id="exp-sub">—</div>
+  </div>
+  <div class="exp-waveform-wrap" id="exp-waveform-wrap">
+    <canvas id="waveform-canvas"></canvas>
+  </div>
+  <div class="exp-time-row" id="exp-time-row">
+    <span id="exp-time-cur">0:00</span>
+    <span id="exp-time-tot">—</span>
+  </div>
+  <div class="exp-seek-wrap" id="exp-seek-wrap">
+    <div class="exp-seek-fill" id="exp-seek-fill"></div>
+  </div>
+  <div class="exp-gain-row" id="exp-gain-row">
+    <label class="exp-gain-label">GAIN</label>
+    <input type="range" class="exp-gain-slider" id="exp-gain-slider"
+      min="-6" max="6" step="0.5" value="0">
+    <span class="exp-gain-value" id="exp-gain-value" style="visibility:hidden;">0.0 dB</span>
+  </div>
+  <div class="exp-controls">
+    <button class="ctrl" id="prev-btn-exp">
+      <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+    </button>
+    <button class="ctrl" id="repeat-btn-exp">
+      <svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+    </button>
+    <button id="play-btn-exp">
+      <svg id="icon-play-exp" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="icon-pause-exp" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <button class="ctrl" id="shuffle-btn-exp">
+      <svg viewBox="0 0 24 24"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+    </button>
+    <button class="ctrl" id="next-btn-exp">
+      <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div class="modal-backdrop" id="help-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('help-modal')">×</button>
+    <div class="modal-title">Kom igång</div>
+    <div id="help-version" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-dim);margin:-10px 0 14px;letter-spacing:0.04em;">Version —</div>
+    <p><strong>1. Anslut Dropbox</strong><br>
+    Tryck ⚙ → <em>Anslut Dropbox</em>. En Dropbox-inloggningssida öppnas — godkänn åtkomst. Spelaren ansluter automatiskt och hämtar dina låtar. Token förnyas i bakgrunden, du behöver aldrig göra detta igen.</p>
+    <p><strong>2. Mappstruktur</strong><br>
+    Lägg låtar i undermappar — varje mapp blir ett paket/spellista. Lägg en bild döpt <code>cover.jpg</code> i mappen för omslagsbild.</p>
+    <p><strong>3. Offline</strong><br>
+    Öppna ett paket och tryck "Ladda ner paket". Filerna sparas lokalt i webbläsaren och finns kvar nästa session. En grön bock visar vilka låtar som är sparade.</p>
+    <p><strong>4. A/B-jämförelseläge</strong><br>
+    Tryck <strong>A/B</strong>-knappen i spellistan för att aktivera jämförelseläget. Varje låt får då A- och B-knappar — tryck för att tilldela låtar till respektive plats. I den utvidgade spelaren visas A och B med vågform; tryck på ett avsnitt för att växla vilket spår som spelas. Låten loopar automatiskt så du kan lyssna i lugn och ro. Tryck <strong>A/B</strong> igen för att stänga av läget.</p>
+    <div class="config-actions" style="margin-top:14px">
+      <button class="btn btn-primary" onclick="closeModal('help-modal');openSettings()">Öppna inställningar</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /#app -->
+<audio id="audio-el" playsinline webkit-playsinline></audio>
+<audio id="airplay-bridge" playsinline webkit-playsinline></audio>
+
+<script>
+const PLAYER_VERSION = 56;
+// ═══════════════════════════════════════════════
+//  SERVICE WORKER REGISTRATION
+// ═══════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+
+// iOS audio session — signal music player mode (WebKit 2023+/iOS 17+)
+// Tillåter AudioContext att fortsätta köra i bakgrunden utan suspension.
+if ('audioSession' in navigator) {
+  navigator.audioSession.type = 'playback';
+}
+
+// ═══════════════════════════════════════════════
+//  INDEXED DB
+// ═══════════════════════════════════════════════
+let idb = null;
+function openIDB() {
+  return new Promise((res,rej) => {
+    const req = indexedDB.open('mm_player',4);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('audio')) {
+        db.createObjectStore('audio',{keyPath:'path'});
+      }
+      if (!db.objectStoreNames.contains('covers')) {
+        db.createObjectStore('covers',{keyPath:'path'});
+      }
+      if (!db.objectStoreNames.contains('waveforms')) {
+        db.createObjectStore('waveforms',{keyPath:'rev'});
+      }
+      if (!db.objectStoreNames.contains('state')) {
+        db.createObjectStore('state',{keyPath:'key'});
+      }
+    };
+    req.onsuccess = e => { idb=e.target.result; res(idb); };
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+// ── Waveforms IDB helpers ──
+function idbWaveformGet(rev) {
+  return new Promise(res => {
+    if (!idb) return res(null);
+    const req = idb.transaction('waveforms','readonly').objectStore('waveforms').get(rev);
+    req.onsuccess = () => res(req.result ? req.result.peaks : null);
+    req.onerror   = () => res(null);
+  });
+}
+function idbWaveformPut(rev, peaks) {
+  return new Promise((res,rej) => {
+    if (!idb) return res();
+    const tx = idb.transaction('waveforms','readwrite');
+    tx.objectStore('waveforms').put({rev, peaks: Array.from(peaks)});
+    tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error);
+  });
+}
+
+// ── State IDB helpers ──
+function idbStateGet(key) {
+  return new Promise(res => {
+    if (!idb) return res(null);
+    const req = idb.transaction('state','readonly').objectStore('state').get(key);
+    req.onsuccess = () => res(req.result ? req.result.data : null);
+    req.onerror   = () => res(null);
+  });
+}
+function idbStatePut(key, data) {
+  return new Promise((res,rej) => {
+    if (!idb) return res();
+    const tx = idb.transaction('state','readwrite');
+    tx.objectStore('state').put({key, data});
+    tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error);
+  });
+}
+
+function idbGet(path) {
+  return new Promise(res => {
+    const req = idb.transaction('audio','readonly').objectStore('audio').get(path);
+    req.onsuccess = () => res(req.result||null);
+    req.onerror   = () => res(null);
+  });
+}
+function idbPut(path, blob, rev) {
+  return new Promise((res,rej) => {
+    const tx = idb.transaction('audio','readwrite');
+    tx.objectStore('audio').put({path, blob, rev: rev||null});
+    tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error);
+  });
+}
+function idbDelete(path) {
+  return new Promise(res => {
+    const tx = idb.transaction('audio','readwrite');
+    tx.objectStore('audio').delete(path);
+    tx.oncomplete = ()=>res();
+  });
+}
+function idbGetAll() {
+  return new Promise(res => {
+    const req = idb.transaction('audio','readonly').objectStore('audio').getAll();
+    req.onsuccess = ()=>res(req.result||[]); req.onerror=()=>res([]);
+  });
+}
+function idbGetAllKeys() {
+  return new Promise(res => {
+    const req = idb.transaction('audio','readonly').objectStore('audio').getAllKeys();
+    req.onsuccess = ()=>res(req.result||[]); req.onerror=()=>res([]);
+  });
+}
+
+// ── Covers IDB helpers ──
+function idbCoverGet(path) {
+  return new Promise(res => {
+    const req = idb.transaction('covers','readonly').objectStore('covers').get(path);
+    req.onsuccess = () => res(req.result||null);
+    req.onerror   = () => res(null);
+  });
+}
+function idbCoverPut(path, blob, rev) {
+  return new Promise((res,rej) => {
+    const tx = idb.transaction('covers','readwrite');
+    tx.objectStore('covers').put({path, blob, rev: rev||null});
+    tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  ARCHITECTURE MAP
+// ═══════════════════════════════════════════════
+// STATE:
+//   tracks, currentIdx, isPlaying, repeatMode, shuffle, shuffleQueue, activePkg
+//   syncedPaths, restoredPosition, lastSavedPosition
+//   coverPathMap, coverUrlMap, allSongsCoverUrl
+//   linkCache, activeObjUrl
+//   durationCache, waveformCache, gainCache
+//   currentGainDb, gainDbA, gainDbB
+//   audioCtx, streamDest, airplayBridge
+//   abMode, abA, abB, abActiveSlot, waveformDataA, waveformDataB
+//   abAudioBufA, abAudioBufB, abSourceA, abSourceB
+//   abGainNodeA, abGainNodeB, abStartContextTime, abStartOffset
+//   abIsPlaying, abPausedOffset, abRafId
+// Constants: LS_KEY, LS_DUR_KEY, LS_WAVE_KEY, LS_GAIN_KEY
+// FUNCTIONS:
+//   Gain: loadGainCache, saveGainToCache, getGainFromCache, applyGain, dbToGain
+//         ensureAudioGraph, syncGainSlider, syncABGainSliders
+//   A/B buffered playback: loadABBuffer, startABPlayback, switchABSlot (ersatt),
+//         getABCurrentTime, applyABGain, startABRaf, stopABRaf
+//   Waveform: buildWaveform, buildWaveformForA, buildWaveformForB,
+//             preloadAWaveform, preloadBWaveform
+//   Playback: playTrack, togglePlay, nextTrack, prevTrack
+//   A/B mode: setABSlot, toggleABMode, updateABExpandedUI, drawABWaveforms,
+//             drawOneABCanvas, handleABSectionClick
+// ═══════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════
+const LS_KEY         = 'mm_player_v2';
+const LS_DUR_KEY     = 'mm_player_durations';  // { "<rev>": seconds }
+const LS_GAIN_KEY    = 'mm_player_gains';       // { "<rev>": dB }
+let config      = { token:'', folder:'', exts:'mp3,wav,flac,aiff,m4a' };
+let tracks      = [];
+let currentIdx  = -1;
+let isPlaying   = false;
+let repeatMode  = 'none';
+let shuffle     = false;
+let shuffleQueue= [];
+let activePkg   = null; // null = library, 'all' or pkg name = playlist
+let syncedPaths = new Map();
+let restoredPosition = 0;
+let lastSavedPosition = 0;
+let coverPathMap= {}; // pkg → { path, rev }
+let coverUrlMap = {}; // dropbox path → objectURL
+let allSongsCoverUrl = null; // hårdkodad omslag för "Alla låtar"
+const ALL_SONGS_COVER_PATH = '/all_songs_cover.heic';
+let linkCache   = {};
+let activeObjUrl= null;
+let durationCache  = {}; // rev → seconds (in-memory, backed by localStorage)
+let gainCache      = {}; // rev → dB (in-memory, backed by localStorage)
+let currentGainDb  = 0.0;
+let gainDbA        = 0.0;
+let gainDbB        = 0.0;
+
+// Web Audio API — persistent graph
+let audioCtx    = null;
+let streamDest  = null;   // MediaStreamDestination för AirPlay-bridge
+const airplayBridge = document.getElementById('airplay-bridge');
+
+// A/B comparison mode state
+let abMode        = false;
+let abA           = null;   // global track index for slot A, or null
+let abB           = null;   // global track index for slot B, or null
+let abActiveSlot  = 'a';   // 'a' or 'b' — which slot is currently playing
+let waveformDataA = null;   // Float32Array of peaks for slot A
+let waveformDataB = null;   // Float32Array of peaks for slot B
+
+// A/B parallel buffered playback (zero-latency switching)
+let abAudioBufA      = null;   // AudioBuffer för slot A
+let abAudioBufB      = null;   // AudioBuffer för slot B
+let abSourceA        = null;   // Aktiv AudioBufferSourceNode för A
+let abSourceB        = null;   // Aktiv AudioBufferSourceNode för B
+let abGainNodeA      = null;   // GainNode för slot A
+let abGainNodeB      = null;   // GainNode för slot B
+let abStartContextTime = 0;    // audioCtx.currentTime när uppspelning startade
+let abStartOffset    = 0;      // offset i bufferten vid start (sekunder)
+let abIsPlaying      = false;  // om A/B-uppspelning pågår
+let abPausedOffset   = 0;      // position vid paus
+let abRafId          = null;   // requestAnimationFrame-ID för tiduppdateringsloop
+
+// ── Regular buffered playback state ──
+let regularBuf              = null;
+let regularSource           = null;
+let regularStartContextTime = 0;
+let regularStartOffset      = 0;
+let regularIsPlaying        = false;
+let regularPausedOffset     = 0;
+let regularRafId            = null;
+
+function loadDurationCache() {
+  try { durationCache = JSON.parse(localStorage.getItem(LS_DUR_KEY)||'{}'); } catch(e){ durationCache={}; }
+}
+function saveDurationToCache(rev, seconds) {
+  if (!rev || !seconds || isNaN(seconds)) return;
+  durationCache[rev] = seconds;
+  try { localStorage.setItem(LS_DUR_KEY, JSON.stringify(durationCache)); } catch(e){}
+}
+
+// ── Gain cache helpers ──
+function loadGainCache() {
+  try { gainCache = JSON.parse(localStorage.getItem(LS_GAIN_KEY) || '{}'); } catch(e) { gainCache = {}; }
+}
+function saveGainToCache(rev, db) {
+  if (!rev) return;
+  gainCache[rev] = db;
+  try { localStorage.setItem(LS_GAIN_KEY, JSON.stringify(gainCache)); } catch(e) {}
+}
+function getGainFromCache(rev) {
+  if (!rev || gainCache[rev] === undefined) return 0.0;
+  return gainCache[rev];
+}
+
+// ── iOS audio hardware unlock ──
+// Engångs tyst play vid första användargest — priomar iOS att routa
+// AudioBufferSourceNode-uppspelning till den inbyggda högtalaren.
+// Löser: inget ljud via inbyggd högtalare utan tillbehör kopplat.
+let audioHardwareUnlocked = false;
+function unlockAudioHardware() {
+  if (audioHardwareUnlocked) return;
+  audioHardwareUnlocked = true;
+  // Minimal tyst WAV (1 frame, 44100 Hz, 16-bit mono)
+  const tmp = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+  tmp.play().catch(() => {});
+}
+
+// ── Web Audio API ──
+function ensureAudioCtx() {
+  // Skapar AudioContext och kallar resume() — men INGA noder.
+  // Måste anropas synkront i gesture-handleren (innan await) för att iOS Safari
+  // ska acceptera unlock av Web Audio-hårdvaran.
+  const created = !audioCtx;
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Skapa MediaStreamDestination för att brygga Web Audio → <audio> → AirPlay
+    streamDest = audioCtx.createMediaStreamDestination();
+    airplayBridge.srcObject = streamDest.stream;
+  }
+  unlockAudioHardware();
+  const wasSuspended = audioCtx.state === 'suspended';
+  if (wasSuspended) {
+    audioCtx.resume();
+  }
+  if (created || wasSuspended) {
+    console.log('[ensureAudioCtx] created=' + created + ' resumed=' + wasSuspended + ' state=' + audioCtx.state);
+  }
+}
+
+// ensureAudioGraph() borttagen — createMediaElementSource() bort, regular playback är nu native.
+
+function dbToGain(db) { return Math.pow(10, db / 20); }
+
+function applyGain(db) {
+  // Gain är inaktiverat i regular mode — används bara av A/B-slidern
+}
+
+// ── A/B parallel buffered playback ──
+async function loadABBuffer(gi) {
+  const t = tracks[gi];
+  let url, shouldRevoke = false;
+  const stored = await idbGet(t.path);
+  const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+  if (stored && revMatch) { url = URL.createObjectURL(stored.blob); shouldRevoke = true; }
+  else { url = await getTmpLink(t.path); }
+  const resp = await fetch(url);
+  const buf = await resp.arrayBuffer();
+  ensureAudioCtx();
+  const decoded = await audioCtx.decodeAudioData(buf);
+  if (shouldRevoke) URL.revokeObjectURL(url);
+  return decoded;
+}
+
+function startABPlayback(slot, offsetSeconds) {
+  // Kolla buffertarna FÖRST — stoppa ingenting om de inte finns (race vid snabbt spårbyte)
+  const bufA = abAudioBufA;
+  const bufB = abAudioBufB;
+  if (!bufA || !bufB) return;
+
+  ensureAudioCtx();
+  // Nolla onended innan stop — annars triggar ended-callbacken och återstartar från 0
+  if (abSourceA) abSourceA.onended = null;
+  if (abSourceB) abSourceB.onended = null;
+  [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+  abSourceA = null; abSourceB = null;
+
+  // Koppla abGainNodeA/B till streamDest (MediaStreamDestination → bridge <audio> → AirPlay)
+  if (!abGainNodeA) { abGainNodeA = audioCtx.createGain(); abGainNodeA.connect(streamDest); }
+  if (!abGainNodeB) { abGainNodeB = audioCtx.createGain(); abGainNodeB.connect(streamDest); }
+
+  abSourceA = audioCtx.createBufferSource();
+  abSourceA.buffer = bufA;
+  abSourceA.connect(abGainNodeA);
+
+  abSourceB = audioCtx.createBufferSource();
+  abSourceB.buffer = bufB;
+  abSourceB.connect(abGainNodeB);
+
+  // Starta källorna först efter att kontexten garanterat är igång.
+  // gain.value sätts här (ej setValueAtTime vid tid=0 — opålitlig på Safari).
+  // isPlaying/setPlayIcon/startABRaf sätts EFTER .start() för att inte
+  // skrivas över av audio-elementets asynkrona pause-event.
+  const launch = () => {
+    // Tysta regular <audio> och starta bridge för AirPlay
+    audio.volume = 0;
+    airplayBridge.play().catch(() => {});
+    console.log('[AB launch] ctx.state=' + audioCtx.state +
+      ' slot=' + slot +
+      ' gainA=' + (slot==='a' ? dbToGain(gainDbA) : 0).toFixed(3) +
+      ' gainB=' + (slot==='b' ? dbToGain(gainDbB) : 0).toFixed(3) +
+      ' bufA.dur=' + bufA.duration.toFixed(2) +
+      ' bufB.dur=' + bufB.duration.toFixed(2) +
+      ' audio.paused=' + audio.paused +
+      ' audio.src=' + (audio.src ? 'set' : 'empty'));
+    abGainNodeA.gain.value = slot === 'a' ? dbToGain(gainDbA) : 0;
+    abGainNodeB.gain.value = slot === 'b' ? dbToGain(gainDbB) : 0;
+
+    const offset = Math.max(0, Math.min(offsetSeconds, bufA.duration, bufB.duration));
+    abStartOffset = offset;
+    abStartContextTime = audioCtx.currentTime;
+    abIsPlaying = true;
+
+    abSourceA.start(0, offset);
+    abSourceB.start(0, offset);
+    console.log('[AB launch] start() called. ctx.currentTime=' + audioCtx.currentTime.toFixed(3));
+
+    isPlaying = true; setPlayIcon(true);
+    startABRaf();
+
+    const activeSrc = slot === 'a' ? abSourceA : abSourceB;
+    activeSrc.onended = () => {
+      if (abIsPlaying) { startABPlayback(abActiveSlot, 0); }
+    };
+  };
+
+  console.log('[AB startABPlayback] ctx.state=' + audioCtx.state + ' slot=' + slot);
+  if (audioCtx.state === 'running') {
+    launch();
+  } else {
+    audioCtx.resume().then(launch).catch(e => console.warn('AB resume failed:', e));
+  }
+}
+
+function getABCurrentTime() {
+  if (!abIsPlaying || !audioCtx) return abPausedOffset;
+  return abStartOffset + (audioCtx.currentTime - abStartContextTime);
+}
+
+function applyABGain(slot, db) {
+  const node = slot === 'a' ? abGainNodeA : abGainNodeB;
+  if (!node) return;
+  node.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.01);
+}
+
+function startABRaf() {
+  if (abRafId) return;
+  function tick() {
+    if (!abIsPlaying) { abRafId = null; return; }
+    const ct = getABCurrentTime();
+    const buf = abActiveSlot === 'a' ? abAudioBufA : abAudioBufB;
+    const dur = buf ? buf.duration : 0;
+    if (dur) {
+      const pct = (ct / dur * 100) + '%';
+      progFill.style.width = pct;
+      timeDisp.textContent = `${fmtTime(ct)} / ${fmtTime(dur)}`;
+      expSeekFill.style.width = pct;
+      expTimeCur.textContent = fmtTime(ct);
+    }
+    if (expOpen) drawABWaveforms();
+    abRafId = requestAnimationFrame(tick);
+  }
+  abRafId = requestAnimationFrame(tick);
+}
+
+function stopABRaf() {
+  if (abRafId) { cancelAnimationFrame(abRafId); abRafId = null; }
+}
+
+// ── Regular buffered playback ──
+function startRegularPlayback(offsetSeconds) {
+  stopRegularRaf();
+  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+  const offset = Math.max(0, dur ? Math.min(offsetSeconds, dur) : offsetSeconds);
+  regularPausedOffset = offset;
+  // Regular mode: native <audio> playback (AirPlay-kompatibel, ingen Web Audio-routing)
+  audio.volume = 1;
+  audio.loop = false;
+  audio.currentTime = offset;
+  audio.play().catch(e => console.warn('[regular] audio.play() failed:', e));
+  regularIsPlaying = true;
+  isPlaying = true; setPlayIcon(true);
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+  syncPositionState();
+  startRegularRaf();
+}
+
+function getRegularCurrentTime() {
+  if (!regularIsPlaying) return regularPausedOffset;
+  return audio.currentTime;
+}
+
+function pauseRegular() {
+  if (!regularIsPlaying) return;
+  regularPausedOffset = audio.currentTime;
+  audio.pause();
+  regularIsPlaying = false;
+  stopRegularRaf();
+  isPlaying = false; setPlayIcon(false);
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.playbackState = 'paused';
+    syncPositionState();
+  }
+}
+
+function seekRegular(time) {
+  const wasPlaying = regularIsPlaying;
+  if (regularIsPlaying) {
+    audio.pause();
+    regularIsPlaying = false;
+    stopRegularRaf();
+  }
+  regularPausedOffset = Math.max(0, time);
+  audio.currentTime = regularPausedOffset;
+  if (wasPlaying) {
+    startRegularPlayback(regularPausedOffset);
+  } else {
+    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+    if (dur) {
+      const pct = (regularPausedOffset / dur * 100) + '%';
+      progFill.style.width = pct;
+      timeDisp.textContent = fmtTime(regularPausedOffset) + ' / ' + fmtTime(dur);
+      expSeekFill.style.width = pct;
+      expTimeCur.textContent = fmtTime(regularPausedOffset);
+    }
+  }
+}
+
+function stopRegular() {
+  audio.pause();
+  regularIsPlaying = false;
+  regularBuf = null;
+  regularPausedOffset = 0;
+  stopRegularRaf();
+}
+
+function startRegularRaf() {
+  if (regularRafId) return;
+  let lastPositionSyncTime = 0;
+  function tick() {
+    if (!regularIsPlaying) { regularRafId = null; return; }
+    const ct = audio.currentTime;
+    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+    if (dur) {
+      const pct = (ct / dur * 100) + '%';
+      progFill.style.width = pct;
+      timeDisp.textContent = fmtTime(ct) + ' / ' + fmtTime(dur);
+      expSeekFill.style.width = pct;
+      expTimeCur.textContent = fmtTime(ct);
+    }
+    if (expOpen) drawWaveform();
+    if (Math.abs(ct - lastSavedPosition) >= 5) {
+      lastSavedPosition = ct;
+      saveState();
+    }
+    const now = performance.now();
+    if (now - lastPositionSyncTime >= 1000) {
+      lastPositionSyncTime = now;
+      syncPositionState();
+    }
+    regularRafId = requestAnimationFrame(tick);
+  }
+  regularRafId = requestAnimationFrame(tick);
+}
+
+function stopRegularRaf() {
+  if (regularRafId) { cancelAnimationFrame(regularRafId); regularRafId = null; }
+}
+
+function syncPositionState() {
+  if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
+  if (abMode) return;
+  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+  if (!dur || !isFinite(dur)) return;
+  const pos = Math.min(Math.max(audio.currentTime, 0), dur);
+  try {
+    navigator.mediaSession.setPositionState({ duration: dur, playbackRate: 1, position: pos });
+  } catch(e) {}
+}
+
+const audio     = document.getElementById('audio-el');
+audio.addEventListener('ended', () => {
+  if (regularIsPlaying) { regularIsPlaying = false; nextTrack(true); }
+});
+const npName    = document.getElementById('np-name');
+const npSub     = document.getElementById('np-sub');
+const progFill  = document.getElementById('progress-fill');
+const timeDisp  = document.getElementById('time-display');
+const playBtn   = document.getElementById('play-btn');
+const repeatBtn = document.getElementById('repeat-btn');
+const shuffleBtn= document.getElementById('shuffle-btn');
+
+function setPlayIcon(p) {
+  document.getElementById('icon-play').style.display  = p?'none':'block';
+  document.getElementById('icon-pause').style.display = p?'block':'none';
+  setExpandedPlayIcon(p);
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      config,
+      currentIdx, repeatMode, shuffle, activePkg,
+      lastPosition: regularBuf ? (regularIsPlaying ? getRegularCurrentTime() : (regularPausedOffset > 0 ? regularPausedOffset : undefined)) : undefined
+    }));
+    idbStatePut('tracks', tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null}))).catch(()=>{});
+    idbStatePut('coverPathMap', coverPathMap).catch(()=>{});
+  } catch(e){}
+}
+async function loadState() {
+  try {
+    const d = JSON.parse(localStorage.getItem(LS_KEY)||'null');
+    if (d) {
+      config=Object.assign(config,d.config);
+      currentIdx=d.currentIdx??-1;
+      repeatMode=d.repeatMode||'none';
+      shuffle=d.shuffle||false;
+      activePkg=d.activePkg??null;
+      restoredPosition=d.lastPosition||0;
+    }
+    const t = await idbStateGet('tracks');
+    if (t) tracks = t;
+    const c = await idbStateGet('coverPathMap');
+    if (c) coverPathMap = c;
+    // Rensning av gamla waveforms från localStorage
+    localStorage.removeItem('mm_player_waveforms');
+    // Tillfälligt städa bort gamla keys om de är sparade fel i LS_KEY (då LS minskas kraftigt)
+    if (d && (d.tracks || d.coverPathMap)) {
+      delete d.tracks;
+      delete d.coverPathMap;
+      localStorage.setItem(LS_KEY, JSON.stringify(d));
+    }
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════════════
+//  DROPBOX OAUTH (PKCE)
+// ═══════════════════════════════════════════════
+const DBX_APP_KEY    = 's7z6n7hg25ipk7n'; // ← byt ut mot din App Key
+const DBX_REDIRECT   = 'https://martinmellstrom.github.io/oauth.html';
+const DBX_TOKEN_URL  = 'https://api.dropbox.com/oauth2/token';
+const DBX_AUTH_URL   = 'https://www.dropbox.com/oauth2/authorize';
+const LS_OAUTH_KEY   = 'mm_dbx_oauth';
+const LS_PKCE_KEY    = 'mm_dbx_pkce_verifier';
+
+let oauthData = null; // { access_token, refresh_token, expires_at }
+
+function loadOAuth() {
+  try { oauthData = JSON.parse(localStorage.getItem(LS_OAUTH_KEY)||'null'); } catch(e){}
+}
+function saveOAuth(data) {
+  oauthData = data;
+  localStorage.setItem(LS_OAUTH_KEY, JSON.stringify(data));
+  config.token = data?.access_token || '';
+}
+function clearOAuth() {
+  oauthData = null;
+  localStorage.removeItem(LS_OAUTH_KEY);
+  localStorage.removeItem(LS_PKCE_KEY);
+  config.token = '';
+  saveState();
+}
+
+function isOAuthConnected() { return !!(oauthData?.refresh_token); }
+
+async function ensureAccessToken() {
+  if (!oauthData?.refresh_token) throw new Error('Inte ansluten till Dropbox');
+  const margin = 5 * 60 * 1000;
+  if (oauthData.access_token && oauthData.expires_at && Date.now() < oauthData.expires_at - margin) {
+    return oauthData.access_token;
+  }
+  // Förnya med refresh token (PKCE refresh behöver inte code_verifier)
+  const res = await fetch(DBX_TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type:    'refresh_token',
+      refresh_token: oauthData.refresh_token,
+      client_id:     DBX_APP_KEY,
+    })
+  });
+  if (!res.ok) {
+    clearOAuth(); updateOAuthUI();
+    throw new Error('Token-förnyelse misslyckades — anslut Dropbox igen');
+  }
+  const d = await res.json();
+  saveOAuth({
+    ...oauthData,
+    access_token: d.access_token,
+    expires_at:   Date.now() + (d.expires_in || 14400) * 1000,
+  });
+  return d.access_token;
+}
+
+// PKCE-hjälpfunktioner
+async function generatePKCE() {
+  const verifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(48))))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'').slice(0,128);
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const challenge = btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  return { verifier, challenge };
+}
+
+async function startOAuthFlow() {
+  // Öppna popup INNAN await — annars blockerar Safari/mobil det som ej user-initiated
+  const popup = window.open('about:blank', '_blank', 'width=520,height=640');
+
+  const { verifier, challenge } = await generatePKCE();
+  localStorage.setItem(LS_PKCE_KEY, verifier);
+
+  const params = new URLSearchParams({
+    client_id:             DBX_APP_KEY,
+    redirect_uri:          DBX_REDIRECT,
+    response_type:         'code',
+    token_access_type:     'offline',
+    code_challenge:        challenge,
+    code_challenge_method: 'S256',
+  });
+
+  if (popup && !popup.closed) {
+    popup.location.href = `${DBX_AUTH_URL}?${params}`;
+  } else {
+    // Popup blockerades — fallback: navigera i samma flik
+    localStorage.setItem('mm_dbx_oauth_redirect_back', window.location.href);
+    window.location.href = `${DBX_AUTH_URL}?${params}`;
+  }
+
+  const ch = new BroadcastChannel('mm_dbx_oauth');
+  ch.onmessage = async (e) => {
+    if (e.data?.type !== 'auth_code' || !e.data.code) return;
+    // Bekräfta till oauth.html att vi tog emot koden (stoppar same-tab fallback)
+    e.target.postMessage({ type: 'ack' });
+    ch.close();
+    await handleAuthCode(e.data.code);
+  };
+}
+
+async function handleAuthCode(code) {
+  const verifier = localStorage.getItem(LS_PKCE_KEY);
+  if (!verifier) { setStatus('error', 'PKCE-verifier saknas — försök igen'); return; }
+  localStorage.removeItem(LS_PKCE_KEY);
+  setStatus('loading', 'Ansluter till Dropbox…');
+  try {
+    const res = await fetch(DBX_TOKEN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        grant_type:    'authorization_code',
+        client_id:     DBX_APP_KEY,
+        redirect_uri:  DBX_REDIRECT,
+        code_verifier: verifier,
+      })
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e?.error_description || e?.error || 'Kunde inte hämta token');
+    }
+    const d = await res.json();
+    saveOAuth({
+      access_token:  d.access_token,
+      refresh_token: d.refresh_token,
+      expires_at:    Date.now() + (d.expires_in || 14400) * 1000,
+    });
+    saveState();
+    updateOAuthUI();
+    closeSettings();
+    setStatus('loading', 'Ansluten — hämtar låtar…');
+    fetchTracks();
+  } catch(err) {
+    setStatus('error', `OAuth-fel: ${err.message}`);
+  }
+}
+
+function updateOAuthUI() {
+  const connected = isOAuthConnected();
+  const statusEl  = document.getElementById('oauth-status-text');
+  const connectBtn   = document.getElementById('oauth-connect-btn');
+  const disconnectBtn= document.getElementById('oauth-disconnect-btn');
+  if (!statusEl) return;
+  if (connected) {
+    statusEl.textContent = '✓ Ansluten till Dropbox';
+    statusEl.style.color = 'var(--green)';
+    connectBtn.style.display    = 'none';
+    disconnectBtn.style.display = '';
+  } else {
+    statusEl.textContent = 'Inte ansluten';
+    statusEl.style.color = 'var(--text-dim)';
+    connectBtn.style.display    = '';
+    disconnectBtn.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  DROPBOX API
+// ═══════════════════════════════════════════════
+async function dbxCall(ep, body) {
+  const token = await ensureAccessToken();
+  const res = await fetch(`https://api.dropboxapi.com/2/${ep}`,{
+    method:'POST',
+    headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+  if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e?.error_summary||`HTTP ${res.status}`); }
+  return res.json();
+}
+async function getTmpLink(path) {
+  const c=linkCache[path];
+  if (c&&c.exp>Date.now()) return c.url;
+  const d=await dbxCall('files/get_temporary_link',{path});
+  linkCache[path]={url:d.link,exp:Date.now()+3.5*60*60*1000};
+  return d.link;
+}
+async function listAllFiles(folder) {
+  const exts  = config.exts.split(',').map(e=>'.'+e.trim().toLowerCase());
+  const imgExt= ['.jpg','.jpeg','.png','.webp'];
+  let audio=[], covers=[];
+  const proc = entries => {
+    for (const e of entries) {
+      if (e['.tag']!=='file') continue;
+      const l=e.name.toLowerCase();
+      if (exts.some(x=>l.endsWith(x))) audio.push(e);
+      if (imgExt.some(x=>l.endsWith(x))&&/^(cover|folder|artwork)\./i.test(e.name)) covers.push(e);
+    }
+  };
+  const path = (!folder||folder==='/')?'':folder;
+  let r = await dbxCall('files/list_folder',{path,recursive:true,limit:2000});
+  proc(r.entries);
+  while(r.has_more){r=await dbxCall('files/list_folder/continue',{cursor:r.cursor});proc(r.entries);}
+  return {audio,covers};
+}
+
+// ═══════════════════════════════════════════════
+//  FETCH
+// ═══════════════════════════════════════════════
+async function fetchTracks() {
+  if (!isOAuthConnected()){setStatus('error','Anslut Dropbox via ⚙ för att komma igång');return;}
+  setStatus('loading','Hämtar från Dropbox…');
+  try {
+    const {audio:aFiles,covers} = await listAllFiles(config.folder);
+    const folderLower = (config.folder||'').toLowerCase();
+
+    // Build cover map — pkg → { path, rev }
+    coverPathMap={};
+    for (const c of covers) {
+      const rel   = c.path_lower.replace(folderLower,'');
+      const parts = rel.split('/').filter(Boolean);
+      if (parts.length>=2) coverPathMap[parts[0]] = { path: c.path_lower, rev: c.rev||null };
+    }
+
+    tracks = aFiles.map(f => {
+      const rel   = f.path_lower.replace(folderLower,'');
+      const parts = rel.split('/').filter(Boolean);
+      const pkg   = parts.length>1?parts[0]:null;
+      return { id:f.id||f.path_lower, name:f.name.replace(/\.[^.]+$/,''), path:f.path_lower, package:pkg, ext:f.name.split('.').pop().toUpperCase(), duration:null, rev:f.rev||null };
+    });
+
+    tracks.sort((a,b)=>{
+      if (a.package&&!b.package) return -1;
+      if (!a.package&&b.package) return 1;
+      if (a.package!==b.package) return (a.package||'').localeCompare(b.package||'');
+      return a.name.localeCompare(b.name);
+    });
+
+    if (currentIdx>=tracks.length) currentIdx=-1;
+    await refreshSynced();
+    // Vid ↻ tvingar vi nedladdning av alla omslag (rev kan ha ändrats)
+    coverUrlMap = {};
+    _allSongsCoverNeedsRefresh = true;
+    fetchAllSongsCover();
+    saveState();
+    renderLibrary();
+    setStatus('ok',`${tracks.length} låtar hämtade`);
+  } catch(e){setStatus('error',`Fel: ${e.message}`);}
+}
+
+async function refreshSynced() {
+  const all = await idbGetAll();
+  // syncedPaths: path → stored rev (or true if no rev stored)
+  syncedPaths = new Map(all.map(r => [r.path, r.rev||null]));
+}
+
+function isSynced(track) {
+  if (!syncedPaths.has(track.path)) return false;
+  const storedRev = syncedPaths.get(track.path);
+  // If we have rev info on both sides, compare them
+  if (storedRev && track.rev) return storedRev === track.rev;
+  // Fallback: file exists in IDB, assume ok
+  return true;
+}
+
+// ═══════════════════════════════════════════════
+//  COVERS
+// ═══════════════════════════════════════════════
+async function getCoverUrl(pkg) {
+  const entry = coverPathMap[pkg];
+  if (!entry) return null;
+  const { path, rev } = entry;
+
+  // Returnera redan skapad object URL direkt
+  if (coverUrlMap[path]) return coverUrlMap[path];
+
+  // Kolla IDB-cache — använd om rev matchar (eller ingen rev-info finns)
+  const cached = await idbCoverGet(path);
+  if (cached?.blob) {
+    const revOk = !rev || !cached.rev || cached.rev === rev;
+    if (revOk) {
+      const url = URL.createObjectURL(cached.blob);
+      coverUrlMap[path] = url;
+      return url;
+    }
+  }
+
+  // Ladda ner färsk, spara i IDB
+  try {
+    const link = await getTmpLink(path);
+    const blob = await (await fetch(link)).blob();
+    await idbCoverPut(path, blob, rev);
+    const url = URL.createObjectURL(blob);
+    coverUrlMap[path] = url;
+    return url;
+  } catch(e) { return null; }
+}
+
+let _allSongsCoverNeedsRefresh = false;
+
+async function fetchAllSongsCover() {
+  // Kolla IDB-cache vid uppstart (ingen rev för denna hårdkodade fil)
+  if (!_allSongsCoverNeedsRefresh) {
+    const cached = await idbCoverGet(ALL_SONGS_COVER_PATH);
+    if (cached?.blob) {
+      allSongsCoverUrl = URL.createObjectURL(cached.blob);
+      _applyAllSongsCoverToDOM();
+      return;
+    }
+  }
+  _allSongsCoverNeedsRefresh = false;
+  // Ladda ner färsk
+  try {
+    const link = await getTmpLink(ALL_SONGS_COVER_PATH);
+    const blob = await (await fetch(link)).blob();
+    await idbCoverPut(ALL_SONGS_COVER_PATH, blob, null);
+    allSongsCoverUrl = URL.createObjectURL(blob);
+    _applyAllSongsCoverToDOM();
+  } catch(e) { /* filen saknas eller fel — visa placeholder */ }
+}
+
+function _applyAllSongsCoverToDOM() {
+  const el = document.getElementById('card-cover-all');
+  if (el) {
+    const badge = el.querySelector('.pkg-sync-badge');
+    el.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+    if (badge) el.appendChild(badge);
+  }
+  if (activePkg === 'all') {
+    const coverEl = document.getElementById('playlist-cover');
+    if (coverEl) coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  DURATION PRELOAD
+// ═══════════════════════════════════════════════
+async function preloadDurations(pkgTracks) {
+  const toLoad = pkgTracks.filter(t => !t.duration);
+  if (!toLoad.length) return;
+
+  // Fyll i från cache först (inga nätverksanrop)
+  for (const t of toLoad) {
+    if (t.rev && durationCache[t.rev]) {
+      t.duration = durationCache[t.rev];
+      _updateDurationEl(tracks.indexOf(t), t.duration);
+    }
+  }
+
+  const stillMissing = toLoad.filter(t => !t.duration);
+  if (!stillMissing.length) return;
+
+  for (const t of stillMissing) {
+    (async () => {
+      try {
+        let url;
+        const stored = await idbGet(t.path);
+        const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+        if (stored && revMatch) {
+          url = URL.createObjectURL(stored.blob);
+        } else {
+          url = await getTmpLink(t.path);
+        }
+        const tmp = document.createElement('audio');
+        tmp.preload = 'metadata';
+        tmp.src = url;
+        tmp.addEventListener('loadedmetadata', () => {
+          const dur = tmp.duration;
+          if (dur && !isNaN(dur) && isFinite(dur)) {
+            t.duration = dur;
+            saveDurationToCache(t.rev, dur);
+            _updateDurationEl(tracks.indexOf(t), dur);
+          }
+          tmp.src = '';
+          if (stored && revMatch) URL.revokeObjectURL(url);
+        }, { once: true });
+        tmp.addEventListener('error', () => { tmp.src=''; }, { once: true });
+      } catch(e) { /* tyst fel */ }
+    })();
+  }
+}
+
+function _updateDurationEl(globalIdx, dur) {
+  const el = document.querySelector(`.track-item[data-idx="${globalIdx}"] .track-duration`);
+  if (el) el.textContent = fmtTime(dur);
+  saveState();
+}
+
+function showLibrary() {
+  activePkg = null;
+  document.getElementById('library-view').classList.remove('hidden');
+  document.getElementById('playlist-view').classList.remove('visible');
+  document.getElementById('back-btn').classList.remove('visible');
+  renderLibrary();
+  saveState();
+}
+
+async function showPlaylist(pkg) {
+  activePkg = pkg;
+  document.getElementById('library-view').classList.add('hidden');
+  document.getElementById('playlist-view').classList.add('visible');
+  document.getElementById('back-btn').classList.add('visible');
+
+  const pkgTracks = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
+  const name = pkg==='all'?'Alla låtar':formatPkgName(pkg);
+  document.getElementById('playlist-name').textContent = name;
+  document.getElementById('playlist-count').textContent = `${pkgTracks.length} låtar`;
+
+  const coverEl = document.getElementById('playlist-cover');
+  if (pkg==='all' && allSongsCoverUrl) {
+    coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+  } else if (pkg!=='all'&&coverPathMap[pkg]) {
+    const url = await getCoverUrl(pkg);
+    coverEl.innerHTML = url ? `<img src="${url}" alt="${name}">` : `<span class="cover-placeholder">♩</span>`;
+  } else {
+    coverEl.innerHTML = `<span class="cover-placeholder">♬</span>`;
+  }
+
+  renderTrackList(pkgTracks);
+  preloadDurations(pkgTracks);
+  saveState();
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER LIBRARY
+// ═══════════════════════════════════════════════
+async function renderLibrary() {
+  const grid = document.getElementById('pkg-grid');
+  if (!grid) return;
+  const pkgs = [...new Set(tracks.map(t=>t.package).filter(Boolean))].sort();
+
+  if (tracks.length===0) {
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-dim);font-size:12px;">Inga låtar — tryck ↻ för att hämta</div>`;
+    return;
+  }
+
+  const syncBadge = (n,total) => {
+    if (total===0) return '';
+    if (n===total) return `<div class="pkg-sync-badge synced"><svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>`;
+    if (n>0)       return `<div class="pkg-sync-badge partial"><svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>${n}/${total}</div>`;
+    return '';
+  };
+
+  const allSynced = tracks.filter(t=>isSynced(t)).length;
+  const allCoverHtml = allSongsCoverUrl
+    ? `<img src="${allSongsCoverUrl}" alt="Alla låtar">`
+    : `<span class="cover-placeholder">♬</span>`;
+  let html = `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
+    <div class="pkg-card-cover" id="card-cover-all">${allCoverHtml}${syncBadge(allSynced,tracks.length)}</div>
+    <div class="pkg-card-info">
+      <div class="pkg-card-name">Alla låtar</div>
+      <div class="pkg-card-meta">${tracks.length} låtar · ${pkgs.length} paket</div>
+    </div>
+  </div>`;
+
+  for (const p of pkgs) {
+    const pt = tracks.filter(t=>t.package===p);
+    const ns = pt.filter(t=>isSynced(t)).length;
+    html += `<div class="pkg-card" data-pkg="${p}" onclick="showPlaylist('${p}')">
+      <div class="pkg-card-cover" id="card-cover-${p}"><span class="cover-placeholder">♩</span>${syncBadge(ns,pt.length)}</div>
+      <div class="pkg-card-info">
+        <div class="pkg-card-name">${formatPkgName(p)}</div>
+        <div class="pkg-card-meta">${pt.length} låtar</div>
+      </div>
+    </div>`;
+  }
+  grid.innerHTML = html;
+
+  if (!allSongsCoverUrl) fetchAllSongsCover();
+  for (const p of pkgs) {
+    if (!coverPathMap[p]) continue;
+    getCoverUrl(p).then(url => {
+      if (!url) return;
+      const el = document.getElementById(`card-cover-${p}`);
+      if (!el) return;
+      const badge = el.querySelector('.pkg-sync-badge');
+      el.innerHTML = `<img src="${url}" alt="">`;
+      if (badge) el.appendChild(badge);
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  RENDER TRACK LIST (playlist view)
+// ═══════════════════════════════════════════════
+function renderTrackList(pkgTracks) {
+  const list = document.getElementById('track-list');
+  if (!list) return;
+
+  if (pkgTracks.length===0) {
+    list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar</div>`;
+    return;
+  }
+
+  const checkSvg = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+  const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
+
+  list.classList.toggle('ab-mode-active', abMode);
+  let html = '<div class="pkg-section">';
+  pkgTracks.forEach((t,i) => {
+    const gi      = tracks.indexOf(t);
+    const isActive= gi===currentIdx;
+    const isPlay  = isActive&&isPlaying;
+    const synced  = isSynced(t);
+    const abBtns  = `<div class="track-ab-btns">
+      <button class="track-ab-btn${abA===gi?' ab-sel':''}" onclick="setABSlot('a',${gi},event)">A</button>
+      <button class="track-ab-btn${abB===gi?' ab-sel':''}" onclick="setABSlot('b',${gi},event)">B</button>
+    </div>`;
+    html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrack(${gi})">
+      <div class="track-num">${i+1}</div>
+      <div class="track-bars"><span></span><span></span><span></span></div>
+      <div class="track-info">
+        <div class="track-name">${escHtml(t.name)}</div>
+        <div class="track-meta">${t.ext}</div>
+      </div>
+      ${abBtns}
+      <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
+      <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
+    </div>`;
+  });
+  html += '</div>';
+  list.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
+//  GLOBAL SEARCH RESULTS
+// ═══════════════════════════════════════════════
+function renderSearchResults(q) {
+  const resultsView = document.getElementById('search-results-view');
+  const resultsList = document.getElementById('search-results-list');
+
+  if (!q) {
+    resultsView.classList.remove('visible');
+    // Återställ rätt vy
+    if (activePkg === null) {
+      document.getElementById('library-view').classList.remove('hidden');
+    } else {
+      document.getElementById('playlist-view').classList.add('visible');
+    }
+    return;
+  }
+
+  // Dölj bibliotek och spellista — visa sökresultat
+  document.getElementById('library-view').classList.add('hidden');
+  document.getElementById('playlist-view').classList.remove('visible');
+  resultsView.classList.add('visible');
+
+  const matched = tracks.filter(t => t.name.toLowerCase().includes(q));
+
+  if (matched.length === 0) {
+    resultsList.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar matchar "${escHtml(q)}"</div>`;
+    return;
+  }
+
+  const checkSvg = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+  const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
+
+  function highlight(name) {
+    const ix = name.toLowerCase().indexOf(q);
+    if (ix < 0) return escHtml(name);
+    return escHtml(name.slice(0, ix))
+      + '<mark style="background:var(--gold-glow);color:var(--gold);border-radius:2px;">' + escHtml(name.slice(ix, ix + q.length)) + '</mark>'
+      + escHtml(name.slice(ix + q.length));
+  }
+
+  let html = `<div style="padding:14px 2px 10px 10px;font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:8px;">${matched.length} träff${matched.length !== 1 ? 'ar' : ''}<span style="flex:1;height:1px;background:var(--border);display:block;"></span></div>`;
+  html += '<div class="pkg-section">';
+  matched.forEach((t, i) => {
+    const gi = tracks.indexOf(t);
+    const isActive = gi === currentIdx;
+    const isPlay = isActive && isPlaying;
+    const synced = isSynced(t);
+    const pkgLabel = t.package ? formatPkgName(t.package) : 'Alla låtar';
+    html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrackFromSearch(${gi})">
+      <div class="track-num">${i+1}</div>
+      <div class="track-bars"><span></span><span></span><span></span></div>
+      <div class="track-info">
+        <div class="track-name">${highlight(t.name)}</div>
+        <div class="track-meta">${pkgLabel} · ${t.ext}</div>
+      </div>
+      <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
+      <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
+    </div>`;
+  });
+  html += '</div>';
+  resultsList.innerHTML = html;
+}
+
+// Spela en låt från sökresultaten — utan att ändra activePkg
+function playTrackFromSearch(idx) {
+  playTrack(idx);
+  // Uppdatera bara sökresultat-vyn med nytt aktivt state
+  if (searchQuery) renderSearchResults(searchQuery);
+}
+
+function refreshView() {
+  if (searchQuery) { renderSearchResults(searchQuery); return; }
+  if (activePkg===null) { renderLibrary(); }
+  else { renderTrackList(activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg)); }
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function formatPkgName(s){if(!s)return'';return s.split(/[-_ ]/).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');}
+
+// ═══════════════════════════════════════════════
+//  OFFLINE SYNC
+// ═══════════════════════════════════════════════
+function setTrackSyncState(globalIdx, state) {
+  const el = document.querySelector(`.track-item[data-idx="${globalIdx}"] .track-sync`);
+  if (!el) return;
+  const checkSvg = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+  const cloudSvg = `<svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>`;
+  el.className = `track-sync ${state}`;
+  el.innerHTML = state === 'synced' ? checkSvg : cloudSvg;
+}
+
+async function syncPackage(pkg) {
+  const pt     = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
+  const toSync = pt.filter(t=>!isSynced(t));
+  if (!toSync.length){setStatus('ok','Redan synkat och uppdaterat');return;}
+  const hasStale = toSync.some(t=>syncedPaths.has(t.path));
+  setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} 0/${toSync.length}…`);
+  let done=0;
+  for (const t of toSync) {
+    const gi = tracks.indexOf(t);
+    setTrackSyncState(gi, 'syncing');
+    try {
+      const link = await getTmpLink(t.path);
+      const blob = await (await fetch(link)).blob();
+      await idbPut(t.path, blob, t.rev);
+      syncedPaths.set(t.path, t.rev||null);
+      setTrackSyncState(gi, 'synced');
+      setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} ${++done}/${toSync.length}…`);
+    } catch(e){
+      setTrackSyncState(gi, 'unsynced');
+      console.warn('sync fail',t.path,e);
+    }
+  }
+  setStatus('ok',`${done} låtar ${hasStale?'uppdaterade':'sparade'}`);
+  renderLibrary();
+}
+
+async function deletePackageLocal(pkg) {
+  const pt = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
+  for (const t of pt){await idbDelete(t.path);syncedPaths.delete(t.path);}
+  setStatus('ok','Lokala filer borttagna');
+  refreshView(); renderLibrary();
+}
+
+// ═══════════════════════════════════════════════
+//  MEDIA SESSION API
+//  Registrerar spelaren med OS/Safari så att
+//  webbläsarens egna mediakontroller ersätts av
+//  spelarens egna handlers. Förhindrar att Safari
+//  visar en extra mini-player i UI:t.
+// ═══════════════════════════════════════════════
+function updateMediaSession(t) {
+  if (!('mediaSession' in navigator)) return;
+  const artwork = [];
+  if (t.package && coverUrlMap[coverPathMap[t.package]?.path]) {
+    artwork.push({ src: coverUrlMap[coverPathMap[t.package].path], sizes: '512x512', type: 'image/jpeg' });
+  } else if (!t.package && allSongsCoverUrl) {
+    artwork.push({ src: allSongsCoverUrl, sizes: '512x512', type: 'image/jpeg' });
+  }
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title:  t.name,
+    artist: 'Martin Mellström',
+    album:  t.package ? formatPkgName(t.package) : 'Alla låtar',
+    artwork,
+  });
+  navigator.mediaSession.setActionHandler('play',          () => {
+    if (!abMode) startRegularPlayback(regularPausedOffset);
+  });
+  navigator.mediaSession.setActionHandler('pause',         () => {
+    if (!abMode) pauseRegular();
+  });
+  navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
+  navigator.mediaSession.setActionHandler('nexttrack',     () => nextTrack(false));
+  navigator.mediaSession.setActionHandler('seekto', details => {
+    if (details.seekTime !== undefined) seekRegular(details.seekTime);
+  });
+  try {
+    navigator.mediaSession.setActionHandler('seekforward', details => {
+      seekRegular(audio.currentTime + (details.seekOffset || 10));
+    });
+    navigator.mediaSession.setActionHandler('seekbackward', details => {
+      seekRegular(Math.max(0, audio.currentTime - (details.seekOffset || 10)));
+    });
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════
+//  PLAYBACK
+// ═══════════════════════════════════════════════
+async function playTrack(idx) {
+  if (idx<0||idx>=tracks.length) return;
+  // iOS Safari: AudioContext.resume() måste anropas synkront i gesture-handleren
+  // — INNAN några await-steg. Om resume() anropas senare (t.ex. i ensureAudioGraph()
+  // efter idbGet/fetch) hinner iOS stänga gesture-fönstret och nekar unlock.
+  // Resultat utan detta: AudioContext körs men Web Audio-noder (A/B) ger inget ljud
+  // tills playTrack anropats minst två gånger.
+  ensureAudioCtx();
+  lastSavedPosition = getRegularCurrentTime() || 0;
+  saveState();
+  currentIdx=idx;
+  if (abMode) {
+    // Klick på valfri låt i spellistan inaktiverar alltid A/B-läget —
+    // oavsett om låten är A, B eller annan. Förhindrar att audio-elementet
+    // startar parallellt med pågående A/B WebAudio-källor.
+    toggleABMode();
+  }
+  const t=tracks[idx];
+  npName.textContent=t.name;
+  npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
+  const pool = activePkg==='all'||activePkg===null?tracks:tracks.filter(x=>x.package===activePkg);
+  if (!searchQuery) renderTrackList(pool);
+  try {
+    if (activeObjUrl){URL.revokeObjectURL(activeObjUrl);activeObjUrl=null;}
+    const stored = await idbGet(t.path);
+    let blob;
+    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+    if (stored && revMatch) {
+      blob = stored.blob;
+    } else {
+      if (stored && !revMatch) setStatus('loading',`Uppdaterar: ${t.name}…`);
+      else setStatus('loading',`Laddar: ${t.name}…`);
+      const link=await getTmpLink(t.path);
+      blob=await (await fetch(link)).blob();
+      await idbPut(t.path, blob, t.rev);
+      syncedPaths.set(t.path, t.rev||null);
+      setStatus('ok','');
+    }
+    stopRegular();
+    ensureAudioCtx();
+    if (activeObjUrl) { URL.revokeObjectURL(activeObjUrl); }
+    activeObjUrl = URL.createObjectURL(blob);
+    audio.loop = false;
+    audio.src = activeObjUrl;
+    setStatus('loading', 'Avkodar…');
+    const _arrBuf = await blob.arrayBuffer();
+    regularBuf = await audioCtx.decodeAudioData(_arrBuf);
+    if (!t.duration) { t.duration = regularBuf.duration; saveDurationToCache(t.rev, regularBuf.duration); }
+    setStatus('ok', '');
+    currentGainDb = getGainFromCache(t.rev);
+    syncGainSlider(currentGainDb);
+    updateMediaSession(t);
+    if (!searchQuery) renderTrackList(pool);
+    saveState();
+    if (expOpen) syncExpandedMeta();
+    waveformData = null; waveformPath = null;
+    const _startOff = restoredPosition > 0 ? restoredPosition : 0;
+    restoredPosition = 0;
+    startRegularPlayback(_startOff);
+    buildWaveform(regularBuf, t);
+  } catch(e){setStatus('error',`Kan inte spela: ${e.message}`);}
+}
+
+function getPool(){return !activePkg||activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg);}
+
+function togglePlay(){
+  if (abMode && abAudioBufA && abAudioBufB) {
+    if (abIsPlaying) {
+      abPausedOffset = getABCurrentTime();
+      [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+      abSourceA = null; abSourceB = null;
+      abIsPlaying = false;
+      isPlaying = false; setPlayIcon(false);
+      stopABRaf();
+    } else {
+      startABPlayback(abActiveSlot, abPausedOffset);
+      isPlaying = true; setPlayIcon(true);
+      startABRaf();
+    }
+    return;
+  }
+  if (currentIdx<0&&tracks.length){playTrack(0);return;}
+  if (regularIsPlaying) { pauseRegular(); }
+  else if (regularBuf) { startRegularPlayback(regularPausedOffset); }
+  else if (currentIdx >= 0) { playTrack(currentIdx); }
+}
+
+function prevTrack(){
+  if (getRegularCurrentTime()>3){seekRegular(0);return;}
+  const pool=getPool(),ci=pool.indexOf(tracks[currentIdx]);
+  playTrack(tracks.indexOf(pool[(ci-1+pool.length)%pool.length]));
+}
+
+function nextTrack(fromEnded=false){
+  if (repeatMode==='one'&&fromEnded){playTrack(currentIdx);return;}
+  const pool=getPool();
+  if (shuffle&&fromEnded){
+    if (!shuffleQueue.length) shuffleQueue=pool.map((_,i)=>i).sort(()=>Math.random()-0.5);
+    playTrack(tracks.indexOf(pool[shuffleQueue.shift()]));return;
+  }
+  const ci=pool.indexOf(tracks[currentIdx]),ni=(ci+1)%pool.length;
+  if (ni===0&&fromEnded&&repeatMode==='none'){isPlaying=false;setPlayIcon(false);return;}
+  playTrack(tracks.indexOf(pool[ni]));
+}
+
+function cycleRepeat(){repeatMode=repeatMode==='none'?'all':repeatMode==='all'?'one':'none';updateRepeatUI();document.getElementById('repeat-btn-exp').classList.toggle('active',repeatMode!=='none');saveState();}
+function updateRepeatUI(){
+  repeatBtn.classList.toggle('active',repeatMode!=='none');
+  document.getElementById('repeat-btn-exp').classList.toggle('active',repeatMode!=='none');
+  const ex=repeatBtn.querySelector('.repeat-one-badge');
+  const exExp=document.getElementById('repeat-btn-exp').querySelector('.repeat-one-badge');
+  if (repeatMode==='one'){
+    if(!ex){const b=document.createElement('span');b.className='repeat-one-badge';b.textContent='1';repeatBtn.appendChild(b);}
+    if(!exExp){const b=document.createElement('span');b.className='repeat-one-badge';b.textContent='1';document.getElementById('repeat-btn-exp').appendChild(b);}
+  } else {
+    if(ex) ex.remove();
+    if(exExp) exExp.remove();
+  }
+}
+function toggleShuffle(){shuffle=!shuffle;shuffleQueue=[];shuffleBtn.classList.toggle('active',shuffle);document.getElementById('shuffle-btn-exp').classList.toggle('active',shuffle);saveState();}
+
+// ═══════════════════════════════════════════════
+//  AUDIO EVENTS
+// ═══════════════════════════════════════════════
+// Audio element events ersatta av RAF-loop i startRegularRaf() + startABRaf().
+document.getElementById('progress-wrap').addEventListener('click',e=>{
+  if(!regularBuf)return;
+  const r=e.currentTarget.getBoundingClientRect();
+  seekRegular(((e.clientX-r.left)/r.width)*regularBuf.duration);
+});
+
+// ═══════════════════════════════════════════════
+//  EXPANDED PLAYER
+// ═══════════════════════════════════════════════
+const expPanel    = document.getElementById('expanded-player');
+const expName     = document.getElementById('exp-name');
+const expSub      = document.getElementById('exp-sub');
+const expCover    = document.getElementById('exp-cover');
+const expSeekFill = document.getElementById('exp-seek-fill');
+const expTimeCur  = document.getElementById('exp-time-cur');
+const expTimeTot  = document.getElementById('exp-time-tot');
+let expOpen = false;
+
+function openExpandedPlayer() {
+  expPanel.classList.add('open');
+  expOpen = true;
+  if (abMode && abA !== null && abB !== null) {
+    showABExpandedLayout();
+    updateABExpandedUI();
+  } else {
+    hideABExpandedLayout();
+    syncExpandedMeta();
+    drawWaveform();
+    adjustExpandedSpacing();
+  }
+}
+function closeExpandedPlayer() {
+  expPanel.classList.remove('open');
+  expOpen = false;
+  if (abMode && abIsPlaying) {
+    // A/B kan bara spelas i expanded player — pausa när den stängs
+    abPausedOffset = getABCurrentTime();
+    [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+    abSourceA = null; abSourceB = null;
+    abIsPlaying = false;
+    isPlaying = false; setPlayIcon(false);
+    stopABRaf();
+  }
+}
+function adjustExpandedSpacing() {
+  const cover   = document.getElementById('exp-cover');
+  const meta    = document.getElementById('exp-meta');
+  const wave    = document.getElementById('exp-waveform-wrap');
+  const timeRow = document.getElementById('exp-time-row');
+  if (!cover || !meta) return;
+  meta.style.marginTop = '';
+  wave.style.marginTop = '';
+  requestAnimationFrame(() => {
+    const gap = meta.getBoundingClientRect().top - cover.getBoundingClientRect().bottom;
+    if (gap <= 0) return;
+    const pull = gap / 2;
+    meta.style.marginTop = `-${pull}px`;
+    requestAnimationFrame(() => {
+      const waveGap = wave.getBoundingClientRect().top  - meta.getBoundingClientRect().bottom;
+      if (pull > waveGap) wave.style.marginTop = `${pull - waveGap}px`;
+    });
+  });
+}
+let _adjResizeTimer = null;
+window.addEventListener('resize', () => {
+  if (!expOpen || abMode) return;
+  clearTimeout(_adjResizeTimer);
+  _adjResizeTimer = setTimeout(adjustExpandedSpacing, 100);
+});
+
+
+function syncExpandedMeta() {
+  if (!expOpen) return;
+  if (abMode && abA !== null && abB !== null) { updateABExpandedUI(); return; }
+  const t = tracks[currentIdx];
+  expName.textContent = t ? t.name : 'Ingen låt vald';
+  expSub.textContent  = t ? (t.package ? formatPkgName(t.package) : 'Alla låtar') : '—';
+  expTimeTot.textContent = t?.duration ? fmtTime(t.duration) : '—';
+  expCover.innerHTML = '<span class="cover-placeholder">♬</span>';
+  if (t) {
+    if (t.package === null || t.package === undefined) {
+      if (allSongsCoverUrl) expCover.innerHTML = `<img src="${allSongsCoverUrl}" alt="">`;
+    } else if (coverPathMap[t.package]) {
+      getCoverUrl(t.package).then(url => {
+        if (url) expCover.innerHTML = `<img src="${url}" alt="">`;
+      });
+    }
+  }
+  setExpandedPlayIcon(isPlaying);
+  document.getElementById('repeat-btn-exp').classList.toggle('active', repeatMode !== 'none');
+  document.getElementById('shuffle-btn-exp').classList.toggle('active', shuffle);
+  syncGainSlider(currentGainDb);
+}
+
+function setExpandedPlayIcon(p) {
+  document.getElementById('icon-play-exp').style.display  = p ? 'none' : 'block';
+  document.getElementById('icon-pause-exp').style.display = p ? 'block' : 'none';
+}
+
+// ── Gain slider — normal mode ──
+const gainSlider   = document.getElementById('exp-gain-slider');
+const gainValueEl  = document.getElementById('exp-gain-value');
+const abGainSliderA = document.getElementById('ab-gain-slider-a');
+const abGainSliderB = document.getElementById('ab-gain-slider-b');
+const abGainValueA  = document.getElementById('ab-gain-value-a');
+const abGainValueB  = document.getElementById('ab-gain-value-b');
+
+gainSlider.addEventListener('input', () => {
+  const db = parseFloat(gainSlider.value);
+  currentGainDb = db;
+  applyGain(db);
+  gainValueEl.style.visibility = 'visible';
+  gainValueEl.textContent = (db >= 0 ? '+' : '') + db.toFixed(1) + ' dB';
+  const t = tracks[currentIdx];
+  if (t?.rev) saveGainToCache(t.rev, db);
+});
+gainSlider.addEventListener('pointerup', () => {
+  setTimeout(() => { gainValueEl.style.visibility = 'hidden'; }, 1200);
+});
+
+function syncGainSlider(db) {
+  gainSlider.value = db;
+  gainValueEl.style.visibility = 'hidden';
+  gainValueEl.textContent = (db >= 0 ? '+' : '') + db.toFixed(1) + ' dB';
+}
+
+// ── AB gain sliders ──
+[abGainSliderA, abGainSliderB, gainSlider].forEach(sl => {
+  sl.addEventListener('click', e => e.stopPropagation());
+  sl.addEventListener('pointerdown', e => e.stopPropagation());
+  sl.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+  sl.addEventListener('touchend', e => e.stopPropagation(), { passive: true });
+});
+
+abGainSliderA.addEventListener('input', () => {
+  gainDbA = parseFloat(abGainSliderA.value);
+  abGainValueA.style.visibility = 'visible';
+  abGainValueA.textContent = (gainDbA >= 0 ? '+' : '') + gainDbA.toFixed(1) + ' dB';
+  applyABGain('a', gainDbA);
+  if (abA !== null && tracks[abA]?.rev) saveGainToCache(tracks[abA].rev, gainDbA);
+});
+abGainSliderA.addEventListener('pointerup', () => {
+  setTimeout(() => { abGainValueA.style.visibility = 'hidden'; }, 1200);
+});
+
+abGainSliderB.addEventListener('input', () => {
+  gainDbB = parseFloat(abGainSliderB.value);
+  abGainValueB.style.visibility = 'visible';
+  abGainValueB.textContent = (gainDbB >= 0 ? '+' : '') + gainDbB.toFixed(1) + ' dB';
+  applyABGain('b', gainDbB);
+  if (abB !== null && tracks[abB]?.rev) saveGainToCache(tracks[abB].rev, gainDbB);
+});
+abGainSliderB.addEventListener('pointerup', () => {
+  setTimeout(() => { abGainValueB.style.visibility = 'hidden'; }, 1200);
+});
+
+function syncABGainSliders() {
+  const dba = abA !== null ? gainDbA : 0;
+  const dbb = abB !== null ? gainDbB : 0;
+  abGainSliderA.value = dba;
+  abGainSliderB.value = dbb;
+  abGainValueA.style.visibility = 'hidden';
+  abGainValueB.style.visibility = 'hidden';
+  abGainValueA.textContent = (dba >= 0 ? '+' : '') + dba.toFixed(1) + ' dB';
+  abGainValueB.textContent = (dbb >= 0 ? '+' : '') + dbb.toFixed(1) + ' dB';
+}
+
+document.querySelector('.player-info-row').addEventListener('click', () => {
+  if (currentIdx >= 0) openExpandedPlayer();
+});
+let touchStartY = 0;
+expPanel.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY; }, { passive: true });
+expPanel.addEventListener('touchend', e => {
+  if (e.changedTouches[0].clientY - touchStartY > 60) closeExpandedPlayer();
+}, { passive: true });
+document.querySelector('.exp-handle-bar').addEventListener('click', closeExpandedPlayer);
+
+document.getElementById('play-btn-exp').addEventListener('click', togglePlay);
+document.getElementById('prev-btn-exp').addEventListener('click', prevTrack);
+document.getElementById('next-btn-exp').addEventListener('click', () => nextTrack(false));
+document.getElementById('repeat-btn-exp').addEventListener('click', cycleRepeat);
+document.getElementById('shuffle-btn-exp').addEventListener('click', toggleShuffle);
+
+document.getElementById('exp-seek-wrap').addEventListener('click', e => {
+  if (!regularBuf) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  seekRegular(((e.clientX - r.left) / r.width) * regularBuf.duration);
+});
+
+// ═══════════════════════════════════════════════
+//  WAVEFORM (Web Audio API + localStorage cache)
+// ═══════════════════════════════════════════════
+let waveformData = null;
+let waveformPath = null;
+
+async function buildWaveform(audioBufferOrUrl, track) {
+  const rev = track?.rev || null;
+
+  if (rev) {
+    const cached = await idbWaveformGet(rev);
+    if (cached) {
+      waveformData = new Float32Array(cached);
+      waveformPath = track.path;
+      if (abMode) { if (abActiveSlot === 'a') waveformDataA = waveformData; else waveformDataB = waveformData; }
+      if (expOpen) drawWaveform();
+      return;
+    }
+  }
+
+  try {
+    let decoded;
+    if (audioBufferOrUrl instanceof AudioBuffer) {
+      decoded = audioBufferOrUrl;
+    } else {
+      const tempCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const resp = await fetch(audioBufferOrUrl);
+      const buf  = await resp.arrayBuffer();
+      decoded = await tempCtx.decodeAudioData(buf);
+      if (!audioCtx) tempCtx.close();
+    }
+    const ch   = decoded.getChannelData(0);
+    const bins = 200;
+    const step = Math.floor(ch.length / bins);
+    const peaks = new Float32Array(bins);
+    for (let i = 0; i < bins; i++) {
+      let max = 0;
+      for (let j = 0; j < step; j++) {
+        const v = Math.abs(ch[i * step + j] || 0);
+        if (v > max) max = v;
+      }
+      peaks[i] = max;
+    }
+    const maxPeak = Math.max(...peaks, 0.001);
+    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
+    waveformData = peaks;
+    waveformPath = track.path;
+    if (abMode) { if (abActiveSlot === 'a') waveformDataA = peaks; else waveformDataB = peaks; }
+    // Spara i cache om vi har en rev att knyta till
+    if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
+    if (expOpen) drawWaveform();
+  } catch(e) {
+    console.warn('Waveform build error:', e);
+    waveformData = null;
+  }
+}
+
+function drawWaveform() {
+  if (abMode && abA !== null && abB !== null) { drawABWaveforms(); return; }
+  const canvas = document.getElementById('waveform-canvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight || 56;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const bins = waveformData ? waveformData.length : 200;
+  const barW = Math.max(1, (W / bins) - 0.5);
+  const gap  = (W / bins) - barW;
+  const prog = regularBuf ? (getRegularCurrentTime() / regularBuf.duration) : 0;
+  const progX = prog * W;
+
+  const gold     = '#c9a84c';
+  const goldDim  = 'rgba(201,168,76,0.25)';
+  const midLine  = H / 2;
+
+  for (let i = 0; i < bins; i++) {
+    const x   = i * (barW + gap);
+    const amp = waveformData ? waveformData[i] : 0.3;
+    const barH = Math.max(2, amp * midLine * 0.95);
+    const played = (x + barW / 2) < progX;
+    ctx.fillStyle = played ? gold : goldDim;
+    ctx.beginPath();
+    ctx.roundRect
+      ? ctx.roundRect(x, midLine - barH, barW, barH * 2, 1)
+      : ctx.rect(x, midLine - barH, barW, barH * 2);
+    ctx.fill();
+  }
+
+  if (regularBuf) {
+    ctx.strokeStyle = gold;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(progX, 0);
+    ctx.lineTo(progX, H);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
+  if (!regularBuf) return;
+  const r = e.currentTarget.getBoundingClientRect();
+  seekRegular(((e.clientX - r.left) / r.width) * regularBuf.duration);
+});
+
+// ═══════════════════════════════════════════════
+//  A/B COMPARISON MODE
+// ═══════════════════════════════════════════════
+function showABExpandedLayout() {
+  const _m = document.getElementById('exp-meta'), _w = document.getElementById('exp-waveform-wrap'), _g = document.getElementById('exp-gain-row');
+  if (_m) _m.style.marginTop = ''; if (_w) _w.style.marginTop = ''; if (_g) _g.style.marginTop = '';
+  document.getElementById('ab-expanded-content').classList.add('ab-visible');
+  document.getElementById('exp-cover-wrap').style.display = 'none';
+  document.getElementById('exp-meta').style.display = 'none';
+  document.getElementById('exp-waveform-wrap').style.display = 'none';
+  document.getElementById('exp-time-row').style.display = 'none';
+  document.getElementById('exp-seek-wrap').style.display = 'none';
+  document.getElementById('exp-gain-row').style.display = 'none';
+}
+function hideABExpandedLayout() {
+  document.getElementById('ab-expanded-content').classList.remove('ab-visible');
+  document.getElementById('exp-cover-wrap').style.display = '';
+  document.getElementById('exp-meta').style.display = '';
+  document.getElementById('exp-waveform-wrap').style.display = '';
+  document.getElementById('exp-time-row').style.display = '';
+  document.getElementById('exp-seek-wrap').style.display = '';
+  document.getElementById('exp-gain-row').style.display = 'none';  // Gain är dolt i regular mode
+}
+
+function updateABExpandedUI() {
+  const tA = abA !== null ? tracks[abA] : null;
+  const tB = abB !== null ? tracks[abB] : null;
+  document.getElementById('ab-name-a').textContent = tA ? tA.name : '—';
+  document.getElementById('ab-name-b').textContent = tB ? tB.name : '—';
+  document.getElementById('ab-section-a').classList.toggle('ab-inactive', abActiveSlot !== 'a');
+  document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
+  const grA = document.querySelector('#ab-section-a .ab-gain-row');
+  const grB = document.querySelector('#ab-section-b .ab-gain-row');
+  if (grA) grA.style.display = abActiveSlot === 'a' ? '' : 'none';
+  if (grB) grB.style.display = abActiveSlot === 'b' ? '' : 'none';
+  abGainSliderA.disabled = abActiveSlot !== 'a';
+  abGainSliderB.disabled = abActiveSlot !== 'b';
+  const badge = document.getElementById('np-ab-badge');
+  if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
+  drawABWaveforms();
+  syncABGainSliders();
+  // debug
+  const _grB = document.querySelector('#ab-section-b .ab-gain-row');
+  const _secB = document.getElementById('ab-section-b');
+  const _expGR = document.getElementById('exp-gain-row');
+}
+
+function drawABWaveforms() {
+  drawOneABCanvas('a');
+  drawOneABCanvas('b');
+}
+
+function drawOneABCanvas(slot) {
+  const canvas = document.getElementById(`ab-canvas-${slot}`);
+  if (!canvas || !canvas.offsetWidth) return;
+  const isActive = slot === abActiveSlot;
+  const data = slot === 'a' ? waveformDataA : waveformDataB;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight || 60;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+  const bins = data ? data.length : 200;
+  const barW = Math.max(1, (W / bins) - 0.5);
+  const gap  = (W / bins) - barW;
+  const dur = slot === 'a' ? abAudioBufA?.duration : abAudioBufB?.duration;
+  const prog = (isActive && dur) ? (getABCurrentTime() / dur) : 0;
+  const progX = prog * W;
+  const gold    = '#c9a84c';
+  const goldDim = isActive ? 'rgba(201,168,76,0.28)' : 'rgba(201,168,76,0.14)';
+  const midLine = H / 2;
+  for (let i = 0; i < bins; i++) {
+    const x   = i * (barW + gap);
+    const amp = data ? data[i] : 0.3;
+    const barH = Math.max(2, amp * midLine * 0.95);
+    const played = isActive && (x + barW / 2) < progX;
+    ctx.fillStyle = played ? gold : goldDim;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(x, midLine - barH, barW, barH * 2, 1);
+    else ctx.rect(x, midLine - barH, barW, barH * 2);
+    ctx.fill();
+  }
+  if (isActive && dur) {
+    ctx.strokeStyle = gold;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(progX, 0);
+    ctx.lineTo(progX, H);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+}
+
+
+function handleABSectionClick(e, slot) {
+  if (slot !== abActiveSlot) {
+    switchABSlot(slot);
+  } else {
+    const buf = slot === 'a' ? abAudioBufA : abAudioBufB;
+    if (!buf) return;
+    const canvas = document.getElementById(`ab-canvas-${slot}`);
+    if (!canvas) return;
+    const r = canvas.getBoundingClientRect();
+    const seekTime = ((e.clientX - r.left) / r.width) * buf.duration;
+    if (abIsPlaying) {
+      startABPlayback(abActiveSlot, seekTime);
+    } else {
+      abPausedOffset = seekTime;
+    }
+  }
+}
+
+// Söker framåt i bufferten efter nästa negativ→positiv nollgenomgång.
+// Max söktid 5 ms — ger bara några samples extra fördröjning vid byte.
+function findNextZeroCrossing(audioBuffer, fromSeconds) {
+  const ch = audioBuffer.getChannelData(0);
+  const sr = audioBuffer.sampleRate;
+  const start = Math.floor(fromSeconds * sr);
+  const limit = Math.min(start + Math.floor(0.005 * sr), ch.length - 1);
+  for (let i = start; i < limit; i++) {
+    if (ch[i] <= 0 && ch[i + 1] > 0) return (i + 1) / sr;
+  }
+  return fromSeconds; // fallback om ingen crossing hittas inom 5 ms
+}
+
+function switchABSlot(slot) {
+  if (slot === abActiveSlot) return;
+  const FADE = 0.04; // 40 ms cross-fade
+  ensureAudioCtx();
+  const now = audioCtx.currentTime;
+  const currentOffset = abStartOffset + (now - abStartContextTime);
+
+  // Hitta nästa nollgenomgång i utgående buffert (max 5 ms framåt)
+  const outBuf = abActiveSlot === 'a' ? abAudioBufA : abAudioBufB;
+  const zcOffset = outBuf ? findNextZeroCrossing(outBuf, currentOffset) : currentOffset;
+  const fadeStart = now + Math.max(0, zcOffset - currentOffset);
+
+  abActiveSlot = slot;
+  // Cross-fade: aktiv slot fadear in, inaktiv ut.
+  // setValueAtTime förankrar startvärdet — krävs för korrekt linearRamp i alla browsers.
+  if (abGainNodeA) {
+    abGainNodeA.gain.cancelScheduledValues(now);
+    abGainNodeA.gain.setValueAtTime(abGainNodeA.gain.value, now);
+    abGainNodeA.gain.linearRampToValueAtTime(slot === 'a' ? dbToGain(gainDbA) : 0, fadeStart + FADE);
+  }
+  if (abGainNodeB) {
+    abGainNodeB.gain.cancelScheduledValues(now);
+    abGainNodeB.gain.setValueAtTime(abGainNodeB.gain.value, now);
+    abGainNodeB.gain.linearRampToValueAtTime(slot === 'b' ? dbToGain(gainDbB) : 0, fadeStart + FADE);
+  }
+  // Uppdatera currentIdx och mini-player UI
+  const targetIdx = slot === 'a' ? abA : abB;
+  if (targetIdx !== null) {
+    currentIdx = targetIdx;
+    const t = tracks[targetIdx];
+    npName.textContent = t.name;
+    npSub.textContent = t.package ? formatPkgName(t.package) : 'Alla låtar';
+    const badge = document.getElementById('np-ab-badge');
+    if (badge) { badge.textContent = slot.toUpperCase(); }
+    updateMediaSession(t);
+  }
+  updateABExpandedUI();
+}
+
+function toggleABMode() {
+  abMode = !abMode;
+  const btn = document.getElementById('ab-mode-btn');
+  if (btn) btn.classList.toggle('btn-ab-active', abMode);
+  if (abMode) {
+    pauseRegular();
+    ensureAudioCtx();
+    // A/B-läget pausar regular playback och använder Web Audio + MediaStreamDestination
+    // för AirPlay-kompatibel A/B-uppspelning.
+  } else {
+    // Städning — stoppa sources och frigör resurser
+    audio.pause();
+    stopABRaf();
+    [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+    abSourceA = null; abSourceB = null;
+    abAudioBufA = null; abAudioBufB = null;
+    abGainNodeA?.disconnect(); abGainNodeA = null;
+    abGainNodeB?.disconnect(); abGainNodeB = null;
+    abIsPlaying = false;
+    abPausedOffset = 0;
+    abA = null; abB = null;
+    waveformDataA = null; waveformDataB = null;
+    abActiveSlot = 'a';
+    // Återställ audio-elementet
+    audio.volume = 1;
+    airplayBridge.pause();
+    const badge = document.getElementById('np-ab-badge');
+    if (badge) badge.classList.remove('ab-visible');
+    if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); }
+    // Uppspelning stoppas — ingen automatisk återupptagning
+  }
+  refreshView();
+}
+
+function setABSlot(slot, gi, event) {
+  event.stopPropagation();
+  ensureAudioCtx();
+  if (slot === 'a') {
+    if (abB === gi) abB = null;
+    if (abA === gi) {
+      abA = null;
+      abAudioBufA = null;
+    } else {
+      abA = gi;
+      abActiveSlot = 'a';
+      gainDbA = getGainFromCache(tracks[gi].rev);
+      // Uppdatera UI direkt utan playTrack
+      currentIdx = gi;
+      const t = tracks[gi];
+      npName.textContent = t.name;
+      npSub.textContent = t.package ? formatPkgName(t.package) : 'Alla låtar';
+      const badge = document.getElementById('np-ab-badge');
+      if (badge) { badge.textContent = 'A'; badge.classList.add('ab-visible'); }
+      preloadAWaveform(gi);
+      abAudioBufA = null;
+      loadABBuffer(gi).then(buf => {
+        abAudioBufA = buf;
+        if (abAudioBufA && abAudioBufB) { stopABRaf(); startABPlayback(abActiveSlot, 0); }
+      });
+    }
+  } else {
+    if (abA === gi) abA = null;
+    if (abB === gi) {
+      abB = null;
+      abAudioBufB = null;
+    } else {
+      abB = gi;
+      gainDbB = getGainFromCache(tracks[gi].rev);
+      preloadBWaveform(gi);
+      abAudioBufB = null;
+      loadABBuffer(gi).then(buf => {
+        abAudioBufB = buf;
+        if (abAudioBufA && abAudioBufB) { stopABRaf(); startABPlayback(abActiveSlot, 0); }
+      });
+    }
+  }
+  if (abA !== null && abB !== null) {
+    if (!expOpen) openExpandedPlayer();
+    else { showABExpandedLayout(); updateABExpandedUI(); }
+  } else if (expOpen) {
+    hideABExpandedLayout();
+    syncExpandedMeta();
+    drawWaveform();
+    adjustExpandedSpacing();
+  }
+  const pool = activePkg === 'all' || activePkg === null ? tracks : tracks.filter(t => t.package === activePkg);
+  renderTrackList(pool);
+}
+
+async function preloadAWaveform(gi) {
+  const t = tracks[gi];
+  if (!t) return;
+  if (t.rev) {
+    const cached = await idbWaveformGet(t.rev);
+    if (cached) { waveformDataA = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
+  }
+  try {
+    let url, shouldRevoke = false;
+    const stored = await idbGet(t.path);
+    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+    if (stored && revMatch) { url = URL.createObjectURL(stored.blob); shouldRevoke = true; }
+    else { url = await getTmpLink(t.path); }
+    await buildWaveformForA(url, t);
+    if (shouldRevoke) URL.revokeObjectURL(url);
+  } catch(e) {}
+}
+
+async function buildWaveformForA(objUrl, track) {
+  const rev = track?.rev || null;
+  if (rev) {
+    const cached = await idbWaveformGet(rev);
+    if (cached) { waveformDataA = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
+  }
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const resp = await fetch(objUrl);
+    const buf  = await resp.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(buf);
+    ctx.close();
+    const ch   = decoded.getChannelData(0);
+    const bins = 200;
+    const step = Math.floor(ch.length / bins);
+    const peaks = new Float32Array(bins);
+    for (let i = 0; i < bins; i++) {
+      let max = 0;
+      for (let j = 0; j < step; j++) { const v = Math.abs(ch[i * step + j] || 0); if (v > max) max = v; }
+      peaks[i] = max;
+    }
+    const maxPeak = Math.max(...peaks, 0.001);
+    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
+    waveformDataA = peaks;
+    if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
+    if (expOpen && abMode) drawABWaveforms();
+  } catch(e) { console.warn('buildWaveformForA error:', e); }
+}
+
+async function preloadBWaveform(gi) {
+  const t = tracks[gi];
+  if (!t) return;
+  if (t.rev) {
+    const cached = await idbWaveformGet(t.rev);
+    if (cached) { waveformDataB = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
+  }
+  try {
+    let url, shouldRevoke = false;
+    const stored = await idbGet(t.path);
+    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+    if (stored && revMatch) { url = URL.createObjectURL(stored.blob); shouldRevoke = true; }
+    else { url = await getTmpLink(t.path); }
+    await buildWaveformForB(url, t);
+    if (shouldRevoke) URL.revokeObjectURL(url);
+  } catch(e) {}
+}
+
+async function buildWaveformForB(objUrl, track) {
+  const rev = track?.rev || null;
+  if (rev) {
+    const cached = await idbWaveformGet(rev);
+    if (cached) { waveformDataB = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
+  }
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const resp = await fetch(objUrl);
+    const buf  = await resp.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(buf);
+    ctx.close();
+    const ch   = decoded.getChannelData(0);
+    const bins = 200;
+    const step = Math.floor(ch.length / bins);
+    const peaks = new Float32Array(bins);
+    for (let i = 0; i < bins; i++) {
+      let max = 0;
+      for (let j = 0; j < step; j++) { const v = Math.abs(ch[i * step + j] || 0); if (v > max) max = v; }
+      peaks[i] = max;
+    }
+    const maxPeak = Math.max(...peaks, 0.001);
+    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
+    waveformDataB = peaks;
+    if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
+    if (expOpen && abMode) drawABWaveforms();
+  } catch(e) { console.warn('buildWaveformForB error:', e); }
+}
+
+// ═══════════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════════
+let searchQuery = '';
+
+function openSearch() {
+  document.getElementById('search-panel').style.display = 'block';
+  document.getElementById('search-btn').style.color = 'var(--gold)';
+  setTimeout(() => document.getElementById('search-input').focus(), 50);
+}
+function closeSearch() {
+  document.getElementById('search-panel').style.display = 'none';
+  document.getElementById('search-btn').style.color = '';
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-clear-btn').style.display = 'none';
+  searchQuery = '';
+  // Dölj sökresultat, återställ rätt vy
+  document.getElementById('search-results-view').classList.remove('visible');
+  if (activePkg === null) {
+    document.getElementById('library-view').classList.remove('hidden');
+  } else {
+    document.getElementById('playlist-view').classList.add('visible');
+  }
+}
+function toggleSearch() {
+  const panel = document.getElementById('search-panel');
+  if (panel.style.display === 'none' || !panel.style.display) openSearch(); else closeSearch();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('search-btn').addEventListener('click', toggleSearch);
+
+  document.getElementById('search-clear-btn').addEventListener('click', () => {
+    document.getElementById('search-input').value = '';
+    searchQuery = '';
+    document.getElementById('search-clear-btn').style.display = 'none';
+    renderSearchResults('');
+    document.getElementById('search-input').focus();
+  });
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    searchQuery = e.target.value.trim().toLowerCase();
+    document.getElementById('search-clear-btn').style.display = searchQuery ? 'flex' : 'none';
+    renderSearchResults(searchQuery);
+  });
+});
+
+function setStatus(type,msg){
+  const bar = document.getElementById('status-bar');
+  bar.className = type;
+  document.getElementById('status-text').textContent = msg;
+  bar.classList.remove('hidden');
+  clearTimeout(bar._hideTimer);
+  if (type !== 'loading') {
+    bar._hideTimer = setTimeout(() => bar.classList.add('hidden'), 10000);
+  }
+}
+function openSettings(){document.getElementById('cfg-folder').value=config.folder||'';document.getElementById('cfg-exts').value=config.exts||'mp3,wav,flac,aiff,m4a';updateOAuthUI();document.getElementById('config-panel').style.display='block';}
+function closeSettings(){document.getElementById('config-panel').style.display='none';}
+
+document.getElementById('oauth-connect-btn').addEventListener('click', startOAuthFlow);
+document.getElementById('oauth-disconnect-btn').addEventListener('click', ()=>{
+  if (confirm('Koppla från Dropbox? Token och anslutning raderas.')) {
+    clearOAuth(); updateOAuthUI();
+    setStatus('', 'Frånkopplad från Dropbox');
+  }
+});
+
+document.getElementById('settings-btn').addEventListener('click',()=>{const p=document.getElementById('config-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')openSettings();});
+document.getElementById('save-config-btn').addEventListener('click',()=>{config.folder=document.getElementById('cfg-folder').value.trim();config.exts=document.getElementById('cfg-exts').value.trim()||'mp3,wav,flac,aiff,m4a';saveState();closeSettings();fetchTracks();});
+document.getElementById('cancel-config-btn').addEventListener('click',closeSettings);
+document.getElementById('refresh-btn').addEventListener('click',()=>{loadState();fetchTracks();});
+document.getElementById('help-btn').addEventListener('click',()=>document.getElementById('help-modal').classList.add('open'));
+document.getElementById('back-btn').addEventListener('click',()=>{if(searchQuery){closeSearch();}else{showLibrary();}});
+document.getElementById('sync-pkg-btn').addEventListener('click',()=>syncPackage(activePkg));
+document.getElementById('delete-pkg-btn').addEventListener('click',async()=>{if(confirm(`Ta bort lokalt sparade filer för "${activePkg==='all'?'alla låtar':formatPkgName(activePkg)}"?`))await deletePackageLocal(activePkg);});
+document.getElementById('ab-mode-btn').addEventListener('click', toggleABMode);
+
+playBtn.addEventListener('click',togglePlay);
+document.getElementById('prev-btn').addEventListener('click',prevTrack);
+document.getElementById('next-btn').addEventListener('click',()=>nextTrack(false));
+repeatBtn.addEventListener('click',cycleRepeat);
+shuffleBtn.addEventListener('click',toggleShuffle);
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-backdrop').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  if(e.code==='Escape'&&expOpen){closeExpandedPlayer();return;}
+  if(e.code==='Escape'&&document.getElementById('search-panel').style.display==='block'){closeSearch();return;}
+  if(e.code==='Space'){e.preventDefault();togglePlay();}
+  if(e.code==='ArrowRight')nextTrack(false);
+  if(e.code==='ArrowLeft')prevTrack();
+  if(e.code==='KeyR')cycleRepeat();
+  if(e.code==='KeyS')toggleShuffle();
+});
+
+// Sätt gain=0 synkront vid siddöd — ramp-anrop hinner inte genomföras
+// innan iOS river ner AudioContext. Förhindrar klikket vid stängning.
+window.addEventListener('pagehide', () => {
+  if (abGainNodeA)     abGainNodeA.gain.value = 0;
+  if (abGainNodeB)     abGainNodeB.gain.value = 0;
+});
+
+function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+openIDB().then(async()=>{
+  await loadState();
+  loadDurationCache();
+  loadGainCache();
+  for (const t of tracks) {
+    if (!t.duration && t.rev && durationCache[t.rev]) {
+      t.duration = durationCache[t.rev];
+    }
+  }
+  loadOAuth();
+  const _urlParams = new URLSearchParams(window.location.search);
+  if (_urlParams.get('code')) {
+    history.replaceState(null,'',window.location.pathname);
+    await handleAuthCode(_urlParams.get('code'));
+  } else if (_urlParams.get('oauth')==='success') {
+    history.replaceState(null,'',window.location.pathname);
+  }
+  updateRepeatUI();
+  shuffleBtn.classList.toggle('active',shuffle);
+  await refreshSynced();
+
+  if (tracks.length){
+    if (activePkg&&activePkg!==null) { showPlaylist(activePkg); }
+    else { renderLibrary(); }
+    setStatus('ok',`${tracks.length} låtar från cache — tryck ↻ för att uppdatera`);
+    if (currentIdx>=0&&tracks[currentIdx]){
+      const t=tracks[currentIdx];
+      npName.textContent=t.name;
+      npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
+      if (restoredPosition > 0) {
+        regularPausedOffset = restoredPosition;
+        if (t.duration) {
+          timeDisp.textContent = fmtTime(restoredPosition) + ' / ' + fmtTime(t.duration);
+          expSeekFill.style.width = (restoredPosition / t.duration * 100) + '%';
+          expTimeCur.textContent = fmtTime(restoredPosition);
+        }
+        restoredPosition = 0;
+      }
+    }
+  } else {
+    renderLibrary();
+    setStatus('','Anslut Dropbox via ⚙ för att komma igång');
+  }
+
+  const hv = document.getElementById('help-version');
+  if (hv) hv.textContent = 'Version ' + PLAYER_VERSION;
+});
+</script>
 </body>
 </html>
