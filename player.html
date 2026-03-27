@@ -576,7 +576,7 @@
 <audio id="audio-el" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 51;
+const PLAYER_VERSION = 53;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -599,22 +599,63 @@ if ('audioSession' in navigator) {
 let idb = null;
 function openIDB() {
   return new Promise((res,rej) => {
-    const req = indexedDB.open('mm_player',3);
+    const req = indexedDB.open('mm_player',4);
     req.onupgradeneeded = e => {
       const db = e.target.result;
       if (!db.objectStoreNames.contains('audio')) {
         db.createObjectStore('audio',{keyPath:'path'});
       }
-      // v2: audio store holds {path, blob, rev}
-      // v3: covers store — {path, blob, rev}
       if (!db.objectStoreNames.contains('covers')) {
         db.createObjectStore('covers',{keyPath:'path'});
+      }
+      if (!db.objectStoreNames.contains('waveforms')) {
+        db.createObjectStore('waveforms',{keyPath:'rev'});
+      }
+      if (!db.objectStoreNames.contains('state')) {
+        db.createObjectStore('state',{keyPath:'key'});
       }
     };
     req.onsuccess = e => { idb=e.target.result; res(idb); };
     req.onerror   = () => rej(req.error);
   });
 }
+
+// ── Waveforms IDB helpers ──
+function idbWaveformGet(rev) {
+  return new Promise(res => {
+    if (!idb) return res(null);
+    const req = idb.transaction('waveforms','readonly').objectStore('waveforms').get(rev);
+    req.onsuccess = () => res(req.result ? req.result.peaks : null);
+    req.onerror   = () => res(null);
+  });
+}
+function idbWaveformPut(rev, peaks) {
+  return new Promise((res,rej) => {
+    if (!idb) return res();
+    const tx = idb.transaction('waveforms','readwrite');
+    tx.objectStore('waveforms').put({rev, peaks: Array.from(peaks)});
+    tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error);
+  });
+}
+
+// ── State IDB helpers ──
+function idbStateGet(key) {
+  return new Promise(res => {
+    if (!idb) return res(null);
+    const req = idb.transaction('state','readonly').objectStore('state').get(key);
+    req.onsuccess = () => res(req.result ? req.result.data : null);
+    req.onerror   = () => res(null);
+  });
+}
+function idbStatePut(key, data) {
+  return new Promise((res,rej) => {
+    if (!idb) return res();
+    const tx = idb.transaction('state','readwrite');
+    tx.objectStore('state').put({key, data});
+    tx.oncomplete = ()=>res(); tx.onerror=()=>rej(tx.error);
+  });
+}
+
 function idbGet(path) {
   return new Promise(res => {
     const req = idb.transaction('audio','readonly').objectStore('audio').get(path);
@@ -696,7 +737,6 @@ function idbCoverPut(path, blob, rev) {
 // ═══════════════════════════════════════════════
 const LS_KEY         = 'mm_player_v2';
 const LS_DUR_KEY     = 'mm_player_durations';  // { "<rev>": seconds }
-const LS_WAVE_KEY    = 'mm_player_waveforms';  // { "<rev>": Float32Array serialised as Array }
 const LS_GAIN_KEY    = 'mm_player_gains';       // { "<rev>": dB }
 let config      = { token:'', folder:'', exts:'mp3,wav,flac,aiff,m4a' };
 let tracks      = [];
@@ -716,7 +756,6 @@ const ALL_SONGS_COVER_PATH = '/all_songs_cover.heic';
 let linkCache   = {};
 let activeObjUrl= null;
 let durationCache  = {}; // rev → seconds (in-memory, backed by localStorage)
-let waveformCache  = {}; // rev → Float32Array (in-memory, backed by localStorage)
 let gainCache      = {}; // rev → dB (in-memory, backed by localStorage)
 let currentGainDb  = 0.0;
 let gainDbA        = 0.0;
@@ -765,20 +804,6 @@ function saveDurationToCache(rev, seconds) {
   if (!rev || !seconds || isNaN(seconds)) return;
   durationCache[rev] = seconds;
   try { localStorage.setItem(LS_DUR_KEY, JSON.stringify(durationCache)); } catch(e){}
-}
-
-// ── Waveform cache helpers ──
-function loadWaveformCache() {
-  try { waveformCache = JSON.parse(localStorage.getItem(LS_WAVE_KEY)||'{}'); } catch(e){ waveformCache={}; }
-}
-function saveWaveformToCache(rev, peaks) {
-  if (!rev || !peaks) return;
-  waveformCache[rev] = Array.from(peaks);
-  try { localStorage.setItem(LS_WAVE_KEY, JSON.stringify(waveformCache)); } catch(e){}
-}
-function getWaveformFromCache(rev) {
-  if (!rev || !waveformCache[rev]) return null;
-  return new Float32Array(waveformCache[rev]);
 }
 
 // ── Gain cache helpers ──
@@ -1114,25 +1139,36 @@ function saveState() {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
       config,
-      tracks: tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null})),
       currentIdx, repeatMode, shuffle, activePkg,
-      coverPathMap,
       lastPosition: regularBuf ? (regularIsPlaying ? getRegularCurrentTime() : (regularPausedOffset > 0 ? regularPausedOffset : undefined)) : undefined
     }));
+    idbStatePut('tracks', tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null}))).catch(()=>{});
+    idbStatePut('coverPathMap', coverPathMap).catch(()=>{});
   } catch(e){}
 }
-function loadState() {
+async function loadState() {
   try {
     const d = JSON.parse(localStorage.getItem(LS_KEY)||'null');
-    if (!d) return;
-    config=Object.assign(config,d.config);
-    tracks=d.tracks||[];
-    currentIdx=d.currentIdx??-1;
-    repeatMode=d.repeatMode||'none';
-    shuffle=d.shuffle||false;
-    activePkg=d.activePkg??null;
-    coverPathMap=d.coverPathMap||{};
-    restoredPosition=d.lastPosition||0;
+    if (d) {
+      config=Object.assign(config,d.config);
+      currentIdx=d.currentIdx??-1;
+      repeatMode=d.repeatMode||'none';
+      shuffle=d.shuffle||false;
+      activePkg=d.activePkg??null;
+      restoredPosition=d.lastPosition||0;
+    }
+    const t = await idbStateGet('tracks');
+    if (t) tracks = t;
+    const c = await idbStateGet('coverPathMap');
+    if (c) coverPathMap = c;
+    // Rensning av gamla waveforms från localStorage
+    localStorage.removeItem('mm_player_waveforms');
+    // Tillfälligt städa bort gamla keys om de är sparade fel i LS_KEY (då LS minskas kraftigt)
+    if (d && (d.tracks || d.coverPathMap)) {
+      delete d.tracks;
+      delete d.coverPathMap;
+      localStorage.setItem(LS_KEY, JSON.stringify(d));
+    }
   } catch(e){}
 }
 
@@ -2150,11 +2186,11 @@ async function buildWaveform(audioBufferOrUrl, track) {
   const rev = track?.rev || null;
 
   if (rev) {
-    const cached = getWaveformFromCache(rev);
+    const cached = await idbWaveformGet(rev);
     if (cached) {
-      waveformData = cached;
+      waveformData = new Float32Array(cached);
       waveformPath = track.path;
-      if (abMode) { if (abActiveSlot === 'a') waveformDataA = cached; else waveformDataB = cached; }
+      if (abMode) { if (abActiveSlot === 'a') waveformDataA = waveformData; else waveformDataB = waveformData; }
       if (expOpen) drawWaveform();
       return;
     }
@@ -2189,9 +2225,10 @@ async function buildWaveform(audioBufferOrUrl, track) {
     waveformPath = track.path;
     if (abMode) { if (abActiveSlot === 'a') waveformDataA = peaks; else waveformDataB = peaks; }
     // Spara i cache om vi har en rev att knyta till
-    if (rev) saveWaveformToCache(rev, peaks);
+    if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
     if (expOpen) drawWaveform();
   } catch(e) {
+    console.warn('Waveform build error:', e);
     waveformData = null;
   }
 }
@@ -2515,8 +2552,8 @@ async function preloadAWaveform(gi) {
   const t = tracks[gi];
   if (!t) return;
   if (t.rev) {
-    const cached = getWaveformFromCache(t.rev);
-    if (cached) { waveformDataA = cached; if (expOpen && abMode) drawABWaveforms(); return; }
+    const cached = await idbWaveformGet(t.rev);
+    if (cached) { waveformDataA = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
   }
   try {
     let url, shouldRevoke = false;
@@ -2532,8 +2569,8 @@ async function preloadAWaveform(gi) {
 async function buildWaveformForA(objUrl, track) {
   const rev = track?.rev || null;
   if (rev) {
-    const cached = getWaveformFromCache(rev);
-    if (cached) { waveformDataA = cached; if (expOpen && abMode) drawABWaveforms(); return; }
+    const cached = await idbWaveformGet(rev);
+    if (cached) { waveformDataA = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
   }
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2553,17 +2590,17 @@ async function buildWaveformForA(objUrl, track) {
     const maxPeak = Math.max(...peaks, 0.001);
     for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
     waveformDataA = peaks;
-    if (rev) saveWaveformToCache(rev, peaks);
+    if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
     if (expOpen && abMode) drawABWaveforms();
-  } catch(e) {}
+  } catch(e) { console.warn('buildWaveformForA error:', e); }
 }
 
 async function preloadBWaveform(gi) {
   const t = tracks[gi];
   if (!t) return;
   if (t.rev) {
-    const cached = getWaveformFromCache(t.rev);
-    if (cached) { waveformDataB = cached; if (expOpen && abMode) drawABWaveforms(); return; }
+    const cached = await idbWaveformGet(t.rev);
+    if (cached) { waveformDataB = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
   }
   try {
     let url, shouldRevoke = false;
@@ -2579,8 +2616,8 @@ async function preloadBWaveform(gi) {
 async function buildWaveformForB(objUrl, track) {
   const rev = track?.rev || null;
   if (rev) {
-    const cached = getWaveformFromCache(rev);
-    if (cached) { waveformDataB = cached; if (expOpen && abMode) drawABWaveforms(); return; }
+    const cached = await idbWaveformGet(rev);
+    if (cached) { waveformDataB = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
   }
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2600,9 +2637,9 @@ async function buildWaveformForB(objUrl, track) {
     const maxPeak = Math.max(...peaks, 0.001);
     for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
     waveformDataB = peaks;
-    if (rev) saveWaveformToCache(rev, peaks);
+    if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
     if (expOpen && abMode) drawABWaveforms();
-  } catch(e) {}
+  } catch(e) { console.warn('buildWaveformForB error:', e); }
 }
 
 // ═══════════════════════════════════════════════
@@ -2717,9 +2754,8 @@ function fmtTime(s){if(!s||isNaN(s))return'—';return`${Math.floor(s/60)}:${Mat
 //  INIT
 // ═══════════════════════════════════════════════
 openIDB().then(async()=>{
-  loadState();
+  await loadState();
   loadDurationCache();
-  loadWaveformCache();
   loadGainCache();
   for (const t of tracks) {
     if (!t.duration && t.rev && durationCache[t.rev]) {
