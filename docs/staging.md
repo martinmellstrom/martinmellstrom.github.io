@@ -158,4 +158,5 @@ const PLAYER_VERSION = 42;
 4. **Report to Martin** when staging is pushed: `"Deployat till staging — build 43"`
 5. **Git commit message** for live promotion: `Deploy player.html build 44`
 6. **Notion changelog** entry (when logged): include build number.
-7. `PLAYER_VERSION` is never shown in the player UI — internal tracking only.
+7. **Player UI:** The constant must be displayed at the top of the Help modal, formatted as `Version xx`.
+8. **Verification:** When reporting a deploy, explicitly instruct Martin to double-check that the version number shown in the Help modal matches the deployed build.
