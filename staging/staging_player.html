@@ -2868,57 +2868,6 @@ document.getElementById('sync-pkg-btn').addEventListener('click',()=>syncPackage
 document.getElementById('delete-pkg-btn').addEventListener('click',async()=>{if(confirm(`Ta bort lokalt sparade filer för "${activePkg==='all'?'alla låtar':formatPkgName(activePkg)}"?`))await deletePackageLocal(activePkg);});
 document.getElementById('ab-mode-btn').addEventListener('click', toggleABMode);
 
-document.getElementById('ab-blind-btn').addEventListener('click', () => {
-  if (!abBlindActive) {
-    // Hide & Shuffle
-    abBlindSwapped = Math.random() < 0.5;
-    if (abBlindSwapped) {
-      // Swap A and B slots
-      const tmpIdx = abA; abA = abB; abB = tmpIdx;
-      const tmpGain = gainDbA; gainDbA = gainDbB; gainDbB = tmpGain;
-      const tmpBuf = abAudioBufA; abAudioBufA = abAudioBufB; abAudioBufB = tmpBuf;
-      // Switch active slot to match new mapping
-      const newSlot = abActiveSlot === 'a' ? 'b' : 'a';
-      switchABSlot(newSlot);
-    }
-    abBlindActive = true;
-    // Hide track names
-    const abNameA = document.getElementById('ab-name-a');
-    const abNameB = document.getElementById('ab-name-b');
-    if (abNameA) abNameA.textContent = '???';
-    if (abNameB) abNameB.textContent = '???';
-    // Hide transport name
-    npName.textContent = '???';
-    // Show frosted glass overlays
-    document.getElementById('ab-blind-overlay-a')?.classList.add('visible');
-    document.getElementById('ab-blind-overlay-b')?.classList.add('visible');
-    // Update button
-    const btn = document.getElementById('ab-blind-btn');
-    btn.textContent = 'Reveal';
-    btn.classList.add('reveal-mode');
-  } else {
-    // Reveal
-    abBlindActive = false;
-    // Remove frosted glass
-    document.getElementById('ab-blind-overlay-a')?.classList.remove('visible');
-    document.getElementById('ab-blind-overlay-b')?.classList.remove('visible');
-    // Restore transport name
-    const activeIdx = abActiveSlot === 'a' ? abA : abB;
-    if (activeIdx !== null && tracks[activeIdx]) {
-      npName.textContent = tracks[activeIdx].name;
-    }
-    // Animate titles back in
-    const abNameA = document.getElementById('ab-name-a');
-    const abNameB = document.getElementById('ab-name-b');
-    if (abNameA && abA !== null && tracks[abA]) revealTitle(abNameA, tracks[abA].name);
-    if (abNameB && abB !== null && tracks[abB]) revealTitle(abNameB, tracks[abB].name);
-    // Update button
-    const btn = document.getElementById('ab-blind-btn');
-    btn.textContent = 'Hide \u0026 Shuffle';
-    btn.classList.remove('reveal-mode');
-  }
-});
-
 playBtn.addEventListener('click',togglePlay);
 document.getElementById('prev-btn').addEventListener('click',prevTrack);
 document.getElementById('next-btn').addEventListener('click',()=>nextTrack(false));
