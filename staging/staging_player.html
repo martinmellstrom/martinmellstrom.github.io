@@ -394,7 +394,7 @@
 
 <!-- APP -->
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 58 — Detta är en förhandsvisning.
+  <strong>⚠ STAGING</strong> — build 61 — Detta är en förhandsvisning.
   <a href="/player.html">Gå till live-sidan →</a>
 </div>
 <div id="app">
@@ -647,7 +647,7 @@
 <audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 58;
+const PLAYER_VERSION = 61;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -2075,11 +2075,14 @@ function closeExpandedPlayer() {
   if (abMode && abIsPlaying) {
     // A/B kan bara spelas i expanded player — pausa när den stängs
     abPausedOffset = getABCurrentTime();
+    if (abSourceA) abSourceA.onended = null;
+    if (abSourceB) abSourceB.onended = null;
     [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
     abSourceA = null; abSourceB = null;
     abIsPlaying = false;
     isPlaying = false; setPlayIcon(false);
     stopABRaf();
+    airplayBridge.pause();
   }
 }
 function adjustExpandedSpacing() {
