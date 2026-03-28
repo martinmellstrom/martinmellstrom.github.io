@@ -578,7 +578,7 @@
 <audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 57;
+const PLAYER_VERSION = 60;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -1906,15 +1906,16 @@ function togglePlay(){
   if (abMode && abAudioBufA && abAudioBufB) {
     if (abIsPlaying) {
       abPausedOffset = getABCurrentTime();
+      if (abSourceA) abSourceA.onended = null;
+      if (abSourceB) abSourceB.onended = null;
       [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
       abSourceA = null; abSourceB = null;
       abIsPlaying = false;
       isPlaying = false; setPlayIcon(false);
       stopABRaf();
+      airplayBridge.pause();
     } else {
       startABPlayback(abActiveSlot, abPausedOffset);
-      isPlaying = true; setPlayIcon(true);
-      startABRaf();
     }
     return;
   }
