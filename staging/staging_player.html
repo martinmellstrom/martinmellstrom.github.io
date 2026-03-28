@@ -349,20 +349,7 @@
   }
 
   /* ── A/B BLIND TEST ── */
-  .ab-waveform-blind-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(18, 18, 18, 0.82); /* iOS fallback — backdrop-filter unreliable over canvas */
-    backdrop-filter: blur(8px) brightness(0.85);
-    -webkit-backdrop-filter: blur(8px) brightness(0.85);
-    border-radius: 4px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.35s ease;
-  }
-  .ab-waveform-blind-overlay.visible {
-    opacity: 1;
-  }
+  .ab-waveform-blind-overlay { display: none; } /* ersatt av canvas filter-approach */
   .ab-blind-btn-row {
     display: flex;
     justify-content: center;
@@ -396,7 +383,7 @@
 
 <!-- APP -->
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 64 — Detta är en förhandsvisning.
+  <strong>⚠ STAGING</strong> — build 65 — Detta är en förhandsvisning.
   <a href="/player.html">Gå till live-sidan →</a>
 </div>
 <div id="app">
@@ -649,7 +636,7 @@
 <audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 64;
+const PLAYER_VERSION = 65;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
