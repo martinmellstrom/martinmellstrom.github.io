@@ -578,7 +578,7 @@
 <audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 60;
+const PLAYER_VERSION = 62;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -2000,11 +2000,14 @@ function closeExpandedPlayer() {
   if (abMode && abIsPlaying) {
     // A/B kan bara spelas i expanded player — pausa när den stängs
     abPausedOffset = getABCurrentTime();
+    if (abSourceA) abSourceA.onended = null;
+    if (abSourceB) abSourceB.onended = null;
     [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
     abSourceA = null; abSourceB = null;
     abIsPlaying = false;
     isPlaying = false; setPlayIcon(false);
     stopABRaf();
+    airplayBridge.pause();
   }
 }
 function adjustExpandedSpacing() {
