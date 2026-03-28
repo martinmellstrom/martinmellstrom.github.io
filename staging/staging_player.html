@@ -351,6 +351,7 @@
   .ab-waveform-blind-overlay {
     position: absolute;
     inset: 0;
+    background: rgba(18, 18, 18, 0.82); /* iOS fallback — backdrop-filter unreliable over canvas */
     backdrop-filter: blur(8px) brightness(0.85);
     -webkit-backdrop-filter: blur(8px) brightness(0.85);
     border-radius: 4px;
@@ -394,7 +395,7 @@
 
 <!-- APP -->
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 61 — Detta är en förhandsvisning.
+  <strong>⚠ STAGING</strong> — build 63 — Detta är en förhandsvisning.
   <a href="/player.html">Gå till live-sidan →</a>
 </div>
 <div id="app">
@@ -647,7 +648,7 @@
 <audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 61;
+const PLAYER_VERSION = 63;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
