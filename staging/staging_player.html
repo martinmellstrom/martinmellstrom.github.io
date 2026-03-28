@@ -792,17 +792,19 @@ function idbCoverPut(path, blob, rev) {
 //   abAudioBufA, abAudioBufB, abSourceA, abSourceB
 //   abGainNodeA, abGainNodeB, abStartContextTime, abStartOffset
 //   abIsPlaying, abPausedOffset, abRafId
+//   abBlindActive, abBlindSwapped
 // Constants: LS_KEY, LS_DUR_KEY, LS_WAVE_KEY, LS_GAIN_KEY
 // FUNCTIONS:
 //   Gain: loadGainCache, saveGainToCache, getGainFromCache, applyGain, dbToGain
 //         ensureAudioGraph, syncGainSlider, syncABGainSliders
-//   A/B buffered playback: loadABBuffer, startABPlayback, switchABSlot (ersatt),
+//   A/B buffered playback: loadABBuffer, startABPlayback, switchABSlot,
 //         getABCurrentTime, applyABGain, startABRaf, stopABRaf
 //   Waveform: buildWaveform, buildWaveformForA, buildWaveformForB,
 //             preloadAWaveform, preloadBWaveform
 //   Playback: playTrack, togglePlay, nextTrack, prevTrack
 //   A/B mode: setABSlot, toggleABMode, updateABExpandedUI, drawABWaveforms,
 //             drawOneABCanvas, handleABSectionClick
+//   A/B blind test: revealTitle, ab-blind-btn click handler
 // ═══════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════
@@ -857,6 +859,10 @@ let abStartOffset    = 0;      // offset i bufferten vid start (sekunder)
 let abIsPlaying      = false;  // om A/B-uppspelning pågår
 let abPausedOffset   = 0;      // position vid paus
 let abRafId          = null;   // requestAnimationFrame-ID för tiduppdateringsloop
+
+// A/B blind test state
+let abBlindActive    = false;  // blind test is active (names/waveforms hidden)
+let abBlindSwapped   = false;  // slots were randomly swapped during blind test
 
 // ── Regular buffered playback state ──
 let regularBuf              = null;
@@ -2344,6 +2350,7 @@ function showABExpandedLayout() {
   document.getElementById('exp-time-row').style.display = 'none';
   document.getElementById('exp-seek-wrap').style.display = 'none';
   document.getElementById('exp-gain-row').style.display = 'none';
+  document.getElementById('ab-blind-btn-row').style.display = '';
 }
 function hideABExpandedLayout() {
   document.getElementById('ab-expanded-content').classList.remove('ab-visible');
@@ -2353,29 +2360,37 @@ function hideABExpandedLayout() {
   document.getElementById('exp-time-row').style.display = '';
   document.getElementById('exp-seek-wrap').style.display = '';
   document.getElementById('exp-gain-row').style.display = 'none';  // Gain är dolt i regular mode
+  document.getElementById('ab-blind-btn-row').style.display = 'none';
 }
 
 function updateABExpandedUI() {
   const tA = abA !== null ? tracks[abA] : null;
   const tB = abB !== null ? tracks[abB] : null;
-  document.getElementById('ab-name-a').textContent = tA ? tA.name : '—';
-  document.getElementById('ab-name-b').textContent = tB ? tB.name : '—';
+  // In blind mode, show ??? for both names; show real names otherwise
+  document.getElementById('ab-name-a').textContent = abBlindActive ? '???' : (tA ? tA.name : '—');
+  document.getElementById('ab-name-b').textContent = abBlindActive ? '???' : (tB ? tB.name : '—');
+  // In blind mode, apply overlays to both waveforms
+  document.getElementById('ab-blind-overlay-a').classList.toggle('visible', abBlindActive);
+  document.getElementById('ab-blind-overlay-b').classList.toggle('visible', abBlindActive);
   document.getElementById('ab-section-a').classList.toggle('ab-inactive', abActiveSlot !== 'a');
   document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
   const grA = document.querySelector('#ab-section-a .ab-gain-row');
   const grB = document.querySelector('#ab-section-b .ab-gain-row');
-  if (grA) grA.style.display = abActiveSlot === 'a' ? '' : 'none';
-  if (grB) grB.style.display = abActiveSlot === 'b' ? '' : 'none';
+  // In blind mode, hide gain controls (they reveal identity)
+  if (grA) grA.style.display = (abBlindActive || abActiveSlot !== 'a') ? 'none' : '';
+  if (grB) grB.style.display = (abBlindActive || abActiveSlot !== 'b') ? 'none' : '';
   abGainSliderA.disabled = abActiveSlot !== 'a';
   abGainSliderB.disabled = abActiveSlot !== 'b';
   const badge = document.getElementById('np-ab-badge');
   if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
+  // Update blind btn label
+  const blindBtn = document.getElementById('ab-blind-btn');
+  if (blindBtn) {
+    blindBtn.textContent = abBlindActive ? 'Reveal' : 'Hide & Shuffle';
+    blindBtn.classList.toggle('reveal-mode', abBlindActive);
+  }
   drawABWaveforms();
   syncABGainSliders();
-  // debug
-  const _grB = document.querySelector('#ab-section-b .ab-gain-row');
-  const _secB = document.getElementById('ab-section-b');
-  const _expGR = document.getElementById('exp-gain-row');
 }
 
 function drawABWaveforms() {
@@ -2447,6 +2462,58 @@ function handleABSectionClick(e, slot) {
   }
 }
 
+// Click handler for the Hide & Shuffle / Reveal blind test button
+document.getElementById('ab-blind-btn').addEventListener('click', () => {
+  if (!abBlindActive) {
+    // Activate blind mode: optionally swap slots randomly
+    abBlindActive = true;
+    abBlindSwapped = Math.random() < 0.5;
+    if (abBlindSwapped) {
+      // Swap slot buffers, waveform data, gain values, and indices
+      [abA, abB] = [abB, abA];
+      [abAudioBufA, abAudioBufB] = [abAudioBufB, abAudioBufA];
+      [waveformDataA, waveformDataB] = [waveformDataB, waveformDataA];
+      [gainDbA, gainDbB] = [gainDbB, gainDbA];
+      [abGainNodeA, abGainNodeB] = [abGainNodeB, abGainNodeA];
+      // Re-wire gain nodes so A and B still route to the correct audio slot
+      if (abGainNodeA && abGainNodeB) {
+        abGainNodeA.gain.value = abActiveSlot === 'a' ? dbToGain(gainDbA) : 0;
+        abGainNodeB.gain.value = abActiveSlot === 'b' ? dbToGain(gainDbB) : 0;
+      }
+    }
+    // Always restart from the beginning in blind mode
+    abActiveSlot = 'a';
+    startABPlayback('a', 0);
+    updateABExpandedUI();
+    // Show ??? in mini-player
+    npName.textContent = '???';
+  } else {
+    // Reveal: restore real names with drop animation
+    abBlindActive = false;
+    const tA = abA !== null ? tracks[abA] : null;
+    const tB = abB !== null ? tracks[abB] : null;
+    const nameElA = document.getElementById('ab-name-a');
+    const nameElB = document.getElementById('ab-name-b');
+    if (tA && nameElA) revealTitle(nameElA, tA.name);
+    else if (nameElA) nameElA.textContent = '—';
+    if (tB && nameElB) revealTitle(nameElB, tB.name);
+    else if (nameElB) nameElB.textContent = '—';
+    // Restore overlays, gain controls, and badge
+    document.getElementById('ab-blind-overlay-a').classList.remove('visible');
+    document.getElementById('ab-blind-overlay-b').classList.remove('visible');
+    const grA = document.querySelector('#ab-section-a .ab-gain-row');
+    const grB = document.querySelector('#ab-section-b .ab-gain-row');
+    if (grA) grA.style.display = abActiveSlot === 'a' ? '' : 'none';
+    if (grB) grB.style.display = abActiveSlot === 'b' ? '' : 'none';
+    // Restore mini-player name
+    const tActive = abActiveSlot === 'a' ? tA : tB;
+    if (tActive) npName.textContent = tActive.name;
+    // Update button back to hide mode
+    const blindBtn = document.getElementById('ab-blind-btn');
+    if (blindBtn) { blindBtn.textContent = 'Hide \u0026 Shuffle'; blindBtn.classList.remove('reveal-mode'); }
+  }
+});
+
 // Söker framåt i bufferten efter nästa negativ→positiv nollgenomgång.
 // Max söktid 5 ms — ger bara några samples extra fördröjning vid byte.
 function findNextZeroCrossing(audioBuffer, fromSeconds) {
@@ -2458,6 +2525,24 @@ function findNextZeroCrossing(audioBuffer, fromSeconds) {
     if (ch[i] <= 0 && ch[i + 1] > 0) return (i + 1) / sr;
   }
   return fromSeconds; // fallback om ingen crossing hittas inom 5 ms
+}
+
+// Animates a text element character-by-character (right-to-left slide-in)
+function revealTitle(element, text) {
+  element.innerHTML = '';
+  const chars = text.split('');
+  chars.forEach((ch, i) => {
+    const span = document.createElement('span');
+    span.textContent = ch === ' ' ? '\u00A0' : ch;
+    span.style.cssText = `
+      display: inline-block;
+      opacity: 0;
+      transform: translateX(18px);
+      animation: charDrop 0.22s ease forwards;
+      animation-delay: ${(chars.length - 1 - i) * 38}ms;
+    `;
+    element.appendChild(span);
+  });
 }
 
 function switchABSlot(slot) {
@@ -2490,7 +2575,9 @@ function switchABSlot(slot) {
   if (targetIdx !== null) {
     currentIdx = targetIdx;
     const t = tracks[targetIdx];
-    npName.textContent = t.name;
+    if (!abBlindActive) {
+      npName.textContent = t.name;
+    }
     npSub.textContent = t.package ? formatPkgName(t.package) : 'Alla låtar';
     const badge = document.getElementById('np-ab-badge');
     if (badge) { badge.textContent = slot.toUpperCase(); }
@@ -2509,6 +2596,18 @@ function toggleABMode() {
     // A/B-läget pausar regular playback och använder Web Audio + MediaStreamDestination
     // för AirPlay-kompatibel A/B-uppspelning.
   } else {
+    // Reset blind mode if active
+    if (abBlindActive) {
+      abBlindActive = false;
+      abBlindSwapped = false;
+      document.getElementById('ab-blind-overlay-a')?.classList.remove('visible');
+      document.getElementById('ab-blind-overlay-b')?.classList.remove('visible');
+      const blindBtn = document.getElementById('ab-blind-btn');
+      if (blindBtn) { blindBtn.textContent = 'Hide \u0026 Shuffle'; blindBtn.classList.remove('reveal-mode'); }
+    }
+    // Hide blind button row
+    const blindBtnRow = document.getElementById('ab-blind-btn-row');
+    if (blindBtnRow) blindBtnRow.style.display = 'none';
     // Städning — stoppa sources och frigör resurser
     audio.pause();
     stopABRaf();
@@ -2536,6 +2635,15 @@ function toggleABMode() {
 function setABSlot(slot, gi, event) {
   event.stopPropagation();
   ensureAudioCtx();
+  // Reset blind mode on slot change
+  if (abBlindActive) {
+    abBlindActive = false;
+    abBlindSwapped = false;
+    document.getElementById('ab-blind-overlay-a')?.classList.remove('visible');
+    document.getElementById('ab-blind-overlay-b')?.classList.remove('visible');
+    const blindBtn = document.getElementById('ab-blind-btn');
+    if (blindBtn) { blindBtn.textContent = 'Hide \u0026 Shuffle'; blindBtn.classList.remove('reveal-mode'); }
+  }
   if (slot === 'a') {
     if (abB === gi) abB = null;
     if (abA === gi) {
@@ -2548,7 +2656,7 @@ function setABSlot(slot, gi, event) {
       // Uppdatera UI direkt utan playTrack
       currentIdx = gi;
       const t = tracks[gi];
-      npName.textContent = t.name;
+      if (!abBlindActive) npName.textContent = t.name;
       npSub.textContent = t.package ? formatPkgName(t.package) : 'Alla låtar';
       const badge = document.getElementById('np-ab-badge');
       if (badge) { badge.textContent = 'A'; badge.classList.add('ab-visible'); }
@@ -2759,6 +2867,57 @@ document.getElementById('back-btn').addEventListener('click',()=>{if(searchQuery
 document.getElementById('sync-pkg-btn').addEventListener('click',()=>syncPackage(activePkg));
 document.getElementById('delete-pkg-btn').addEventListener('click',async()=>{if(confirm(`Ta bort lokalt sparade filer för "${activePkg==='all'?'alla låtar':formatPkgName(activePkg)}"?`))await deletePackageLocal(activePkg);});
 document.getElementById('ab-mode-btn').addEventListener('click', toggleABMode);
+
+document.getElementById('ab-blind-btn').addEventListener('click', () => {
+  if (!abBlindActive) {
+    // Hide & Shuffle
+    abBlindSwapped = Math.random() < 0.5;
+    if (abBlindSwapped) {
+      // Swap A and B slots
+      const tmpIdx = abA; abA = abB; abB = tmpIdx;
+      const tmpGain = gainDbA; gainDbA = gainDbB; gainDbB = tmpGain;
+      const tmpBuf = abAudioBufA; abAudioBufA = abAudioBufB; abAudioBufB = tmpBuf;
+      // Switch active slot to match new mapping
+      const newSlot = abActiveSlot === 'a' ? 'b' : 'a';
+      switchABSlot(newSlot);
+    }
+    abBlindActive = true;
+    // Hide track names
+    const abNameA = document.getElementById('ab-name-a');
+    const abNameB = document.getElementById('ab-name-b');
+    if (abNameA) abNameA.textContent = '???';
+    if (abNameB) abNameB.textContent = '???';
+    // Hide transport name
+    npName.textContent = '???';
+    // Show frosted glass overlays
+    document.getElementById('ab-blind-overlay-a')?.classList.add('visible');
+    document.getElementById('ab-blind-overlay-b')?.classList.add('visible');
+    // Update button
+    const btn = document.getElementById('ab-blind-btn');
+    btn.textContent = 'Reveal';
+    btn.classList.add('reveal-mode');
+  } else {
+    // Reveal
+    abBlindActive = false;
+    // Remove frosted glass
+    document.getElementById('ab-blind-overlay-a')?.classList.remove('visible');
+    document.getElementById('ab-blind-overlay-b')?.classList.remove('visible');
+    // Restore transport name
+    const activeIdx = abActiveSlot === 'a' ? abA : abB;
+    if (activeIdx !== null && tracks[activeIdx]) {
+      npName.textContent = tracks[activeIdx].name;
+    }
+    // Animate titles back in
+    const abNameA = document.getElementById('ab-name-a');
+    const abNameB = document.getElementById('ab-name-b');
+    if (abNameA && abA !== null && tracks[abA]) revealTitle(abNameA, tracks[abA].name);
+    if (abNameB && abB !== null && tracks[abB]) revealTitle(abNameB, tracks[abB].name);
+    // Update button
+    const btn = document.getElementById('ab-blind-btn');
+    btn.textContent = 'Hide \u0026 Shuffle';
+    btn.classList.remove('reveal-mode');
+  }
+});
 
 playBtn.addEventListener('click',togglePlay);
 document.getElementById('prev-btn').addEventListener('click',prevTrack);
