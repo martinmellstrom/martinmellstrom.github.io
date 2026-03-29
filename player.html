@@ -181,13 +181,15 @@
   .np-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .time-display { font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; flex-shrink: 0; letter-spacing: 0.03em; }
   .player-controls { display: flex; align-items: center; justify-content: center; padding: 40px 8px 8px; gap: 8px; flex-shrink: 0; }
-  .ctrl { background: none; border: none; color: var(--text-dim); width: 52px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0; -webkit-tap-highlight-color: transparent; position: relative; }
+  .ctrl { background: none; border: none; color: var(--text-dim); width: 56px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0; -webkit-tap-highlight-color: transparent; position: relative; }
   .ctrl svg { width: 18px; height: 18px; fill: currentColor; display: block; }
   .ctrl:active { background: var(--card); color: var(--text); }
   .ctrl.active { color: var(--gold); }
-  #play-btn { width: 56px; height: 40px; background: var(--gold); color: var(--bg); border-radius: 8px; margin: 0 2px; }
-  #play-btn svg { width: 16px; height: 16px; }
+  #play-btn { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 8px; margin: 0; }
+  #play-btn svg { width: 20px; height: 20px; }
   #play-btn:active { background: #e0bb5c; }
+
+
   .repeat-one-badge { position: absolute; top: 4px; right: 6px; font-size: 8px; font-family: 'Space Mono', monospace; color: var(--gold); line-height: 1; pointer-events: none; }
 
   /* ── EXPANDED PLAYER ── */
@@ -223,9 +225,11 @@
 
   .exp-controls { display: flex; align-items: center; justify-content: center; padding: 20px 8px 8px; flex-shrink: 0; }
   .exp-controls .ctrl { width: 56px; height: 48px; }
-  .exp-controls #play-btn-exp { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0 4px; -webkit-tap-highlight-color: transparent; }
+  .exp-controls #play-btn-exp { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0; -webkit-tap-highlight-color: transparent; }
   .exp-controls #play-btn-exp svg { width: 20px; height: 20px; fill: currentColor; }
   .exp-controls #play-btn-exp:active { background: #e0bb5c; }
+  #repeat-btn-exp { margin-right: 8px; }
+  #shuffle-btn-exp { margin-left: 8px; }
 
   /* Close button for expanded player */
   .exp-close-btn {
@@ -596,7 +600,7 @@
 
 <script>
 
-const PLAYER_VERSION = 70;
+const PLAYER_VERSION = 76;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -1569,7 +1573,9 @@ async function showPlaylist(pkg) {
   document.getElementById('playlist-view').classList.add('visible');
   document.getElementById('back-btn').classList.add('visible');
 
-  const pkgTracks = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
+  const pkgTracks = pkg==='all'
+    ? [...tracks].sort((a,b)=>a.name.localeCompare(b.name))
+    : tracks.filter(t=>t.package===pkg);
   const name = pkg==='all'?'All tracks':formatPkgName(pkg);
   document.getElementById('playlist-name').textContent = name;
   document.getElementById('playlist-count').textContent = `${pkgTracks.length} tracks`;
@@ -1890,13 +1896,10 @@ async function playTrack(idx) {
     if (stored && revMatch) {
       blob = stored.blob;
     } else {
-      if (stored && !revMatch) setStatus('loading',`Updating: ${t.name}…`);
-      else setStatus('loading',`Loading: ${t.name}…`);
       const link=await getTmpLink(t.path);
       blob=await (await fetch(link)).blob();
       await idbPut(t.path, blob, t.rev);
       syncedPaths.set(t.path, t.rev||null);
-      setStatus('ok','');
     }
     stopRegular();
     ensureAudioCtx();
@@ -1904,11 +1907,9 @@ async function playTrack(idx) {
     activeObjUrl = URL.createObjectURL(blob);
     audio.loop = false;
     audio.src = activeObjUrl;
-    setStatus('loading', 'Decoding…');
     const _arrBuf = await blob.arrayBuffer();
     regularBuf = await audioCtx.decodeAudioData(_arrBuf);
     if (!t.duration) { t.duration = regularBuf.duration; saveDurationToCache(t.rev, regularBuf.duration); }
-    setStatus('ok', '');
     currentGainDb = getGainFromCache(t.rev);
     syncGainSlider(currentGainDb);
     updateMediaSession(t);
