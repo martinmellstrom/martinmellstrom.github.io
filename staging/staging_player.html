@@ -368,7 +368,7 @@
 </head>
 <body>
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 73 — Detta är en förhandsvisning.
+  <strong>⚠ STAGING</strong> — build 74 — Detta är en förhandsvisning.
   <a href="/player.html">Gå till live-sidan →</a>
 </div>
 
@@ -620,7 +620,7 @@
 
 <script>
 
-const PLAYER_VERSION = 73;
+const PLAYER_VERSION = 74;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -1918,7 +1918,6 @@ async function playTrack(idx) {
       blob=await (await fetch(link)).blob();
       await idbPut(t.path, blob, t.rev);
       syncedPaths.set(t.path, t.rev||null);
-      setStatus('ok','');
     }
     stopRegular();
     ensureAudioCtx();
@@ -1929,7 +1928,6 @@ async function playTrack(idx) {
     const _arrBuf = await blob.arrayBuffer();
     regularBuf = await audioCtx.decodeAudioData(_arrBuf);
     if (!t.duration) { t.duration = regularBuf.duration; saveDurationToCache(t.rev, regularBuf.duration); }
-    setStatus('ok', '');
     currentGainDb = getGainFromCache(t.rev);
     syncGainSlider(currentGainDb);
     updateMediaSession(t);
