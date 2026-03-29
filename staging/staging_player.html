@@ -3,6 +3,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>[STAGING] Audrig</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -349,27 +350,15 @@
     to { opacity: 1; transform: translateX(0); }
   }
 
-  /* ── STAGING BANNER ── */
-  .staging-banner {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-    height: 36px;
-    background: repeating-linear-gradient(45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px);
-    border-bottom: 2px solid #ff4444;
-    padding: 8px 16px;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
-    text-transform: uppercase; color: #ff8888;
-  }
-  .staging-banner strong { color: #ff4444; font-weight: 700; }
-  .staging-banner a { color: #ff8888; text-decoration: underline; }
+  .staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 11px; font-family: monospace; color: #fff; background: repeating-linear-gradient(45deg, #c00 0px, #c00 10px, #900 10px, #900 20px); }
+  .staging-banner a { color: #fff; text-decoration: underline; }
   body { padding-top: 36px; }
 </style>
-  <meta name="robots" content="noindex, nofollow">
 </head>
 <body>
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 75 — Detta är en förhandsvisning.
-  <a href="/player.html">Gå till live-sidan →</a>
+  <strong>⚠ STAGING</strong> — build 77 — This is a preview.
+  <a href="/player.html">Go to live →</a>
 </div>
 
 <!-- APP -->
@@ -620,7 +609,7 @@
 
 <script>
 
-const PLAYER_VERSION = 75;
+const PLAYER_VERSION = 77;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -1916,10 +1905,13 @@ async function playTrack(idx) {
     if (stored && revMatch) {
       blob = stored.blob;
     } else {
+      if (stored && !revMatch) setStatus('loading',`Updating: ${t.name}…`);
+      else setStatus('loading',`Loading: ${t.name}…`);
       const link=await getTmpLink(t.path);
       blob=await (await fetch(link)).blob();
       await idbPut(t.path, blob, t.rev);
       syncedPaths.set(t.path, t.rev||null);
+      setStatus('ok', stored && !revMatch ? `Updated: ${t.name}` : '');
     }
     stopRegular();
     ensureAudioCtx();
