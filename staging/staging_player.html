@@ -368,7 +368,7 @@
 </head>
 <body>
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 74 — Detta är en förhandsvisning.
+  <strong>⚠ STAGING</strong> — build 75 — Detta är en förhandsvisning.
   <a href="/player.html">Gå till live-sidan →</a>
 </div>
 
@@ -620,7 +620,7 @@
 
 <script>
 
-const PLAYER_VERSION = 74;
+const PLAYER_VERSION = 75;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -1593,7 +1593,9 @@ async function showPlaylist(pkg) {
   document.getElementById('playlist-view').classList.add('visible');
   document.getElementById('back-btn').classList.add('visible');
 
-  const pkgTracks = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
+  const pkgTracks = pkg==='all'
+    ? [...tracks].sort((a,b)=>a.name.localeCompare(b.name))
+    : tracks.filter(t=>t.package===pkg);
   const name = pkg==='all'?'All tracks':formatPkgName(pkg);
   document.getElementById('playlist-name').textContent = name;
   document.getElementById('playlist-count').textContent = `${pkgTracks.length} tracks`;
