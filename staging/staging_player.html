@@ -1,8 +1,7 @@
-<html lang="en">
+[Resource from github at repo://martinmellstrom/martinmellstrom.github.io/sha/3ff6cd32df911bcff45acf698d4cd5f85525e3f2/contents/player.html] <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
 <title>[STAGING] Audrig</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -26,16 +25,11 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── STAGING BANNER ── */
-  #staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: #fff; background: repeating-linear-gradient(135deg, #c00 0, #c00 10px, #900 10px, #900 20px); }
-  #staging-banner a { color: #fff; text-decoration: underline; }
-
   body {
     background: var(--bg); color: var(--text);
     font-family: 'Space Mono', monospace; font-size: 13px;
     min-height: 100dvh; display: flex; flex-direction: column;
     overflow-x: hidden; max-width: 100vw;
-    padding-top: 36px;
   }
   body::before {
     content: ''; position: fixed; inset: 0;
@@ -187,13 +181,15 @@
   .np-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .time-display { font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; flex-shrink: 0; letter-spacing: 0.03em; }
   .player-controls { display: flex; align-items: center; justify-content: center; padding: 40px 8px 8px; gap: 8px; flex-shrink: 0; }
-  .ctrl { background: none; border: none; color: var(--text-dim); width: 52px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0; -webkit-tap-highlight-color: transparent; position: relative; }
+  .ctrl { background: none; border: none; color: var(--text-dim); width: 56px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0; -webkit-tap-highlight-color: transparent; position: relative; }
   .ctrl svg { width: 18px; height: 18px; fill: currentColor; display: block; }
   .ctrl:active { background: var(--card); color: var(--text); }
   .ctrl.active { color: var(--gold); }
-  #play-btn { width: 56px; height: 40px; background: var(--gold); color: var(--bg); border-radius: 8px; margin: 0 2px; }
-  #play-btn svg { width: 16px; height: 16px; }
+  #play-btn { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 8px; margin: 0; }
+  #play-btn svg { width: 20px; height: 20px; }
   #play-btn:active { background: #e0bb5c; }
+  #repeat-btn { margin-right: 27px; }
+  #shuffle-btn { margin-left: 27px; }
   .repeat-one-badge { position: absolute; top: 4px; right: 6px; font-size: 8px; font-family: 'Space Mono', monospace; color: var(--gold); line-height: 1; pointer-events: none; }
 
   /* ── EXPANDED PLAYER ── */
@@ -229,9 +225,11 @@
 
   .exp-controls { display: flex; align-items: center; justify-content: center; padding: 20px 8px 8px; flex-shrink: 0; }
   .exp-controls .ctrl { width: 56px; height: 48px; }
-  .exp-controls #play-btn-exp { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0 4px; -webkit-tap-highlight-color: transparent; }
+  .exp-controls #play-btn-exp { width: 64px; height: 48px; background: var(--gold); color: var(--bg); border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 0; -webkit-tap-highlight-color: transparent; }
   .exp-controls #play-btn-exp svg { width: 20px; height: 20px; fill: currentColor; }
   .exp-controls #play-btn-exp:active { background: #e0bb5c; }
+  #repeat-btn-exp { margin-right: 35px; }
+  #shuffle-btn-exp { margin-left: 35px; }
 
   /* Close button for expanded player */
   .exp-close-btn {
@@ -350,14 +348,32 @@
   @keyframes charDrop {
     to { opacity: 1; transform: translateX(0); }
   }
+
+  /* ── STAGING BANNER ── */
+  .staging-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 36px;
+    background: repeating-linear-gradient(45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px);
+    border-bottom: 2px solid #ff4444;
+    padding: 8px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
+    text-transform: uppercase; color: #ff8888;
+  }
+  .staging-banner strong { color: #ff4444; font-weight: 700; }
+  .staging-banner a { color: #ff8888; text-decoration: underline; }
+  body { padding-top: 36px; }
 </style>
+  <meta name="robots" content="noindex, nofollow">
 </head>
 <body>
+<div class="staging-banner">
+  <strong>⚠ STAGING</strong> — build 71 — Detta är en förhandsvisning.
+  <a href="/player.html">Gå till live-sidan →</a>
+</div>
 
 <!-- APP -->
 <div id="app">
-
-<div id="staging-banner">⚠ STAGING — build 69 — Detta är en förhandsvisning. &nbsp;<a href="https://www.martinmellstrom.com/player.html">→ Live</a></div>
 
 <header>
   <div class="header-left">
@@ -603,7 +619,9 @@
 <audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 69;
+
+const PLAYER_VERSION = 71;
+
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
