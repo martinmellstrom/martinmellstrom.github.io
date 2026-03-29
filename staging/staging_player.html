@@ -1,9 +1,9 @@
-<html lang="sv">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>[STAGING] Martin Mellström — Music Player</title>
+<title>[STAGING] Audrig</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -25,18 +25,10 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  .staging-banner {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-    height: 36px;
-    background: repeating-linear-gradient(45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px);
-    border-bottom: 2px solid #ff4444;
-    padding: 8px 16px;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
-    text-transform: uppercase; color: #ff8888;
-  }
-  .staging-banner strong { color: #ff4444; font-weight: 700; }
-  .staging-banner a { color: #ff8888; text-decoration: underline; }
+
+  /* ── STAGING BANNER ── */
+  #staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: #fff; background: repeating-linear-gradient(135deg, #c00 0, #c00 10px, #900 10px, #900 20px); }
+  #staging-banner a { color: #fff; text-decoration: underline; }
 
   body {
     background: var(--bg); color: var(--text);
@@ -349,73 +341,68 @@
   }
 
   /* ── A/B BLIND TEST ── */
-  .ab-waveform-blind-overlay { display: none; } /* ersatt av canvas filter-approach */
+  .ab-waveform-blind-overlay { display: none; }
   .ab-blind-btn-row {
     display: flex;
     justify-content: center;
     padding: 8px 20px 4px;
   }
   @keyframes charDrop {
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    to { opacity: 1; transform: translateX(0); }
   }
 </style>
 </head>
 <body>
 
 <!-- APP -->
-<div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 66 — Detta är en förhandsvisning.
-  <a href="/player.html">Gå till live-sidan →</a>
-</div>
 <div id="app">
+
+<div id="staging-banner">⚠ STAGING — build 68 — Detta är en förhandsvisning. &nbsp;<a href="https://www.martinmellstrom.com/player.html">→ Live</a></div>
 
 <header>
   <div class="header-left">
     <button class="back-btn" id="back-btn">
       <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
     </button>
-    <div class="logo">Martin Mellström <span>/ player</span></div>
+    <div class="logo">Audrig</div>
   </div>
   <div class="header-controls">
-    <button class="btn btn-icon" id="search-btn" title="Sök" style="font-size:14px;"><svg style="width:14px;height:14px;display:block;" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
-    <button class="btn btn-icon" id="refresh-btn" title="Hämta från Dropbox">↻</button>
-    <button class="btn btn-icon" id="settings-btn" title="Inställningar">⚙</button>
-    <button class="btn btn-icon" id="help-btn" title="Hjälp">?</button>
+    <button class="btn btn-icon" id="search-btn" title="Search" style="font-size:14px;"><svg style="width:14px;height:14px;display:block;" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+    <button class="btn btn-icon" id="refresh-btn" title="Fetch from Dropbox">↻</button>
+    <button class="btn btn-icon" id="settings-btn" title="Settings">⚙</button>
+    <button class="btn btn-icon" id="help-btn" title="Help">?</button>
   </div>
 </header>
 
 <div id="config-panel" style="display:none">
   <div class="config-grid">
     <div class="config-field" style="grid-column:1/-1">
-      <label>Dropbox-anslutning</label>
+      <label>Dropbox connection</label>
       <div id="oauth-status-row" style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span id="oauth-status-text" style="font-size:11px;color:var(--text-dim);flex:1;">Inte ansluten</span>
-        <button class="btn btn-primary" id="oauth-connect-btn" style="font-size:10px;padding:6px 12px;">Anslut Dropbox</button>
-        <button class="btn btn-danger" id="oauth-disconnect-btn" style="font-size:10px;padding:6px 12px;display:none;">Koppla från</button>
+        <span id="oauth-status-text" style="font-size:11px;color:var(--text-dim);flex:1;">Not connected</span>
+        <button class="btn btn-primary" id="oauth-connect-btn" style="font-size:10px;padding:6px 12px;">Connect Dropbox</button>
+        <button class="btn btn-danger" id="oauth-disconnect-btn" style="font-size:10px;padding:6px 12px;display:none;">Disconnect</button>
       </div>
     </div>
     <div class="config-field">
-      <label>Mapp (lämna tomt för rot)</label>
+      <label>Folder (leave empty for root)</label>
       <input type="text" id="cfg-folder" placeholder="">
     </div>
     <div class="config-field">
-      <label>Filformat</label>
+      <label>File format</label>
       <input type="text" id="cfg-exts" value="mp3,wav,flac,aiff,m4a">
     </div>
   </div>
   <div class="config-actions">
-    <button class="btn btn-primary" id="save-config-btn">Spara &amp; hämta</button>
-    <button class="btn" id="cancel-config-btn">Avbryt</button>
+    <button class="btn btn-primary" id="save-config-btn">Save &amp; fetch</button>
+    <button class="btn" id="cancel-config-btn">Cancel</button>
   </div>
 </div>
 
 <div id="search-panel" style="display:none">
   <div style="padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--surface);position:relative;z-index:9;animation:slideDown 0.2s ease;">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--text-dim)" style="flex-shrink:0"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-    <input type="text" id="search-input" placeholder="Sök bland alla låtar…" autocomplete="off" autocorrect="off" spellcheck="false" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:4px 0;">
+    <input type="text" id="search-input" placeholder="Search all tracks…" autocomplete="off" autocorrect="off" spellcheck="false" style="flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;padding:4px 0;">
     <button id="search-clear-btn" style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:4px;display:none;align-items:center;-webkit-tap-highlight-color:transparent;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
@@ -424,7 +411,7 @@
 
 <div id="status-bar">
   <div class="dot"></div>
-  <span id="status-text">Anslut Dropbox via ⚙ för att komma igång</span>
+  <span id="status-text">Connect Dropbox via ⚙ to get started</span>
 </div>
 
 <div id="main-content">
@@ -432,7 +419,7 @@
   <!-- LIBRARY -->
   <div id="library-view">
     <div style="padding: 16px 14px;">
-      <div class="library-section-title">Bibliotek</div>
+      <div class="library-section-title">Library</div>
       <div class="pkg-grid" id="pkg-grid"></div>
     </div>
   </div>
@@ -449,11 +436,11 @@
         <div class="playlist-actions">
           <button class="btn btn-success" id="sync-pkg-btn" style="font-size:10px;padding:6px 10px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
-            Ladda ner paket
+            Download pack
           </button>
           <button class="btn btn-danger" id="delete-pkg-btn" style="font-size:10px;padding:6px 10px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-            Ta bort lokalt
+            Remove local
           </button>
           <button class="btn" id="ab-mode-btn" style="font-size:10px;padding:6px 10px;">A/B Mode</button>
         </div>
@@ -475,7 +462,7 @@
   <div class="player-info-row">
     <div class="now-playing">
       <div style="display:flex;align-items:center;overflow:hidden;">
-        <div class="np-name" id="np-name" style="flex:1;min-width:0;">Ingen låt vald</div>
+        <div class="np-name" id="np-name" style="flex:1;min-width:0;">No track selected</div>
         <span class="np-ab-badge" id="np-ab-badge">A</span>
       </div>
       <div class="np-sub" id="np-sub">—</div>
@@ -504,7 +491,7 @@
 
 <!-- EXPANDED PLAYER -->
 <div id="expanded-player">
-  <button class="exp-close-btn" onclick="closeExpandedPlayer()" aria-label="Stäng">
+  <button class="exp-close-btn" onclick="closeExpandedPlayer()" aria-label="Close">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
       <line x1="1" y1="1" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       <line x1="15" y1="1" x2="1" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -518,10 +505,8 @@
         <span class="ab-badge">A</span>
         <span class="ab-section-name" id="ab-name-a">—</span>
       </div>
-      <div style="position: relative;">
-        <canvas class="ab-canvas" id="ab-canvas-a"></canvas>
-        <div class="ab-waveform-blind-overlay" id="ab-blind-overlay-a"></div>
-      </div>
+      <canvas class="ab-canvas" id="ab-canvas-a"></canvas>
+      <div class="ab-waveform-blind-overlay" id="ab-blind-overlay-a"></div>
       <div class="ab-gain-row">
         <span class="exp-gain-label">GAIN</span>
         <input type="range" class="exp-gain-slider ab-gain-slider" id="ab-gain-slider-a"
@@ -535,10 +520,8 @@
         <span class="ab-badge">B</span>
         <span class="ab-section-name" id="ab-name-b">—</span>
       </div>
-      <div style="position: relative;">
-        <canvas class="ab-canvas" id="ab-canvas-b"></canvas>
-        <div class="ab-waveform-blind-overlay" id="ab-blind-overlay-b"></div>
-      </div>
+      <canvas class="ab-canvas" id="ab-canvas-b"></canvas>
+      <div class="ab-waveform-blind-overlay" id="ab-blind-overlay-b"></div>
       <div class="ab-gain-row">
         <span class="exp-gain-label">GAIN</span>
         <input type="range" class="exp-gain-slider ab-gain-slider" id="ab-gain-slider-b"
@@ -553,7 +536,7 @@
     </div>
   </div>
   <div class="exp-meta" id="exp-meta">
-    <div class="exp-name" id="exp-name">Ingen låt vald</div>
+    <div class="exp-name" id="exp-name">No track selected</div>
     <div class="exp-sub" id="exp-sub">—</div>
   </div>
   <div class="exp-waveform-wrap" id="exp-waveform-wrap">
@@ -566,14 +549,14 @@
   <div class="exp-seek-wrap" id="exp-seek-wrap">
     <div class="exp-seek-fill" id="exp-seek-fill"></div>
   </div>
+  <div class="ab-blind-btn-row" id="ab-blind-btn-row" style="display:none;">
+    <button class="btn" id="ab-blind-btn">Hide &amp; Shuffle</button>
+  </div>
   <div class="exp-gain-row" id="exp-gain-row">
     <label class="exp-gain-label">GAIN</label>
     <input type="range" class="exp-gain-slider" id="exp-gain-slider"
       min="-6" max="6" step="0.5" value="0">
     <span class="exp-gain-value" id="exp-gain-value" style="visibility:hidden;">0.0 dB</span>
-  </div>
-  <div class="ab-blind-btn-row" id="ab-blind-btn-row" style="display:none;">
-    <button class="btn" id="ab-blind-btn">Hide &amp; Shuffle</button>
   </div>
   <div class="exp-controls">
     <button class="ctrl" id="prev-btn-exp">
@@ -599,18 +582,18 @@
 <div class="modal-backdrop" id="help-modal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('help-modal')">×</button>
-    <div class="modal-title">Kom igång</div>
+    <div class="modal-title">Get started</div>
     <div id="help-version" style="font-size:10px;font-family:'Space Mono',monospace;color:var(--text-dim);margin:-10px 0 14px;letter-spacing:0.04em;">Version —</div>
-    <p><strong>1. Anslut Dropbox</strong><br>
-    Tryck ⚙ → <em>Anslut Dropbox</em>. En Dropbox-inloggningssida öppnas — godkänn åtkomst. Spelaren ansluter automatiskt och hämtar dina låtar. Token förnyas i bakgrunden, du behöver aldrig göra detta igen.</p>
-    <p><strong>2. Mappstruktur</strong><br>
-    Lägg låtar i undermappar — varje mapp blir ett paket/spellista. Lägg en bild döpt <code>cover.jpg</code> i mappen för omslagsbild.</p>
+    <p><strong>1. Connect Dropbox</strong><br>
+    Press ⚙ → <em>Connect Dropbox</em>. A Dropbox login page opens — grant access. The player connects automatically and fetches your tracks. The token renews in the background; you never need to do this again.</p>
+    <p><strong>2. Folder structure</strong><br>
+    Place tracks in subfolders — each folder becomes a pack/playlist. Add an image named <code>cover.jpg</code> to the folder for cover art.</p>
     <p><strong>3. Offline</strong><br>
-    Öppna ett paket och tryck "Ladda ner paket". Filerna sparas lokalt i webbläsaren och finns kvar nästa session. En grön bock visar vilka låtar som är sparade.</p>
-    <p><strong>4. A/B-jämförelseläge</strong><br>
-    Tryck <strong>A/B</strong>-knappen i spellistan för att aktivera jämförelseläget. Varje låt får då A- och B-knappar — tryck för att tilldela låtar till respektive plats. I den utvidgade spelaren visas A och B med vågform; tryck på ett avsnitt för att växla vilket spår som spelas. Låten loopar automatiskt så du kan lyssna i lugn och ro. Tryck <strong>A/B</strong> igen för att stänga av läget.</p>
+    Open a pack and press "Download pack". Files are saved locally in the browser and persist across sessions. A green checkmark shows which tracks are saved.</p>
+    <p><strong>4. A/B comparison mode</strong><br>
+    Press the <strong>A/B</strong> button in the playlist to activate comparison mode. Each track gets A and B buttons — press to assign tracks to each slot. In the expanded player, A and B are shown with waveforms; press a section to switch which track plays. The track loops automatically so you can listen at leisure. Press <strong>A/B</strong> again to exit the mode.</p>
     <div class="config-actions" style="margin-top:14px">
-      <button class="btn btn-primary" onclick="closeModal('help-modal');openSettings()">Öppna inställningar</button>
+      <button class="btn btn-primary" onclick="closeModal('help-modal');openSettings()">Open settings</button>
     </div>
   </div>
 </div>
@@ -620,7 +603,7 @@
 <audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 66;
+const PLAYER_VERSION = 68;
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
@@ -832,8 +815,6 @@ let abStartOffset    = 0;      // offset i bufferten vid start (sekunder)
 let abIsPlaying      = false;  // om A/B-uppspelning pågår
 let abPausedOffset   = 0;      // position vid paus
 let abRafId          = null;   // requestAnimationFrame-ID för tiduppdateringsloop
-
-// A/B blind test state
 let abBlindActive    = false;  // blind test is active (names/waveforms hidden)
 let abBlindSwapped   = false;  // slots were randomly swapped during blind test
 
@@ -1230,7 +1211,7 @@ function clearOAuth() {
 function isOAuthConnected() { return !!(oauthData?.refresh_token); }
 
 async function ensureAccessToken() {
-  if (!oauthData?.refresh_token) throw new Error('Inte ansluten till Dropbox');
+  if (!oauthData?.refresh_token) throw new Error('Not connected to Dropbox');
   const margin = 5 * 60 * 1000;
   if (oauthData.access_token && oauthData.expires_at && Date.now() < oauthData.expires_at - margin) {
     return oauthData.access_token;
@@ -1247,7 +1228,7 @@ async function ensureAccessToken() {
   });
   if (!res.ok) {
     clearOAuth(); updateOAuthUI();
-    throw new Error('Token-förnyelse misslyckades — anslut Dropbox igen');
+    throw new Error('Token renewal failed — reconnect Dropbox');
   }
   const d = await res.json();
   saveOAuth({
@@ -1304,9 +1285,9 @@ async function startOAuthFlow() {
 
 async function handleAuthCode(code) {
   const verifier = localStorage.getItem(LS_PKCE_KEY);
-  if (!verifier) { setStatus('error', 'PKCE-verifier saknas — försök igen'); return; }
+  if (!verifier) { setStatus('error', 'PKCE verifier missing — try again'); return; }
   localStorage.removeItem(LS_PKCE_KEY);
-  setStatus('loading', 'Ansluter till Dropbox…');
+  setStatus('loading', 'Connecting to Dropbox…');
   try {
     const res = await fetch(DBX_TOKEN_URL, {
       method: 'POST',
@@ -1321,7 +1302,7 @@ async function handleAuthCode(code) {
     });
     if (!res.ok) {
       const e = await res.json().catch(()=>({}));
-      throw new Error(e?.error_description || e?.error || 'Kunde inte hämta token');
+      throw new Error(e?.error_description || e?.error || 'Could not fetch token');
     }
     const d = await res.json();
     saveOAuth({
@@ -1332,10 +1313,10 @@ async function handleAuthCode(code) {
     saveState();
     updateOAuthUI();
     closeSettings();
-    setStatus('loading', 'Ansluten — hämtar låtar…');
+    setStatus('loading', 'Connected — fetching tracks…');
     fetchTracks();
   } catch(err) {
-    setStatus('error', `OAuth-fel: ${err.message}`);
+    setStatus('error', `OAuth error: ${err.message}`);
   }
 }
 
@@ -1346,12 +1327,12 @@ function updateOAuthUI() {
   const disconnectBtn= document.getElementById('oauth-disconnect-btn');
   if (!statusEl) return;
   if (connected) {
-    statusEl.textContent = '✓ Ansluten till Dropbox';
+    statusEl.textContent = '✓ Connected to Dropbox';
     statusEl.style.color = 'var(--green)';
     connectBtn.style.display    = 'none';
     disconnectBtn.style.display = '';
   } else {
-    statusEl.textContent = 'Inte ansluten';
+    statusEl.textContent = 'Not connected';
     statusEl.style.color = 'var(--text-dim)';
     connectBtn.style.display    = '';
     disconnectBtn.style.display = 'none';
@@ -1401,8 +1382,8 @@ async function listAllFiles(folder) {
 //  FETCH
 // ═══════════════════════════════════════════════
 async function fetchTracks() {
-  if (!isOAuthConnected()){setStatus('error','Anslut Dropbox via ⚙ för att komma igång');return;}
-  setStatus('loading','Hämtar från Dropbox…');
+  if (!isOAuthConnected()){setStatus('error','Connect Dropbox via ⚙ to get started');return;}
+  setStatus('loading','Fetching from Dropbox…');
   try {
     const {audio:aFiles,covers} = await listAllFiles(config.folder);
     const folderLower = (config.folder||'').toLowerCase();
@@ -1437,8 +1418,8 @@ async function fetchTracks() {
     fetchAllSongsCover();
     saveState();
     renderLibrary();
-    setStatus('ok',`${tracks.length} låtar hämtade`);
-  } catch(e){setStatus('error',`Fel: ${e.message}`);}
+    setStatus('ok',`${tracks.length} tracks fetched`);
+  } catch(e){setStatus('error',`Error: ${e.message}`);}
 }
 
 async function refreshSynced() {
@@ -1516,12 +1497,12 @@ function _applyAllSongsCoverToDOM() {
   const el = document.getElementById('card-cover-all');
   if (el) {
     const badge = el.querySelector('.pkg-sync-badge');
-    el.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+    el.innerHTML = `<img src="${allSongsCoverUrl}" alt="All tracks">`;
     if (badge) el.appendChild(badge);
   }
   if (activePkg === 'all') {
     const coverEl = document.getElementById('playlist-cover');
-    if (coverEl) coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+    if (coverEl) coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="All tracks">`;
   }
 }
 
@@ -1595,13 +1576,13 @@ async function showPlaylist(pkg) {
   document.getElementById('back-btn').classList.add('visible');
 
   const pkgTracks = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
-  const name = pkg==='all'?'Alla låtar':formatPkgName(pkg);
+  const name = pkg==='all'?'All tracks':formatPkgName(pkg);
   document.getElementById('playlist-name').textContent = name;
-  document.getElementById('playlist-count').textContent = `${pkgTracks.length} låtar`;
+  document.getElementById('playlist-count').textContent = `${pkgTracks.length} tracks`;
 
   const coverEl = document.getElementById('playlist-cover');
   if (pkg==='all' && allSongsCoverUrl) {
-    coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="Alla låtar">`;
+    coverEl.innerHTML = `<img src="${allSongsCoverUrl}" alt="All tracks">`;
   } else if (pkg!=='all'&&coverPathMap[pkg]) {
     const url = await getCoverUrl(pkg);
     coverEl.innerHTML = url ? `<img src="${url}" alt="${name}">` : `<span class="cover-placeholder">♩</span>`;
@@ -1623,7 +1604,7 @@ async function renderLibrary() {
   const pkgs = [...new Set(tracks.map(t=>t.package).filter(Boolean))].sort();
 
   if (tracks.length===0) {
-    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-dim);font-size:12px;">Inga låtar — tryck ↻ för att hämta</div>`;
+    grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--text-dim);font-size:12px;">No tracks — press ↻ to fetch</div>`;
     return;
   }
 
@@ -1636,13 +1617,13 @@ async function renderLibrary() {
 
   const allSynced = tracks.filter(t=>isSynced(t)).length;
   const allCoverHtml = allSongsCoverUrl
-    ? `<img src="${allSongsCoverUrl}" alt="Alla låtar">`
+    ? `<img src="${allSongsCoverUrl}" alt="All tracks">`
     : `<span class="cover-placeholder">♬</span>`;
   let html = `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
     <div class="pkg-card-cover" id="card-cover-all">${allCoverHtml}${syncBadge(allSynced,tracks.length)}</div>
     <div class="pkg-card-info">
-      <div class="pkg-card-name">Alla låtar</div>
-      <div class="pkg-card-meta">${tracks.length} låtar · ${pkgs.length} paket</div>
+      <div class="pkg-card-name">All tracks</div>
+      <div class="pkg-card-meta">${tracks.length} tracks · ${pkgs.length} packs</div>
     </div>
   </div>`;
 
@@ -1653,7 +1634,7 @@ async function renderLibrary() {
       <div class="pkg-card-cover" id="card-cover-${p}"><span class="cover-placeholder">♩</span>${syncBadge(ns,pt.length)}</div>
       <div class="pkg-card-info">
         <div class="pkg-card-name">${formatPkgName(p)}</div>
-        <div class="pkg-card-meta">${pt.length} låtar</div>
+        <div class="pkg-card-meta">${pt.length} tracks</div>
       </div>
     </div>`;
   }
@@ -1681,7 +1662,7 @@ function renderTrackList(pkgTracks) {
   if (!list) return;
 
   if (pkgTracks.length===0) {
-    list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar</div>`;
+    list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">No tracks</div>`;
     return;
   }
 
@@ -1741,7 +1722,7 @@ function renderSearchResults(q) {
   const matched = tracks.filter(t => t.name.toLowerCase().includes(q));
 
   if (matched.length === 0) {
-    resultsList.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">Inga låtar matchar "${escHtml(q)}"</div>`;
+    resultsList.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-dim);font-size:12px;">No tracks match "${escHtml(q)}"</div>`;
     return;
   }
 
@@ -1756,14 +1737,14 @@ function renderSearchResults(q) {
       + escHtml(name.slice(ix + q.length));
   }
 
-  let html = `<div style="padding:14px 2px 10px 10px;font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:8px;">${matched.length} träff${matched.length !== 1 ? 'ar' : ''}<span style="flex:1;height:1px;background:var(--border);display:block;"></span></div>`;
+  let html = `<div style="padding:14px 2px 10px 10px;font-family:'Cormorant Garamond',serif;font-size:11px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;gap:8px;">${matched.length} result${matched.length !== 1 ? 's' : ''}<span style="flex:1;height:1px;background:var(--border);display:block;"></span></div>`;
   html += '<div class="pkg-section">';
   matched.forEach((t, i) => {
     const gi = tracks.indexOf(t);
     const isActive = gi === currentIdx;
     const isPlay = isActive && isPlaying;
     const synced = isSynced(t);
-    const pkgLabel = t.package ? formatPkgName(t.package) : 'Alla låtar';
+    const pkgLabel = t.package ? formatPkgName(t.package) : 'All tracks';
     html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrackFromSearch(${gi})">
       <div class="track-num">${i+1}</div>
       <div class="track-bars"><span></span><span></span><span></span></div>
@@ -1810,9 +1791,9 @@ function setTrackSyncState(globalIdx, state) {
 async function syncPackage(pkg) {
   const pt     = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
   const toSync = pt.filter(t=>!isSynced(t));
-  if (!toSync.length){setStatus('ok','Redan synkat och uppdaterat');return;}
+  if (!toSync.length){setStatus('ok','Already synced and up to date');return;}
   const hasStale = toSync.some(t=>syncedPaths.has(t.path));
-  setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} 0/${toSync.length}…`);
+  setStatus('loading',`${hasStale?'Updating':'Syncing'} 0/${toSync.length}…`);
   let done=0;
   for (const t of toSync) {
     const gi = tracks.indexOf(t);
@@ -1823,20 +1804,20 @@ async function syncPackage(pkg) {
       await idbPut(t.path, blob, t.rev);
       syncedPaths.set(t.path, t.rev||null);
       setTrackSyncState(gi, 'synced');
-      setStatus('loading',`${hasStale?'Uppdaterar':'Synkar'} ${++done}/${toSync.length}…`);
+      setStatus('loading',`${hasStale?'Updating':'Syncing'} ${++done}/${toSync.length}…`);
     } catch(e){
       setTrackSyncState(gi, 'unsynced');
       console.warn('sync fail',t.path,e);
     }
   }
-  setStatus('ok',`${done} låtar ${hasStale?'uppdaterade':'sparade'}`);
+  setStatus('ok',`${done} tracks ${hasStale?'updated':'saved'}`);
   renderLibrary();
 }
 
 async function deletePackageLocal(pkg) {
   const pt = pkg==='all'?tracks:tracks.filter(t=>t.package===pkg);
   for (const t of pt){await idbDelete(t.path);syncedPaths.delete(t.path);}
-  setStatus('ok','Lokala filer borttagna');
+  setStatus('ok','Local files removed');
   refreshView(); renderLibrary();
 }
 
@@ -1858,7 +1839,7 @@ function updateMediaSession(t) {
   navigator.mediaSession.metadata = new MediaMetadata({
     title:  t.name,
     artist: 'Martin Mellström',
-    album:  t.package ? formatPkgName(t.package) : 'Alla låtar',
+    album:  t.package ? formatPkgName(t.package) : 'All tracks',
     artwork,
   });
   navigator.mediaSession.setActionHandler('play',          () => {
@@ -1904,7 +1885,7 @@ async function playTrack(idx) {
   }
   const t=tracks[idx];
   npName.textContent=t.name;
-  npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
+  npSub.textContent=t.package?formatPkgName(t.package):'All tracks';
   const pool = activePkg==='all'||activePkg===null?tracks:tracks.filter(x=>x.package===activePkg);
   if (!searchQuery) renderTrackList(pool);
   try {
@@ -1915,8 +1896,8 @@ async function playTrack(idx) {
     if (stored && revMatch) {
       blob = stored.blob;
     } else {
-      if (stored && !revMatch) setStatus('loading',`Uppdaterar: ${t.name}…`);
-      else setStatus('loading',`Laddar: ${t.name}…`);
+      if (stored && !revMatch) setStatus('loading',`Updating: ${t.name}…`);
+      else setStatus('loading',`Loading: ${t.name}…`);
       const link=await getTmpLink(t.path);
       blob=await (await fetch(link)).blob();
       await idbPut(t.path, blob, t.rev);
@@ -1929,7 +1910,7 @@ async function playTrack(idx) {
     activeObjUrl = URL.createObjectURL(blob);
     audio.loop = false;
     audio.src = activeObjUrl;
-    setStatus('loading', 'Avkodar…');
+    setStatus('loading', 'Decoding…');
     const _arrBuf = await blob.arrayBuffer();
     regularBuf = await audioCtx.decodeAudioData(_arrBuf);
     if (!t.duration) { t.duration = regularBuf.duration; saveDurationToCache(t.rev, regularBuf.duration); }
@@ -1945,7 +1926,7 @@ async function playTrack(idx) {
     restoredPosition = 0;
     startRegularPlayback(_startOff);
     buildWaveform(regularBuf, t);
-  } catch(e){setStatus('error',`Kan inte spela: ${e.message}`);}
+  } catch(e){setStatus('error',`Cannot play: ${e.message}`);}
 }
 
 function getPool(){return !activePkg||activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg);}
@@ -2089,8 +2070,8 @@ function syncExpandedMeta() {
   if (!expOpen) return;
   if (abMode && abA !== null && abB !== null) { updateABExpandedUI(); return; }
   const t = tracks[currentIdx];
-  expName.textContent = t ? t.name : 'Ingen låt vald';
-  expSub.textContent  = t ? (t.package ? formatPkgName(t.package) : 'Alla låtar') : '—';
+  expName.textContent = t ? t.name : 'No track selected';
+  expSub.textContent  = t ? (t.package ? formatPkgName(t.package) : 'All tracks') : '—';
   expTimeTot.textContent = t?.duration ? fmtTime(t.duration) : '—';
   expCover.innerHTML = '<span class="cover-placeholder">♬</span>';
   if (t) {
@@ -2343,26 +2324,20 @@ function hideABExpandedLayout() {
 function updateABExpandedUI() {
   const tA = abA !== null ? tracks[abA] : null;
   const tB = abB !== null ? tracks[abB] : null;
-  // In blind mode, show ??? for both names; show real names otherwise
   document.getElementById('ab-name-a').textContent = abBlindActive ? '???' : (tA ? tA.name : '—');
   document.getElementById('ab-name-b').textContent = abBlindActive ? '???' : (tB ? tB.name : '—');
-  // In blind mode, apply overlays to both waveforms
-  document.getElementById('ab-blind-overlay-a').classList.toggle('visible', abBlindActive);
-  document.getElementById('ab-blind-overlay-b').classList.toggle('visible', abBlindActive);
   document.getElementById('ab-canvas-a').classList.toggle('blind', abBlindActive);
   document.getElementById('ab-canvas-b').classList.toggle('blind', abBlindActive);
   document.getElementById('ab-section-a').classList.toggle('ab-inactive', abActiveSlot !== 'a');
   document.getElementById('ab-section-b').classList.toggle('ab-inactive', abActiveSlot !== 'b');
   const grA = document.querySelector('#ab-section-a .ab-gain-row');
   const grB = document.querySelector('#ab-section-b .ab-gain-row');
-  // In blind mode, hide gain controls (they reveal identity)
   if (grA) grA.style.display = (abBlindActive || abActiveSlot !== 'a') ? 'none' : '';
   if (grB) grB.style.display = (abBlindActive || abActiveSlot !== 'b') ? 'none' : '';
   abGainSliderA.disabled = abActiveSlot !== 'a';
   abGainSliderB.disabled = abActiveSlot !== 'b';
   const badge = document.getElementById('np-ab-badge');
   if (badge) { badge.textContent = abActiveSlot.toUpperCase(); badge.classList.add('ab-visible'); }
-  // Update blind btn label
   const blindBtn = document.getElementById('ab-blind-btn');
   if (blindBtn) {
     blindBtn.textContent = abBlindActive ? 'Reveal' : 'Hide & Shuffle';
@@ -2441,60 +2416,6 @@ function handleABSectionClick(e, slot) {
   }
 }
 
-// Click handler for the Hide & Shuffle / Reveal blind test button
-document.getElementById('ab-blind-btn').addEventListener('click', () => {
-  if (!abBlindActive) {
-    // Activate blind mode: optionally swap slots randomly
-    abBlindActive = true;
-    abBlindSwapped = Math.random() < 0.5;
-    if (abBlindSwapped) {
-      // Swap slot buffers, waveform data, gain values, and indices
-      [abA, abB] = [abB, abA];
-      [abAudioBufA, abAudioBufB] = [abAudioBufB, abAudioBufA];
-      [waveformDataA, waveformDataB] = [waveformDataB, waveformDataA];
-      [gainDbA, gainDbB] = [gainDbB, gainDbA];
-      [abGainNodeA, abGainNodeB] = [abGainNodeB, abGainNodeA];
-      // Re-wire gain nodes so A and B still route to the correct audio slot
-      if (abGainNodeA && abGainNodeB) {
-        abGainNodeA.gain.value = abActiveSlot === 'a' ? dbToGain(gainDbA) : 0;
-        abGainNodeB.gain.value = abActiveSlot === 'b' ? dbToGain(gainDbB) : 0;
-      }
-    }
-    // Always restart from the beginning in blind mode
-    abActiveSlot = 'a';
-    startABPlayback('a', 0);
-    updateABExpandedUI();
-    // Show ??? in mini-player
-    npName.textContent = '???';
-  } else {
-    // Reveal: restore real names with drop animation
-    abBlindActive = false;
-    const tA = abA !== null ? tracks[abA] : null;
-    const tB = abB !== null ? tracks[abB] : null;
-    const nameElA = document.getElementById('ab-name-a');
-    const nameElB = document.getElementById('ab-name-b');
-    if (tA && nameElA) revealTitle(nameElA, tA.name);
-    else if (nameElA) nameElA.textContent = '—';
-    if (tB && nameElB) revealTitle(nameElB, tB.name);
-    else if (nameElB) nameElB.textContent = '—';
-    // Restore overlays, gain controls, and badge
-    document.getElementById('ab-blind-overlay-a').classList.remove('visible');
-    document.getElementById('ab-blind-overlay-b').classList.remove('visible');
-    document.getElementById('ab-canvas-a').classList.remove('blind');
-    document.getElementById('ab-canvas-b').classList.remove('blind');
-    const grA = document.querySelector('#ab-section-a .ab-gain-row');
-    const grB = document.querySelector('#ab-section-b .ab-gain-row');
-    if (grA) grA.style.display = abActiveSlot === 'a' ? '' : 'none';
-    if (grB) grB.style.display = abActiveSlot === 'b' ? '' : 'none';
-    // Restore mini-player name
-    const tActive = abActiveSlot === 'a' ? tA : tB;
-    if (tActive) npName.textContent = tActive.name;
-    // Update button back to hide mode
-    const blindBtn = document.getElementById('ab-blind-btn');
-    if (blindBtn) { blindBtn.textContent = 'Hide \u0026 Shuffle'; blindBtn.classList.remove('btn-ab-active'); }
-  }
-});
-
 // Söker framåt i bufferten efter nästa negativ→positiv nollgenomgång.
 // Max söktid 5 ms — ger bara några samples extra fördröjning vid byte.
 function findNextZeroCrossing(audioBuffer, fromSeconds) {
@@ -2515,16 +2436,52 @@ function revealTitle(element, text) {
   chars.forEach((ch, i) => {
     const span = document.createElement('span');
     span.textContent = ch === ' ' ? '\u00A0' : ch;
-    span.style.cssText = `
-      display: inline-block;
-      opacity: 0;
-      transform: translateX(18px);
-      animation: charDrop 0.22s ease forwards;
-      animation-delay: ${(chars.length - 1 - i) * 38}ms;
-    `;
+    span.style.cssText = `display:inline-block;opacity:0;transform:translateX(18px);animation:charDrop 0.22s ease forwards;animation-delay:${(chars.length-1-i)*38}ms;`;
     element.appendChild(span);
   });
 }
+
+document.getElementById('ab-blind-btn').addEventListener('click', () => {
+  if (!abBlindActive) {
+    abBlindActive = true;
+    abBlindSwapped = Math.random() < 0.5;
+    if (abBlindSwapped) {
+      [abA, abB] = [abB, abA];
+      [abAudioBufA, abAudioBufB] = [abAudioBufB, abAudioBufA];
+      [waveformDataA, waveformDataB] = [waveformDataB, waveformDataA];
+      [gainDbA, gainDbB] = [gainDbB, gainDbA];
+      [abGainNodeA, abGainNodeB] = [abGainNodeB, abGainNodeA];
+      if (abGainNodeA && abGainNodeB) {
+        abGainNodeA.gain.value = abActiveSlot === 'a' ? dbToGain(gainDbA) : 0;
+        abGainNodeB.gain.value = abActiveSlot === 'b' ? dbToGain(gainDbB) : 0;
+      }
+    }
+    abActiveSlot = 'a';
+    startABPlayback('a', 0);
+    updateABExpandedUI();
+    npName.textContent = '???';
+  } else {
+    abBlindActive = false;
+    const tA = abA !== null ? tracks[abA] : null;
+    const tB = abB !== null ? tracks[abB] : null;
+    const nameElA = document.getElementById('ab-name-a');
+    const nameElB = document.getElementById('ab-name-b');
+    if (tA && nameElA) revealTitle(nameElA, tA.name);
+    else if (nameElA) nameElA.textContent = '—';
+    if (tB && nameElB) revealTitle(nameElB, tB.name);
+    else if (nameElB) nameElB.textContent = '—';
+    document.getElementById('ab-canvas-a').classList.remove('blind');
+    document.getElementById('ab-canvas-b').classList.remove('blind');
+    const grA = document.querySelector('#ab-section-a .ab-gain-row');
+    const grB = document.querySelector('#ab-section-b .ab-gain-row');
+    if (grA) grA.style.display = abActiveSlot === 'a' ? '' : 'none';
+    if (grB) grB.style.display = abActiveSlot === 'b' ? '' : 'none';
+    const tActive = abActiveSlot === 'a' ? tA : tB;
+    if (tActive) npName.textContent = tActive.name;
+    const blindBtn = document.getElementById('ab-blind-btn');
+    if (blindBtn) { blindBtn.textContent = 'Hide \u0026 Shuffle'; blindBtn.classList.remove('btn-ab-active'); }
+  }
+});
 
 function switchABSlot(slot) {
   if (slot === abActiveSlot) return;
@@ -2556,10 +2513,8 @@ function switchABSlot(slot) {
   if (targetIdx !== null) {
     currentIdx = targetIdx;
     const t = tracks[targetIdx];
-    if (!abBlindActive) {
-      npName.textContent = t.name;
-    }
-    npSub.textContent = t.package ? formatPkgName(t.package) : 'Alla låtar';
+    if (!abBlindActive) { npName.textContent = t.name; }
+    npSub.textContent = t.package ? formatPkgName(t.package) : 'All tracks';
     const badge = document.getElementById('np-ab-badge');
     if (badge) { badge.textContent = slot.toUpperCase(); }
     updateMediaSession(t);
@@ -2581,16 +2536,11 @@ function toggleABMode() {
     if (abBlindActive) {
       abBlindActive = false;
       abBlindSwapped = false;
-      document.getElementById('ab-blind-overlay-a')?.classList.remove('visible');
-      document.getElementById('ab-blind-overlay-b')?.classList.remove('visible');
       document.getElementById('ab-canvas-a')?.classList.remove('blind');
       document.getElementById('ab-canvas-b')?.classList.remove('blind');
       const blindBtn = document.getElementById('ab-blind-btn');
       if (blindBtn) { blindBtn.textContent = 'Hide \u0026 Shuffle'; blindBtn.classList.remove('btn-ab-active'); }
     }
-    // Hide blind button row
-    const blindBtnRow = document.getElementById('ab-blind-btn-row');
-    if (blindBtnRow) blindBtnRow.style.display = 'none';
     // Städning — stoppa sources och frigör resurser
     audio.pause();
     stopABRaf();
@@ -2622,8 +2572,6 @@ function setABSlot(slot, gi, event) {
   if (abBlindActive) {
     abBlindActive = false;
     abBlindSwapped = false;
-    document.getElementById('ab-blind-overlay-a')?.classList.remove('visible');
-    document.getElementById('ab-blind-overlay-b')?.classList.remove('visible');
     document.getElementById('ab-canvas-a')?.classList.remove('blind');
     document.getElementById('ab-canvas-b')?.classList.remove('blind');
     const blindBtn = document.getElementById('ab-blind-btn');
@@ -2641,8 +2589,8 @@ function setABSlot(slot, gi, event) {
       // Uppdatera UI direkt utan playTrack
       currentIdx = gi;
       const t = tracks[gi];
-      if (!abBlindActive) npName.textContent = t.name;
-      npSub.textContent = t.package ? formatPkgName(t.package) : 'Alla låtar';
+      npName.textContent = t.name;
+      npSub.textContent = t.package ? formatPkgName(t.package) : 'All tracks';
       const badge = document.getElementById('np-ab-badge');
       if (badge) { badge.textContent = 'A'; badge.classList.add('ab-visible'); }
       preloadAWaveform(gi);
@@ -2837,9 +2785,9 @@ function closeSettings(){document.getElementById('config-panel').style.display='
 
 document.getElementById('oauth-connect-btn').addEventListener('click', startOAuthFlow);
 document.getElementById('oauth-disconnect-btn').addEventListener('click', ()=>{
-  if (confirm('Koppla från Dropbox? Token och anslutning raderas.')) {
+  if (confirm('Disconnect from Dropbox? Token and connection will be deleted.')) {
     clearOAuth(); updateOAuthUI();
-    setStatus('', 'Frånkopplad från Dropbox');
+    setStatus('', 'Disconnected from Dropbox');
   }
 });
 
@@ -2850,7 +2798,7 @@ document.getElementById('refresh-btn').addEventListener('click',()=>{loadState()
 document.getElementById('help-btn').addEventListener('click',()=>document.getElementById('help-modal').classList.add('open'));
 document.getElementById('back-btn').addEventListener('click',()=>{if(searchQuery){closeSearch();}else{showLibrary();}});
 document.getElementById('sync-pkg-btn').addEventListener('click',()=>syncPackage(activePkg));
-document.getElementById('delete-pkg-btn').addEventListener('click',async()=>{if(confirm(`Ta bort lokalt sparade filer för "${activePkg==='all'?'alla låtar':formatPkgName(activePkg)}"?`))await deletePackageLocal(activePkg);});
+document.getElementById('delete-pkg-btn').addEventListener('click',async()=>{if(confirm(`Delete locally saved files for "${activePkg==='all'?'All tracks':formatPkgName(activePkg)}"?`))await deletePackageLocal(activePkg);});
 document.getElementById('ab-mode-btn').addEventListener('click', toggleABMode);
 
 playBtn.addEventListener('click',togglePlay);
@@ -2909,11 +2857,11 @@ openIDB().then(async()=>{
   if (tracks.length){
     if (activePkg&&activePkg!==null) { showPlaylist(activePkg); }
     else { renderLibrary(); }
-    setStatus('ok',`${tracks.length} låtar från cache — tryck ↻ för att uppdatera`);
+    setStatus('ok',`${tracks.length} tracks from cache — press ↻ to update`);
     if (currentIdx>=0&&tracks[currentIdx]){
       const t=tracks[currentIdx];
       npName.textContent=t.name;
-      npSub.textContent=t.package?formatPkgName(t.package):'Alla låtar';
+      npSub.textContent=t.package?formatPkgName(t.package):'All tracks';
       if (restoredPosition > 0) {
         regularPausedOffset = restoredPosition;
         if (t.duration) {
@@ -2926,7 +2874,7 @@ openIDB().then(async()=>{
     }
   } else {
     renderLibrary();
-    setStatus('','Anslut Dropbox via ⚙ för att komma igång');
+    setStatus('','Connect Dropbox via ⚙ to get started');
   }
 
   const hv = document.getElementById('help-version');
