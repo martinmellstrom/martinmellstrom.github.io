@@ -41,7 +41,7 @@ Instruction files live alongside the site code:
 - Adding/editing Notion pages and tasks (Guide 07, Changelog, etc.)
 - One-off content changes where staging review is the main goal
 
-**Claude Code** is for all coding and file editing. It handles:
+**Claude Code** is for all coding and file editing. It runs in the Claude Code desktop app. It handles:
 - All HTML edits to `index.html`, `blog.html`, `player.html`, `oauth.html`
 - All staging builds and live promotions
 - Batch operations (multiple blog posts, releasing a pack, etc.)
@@ -51,6 +51,20 @@ Instruction files live alongside the site code:
 
 If Martin asks claude.ai to make a code change directly, respond with:
 > "Detta är en Claude Code-uppgift. Vill du att jag skapar en uppgift i Guide 07 så att du kan köra den i terminalen?"
+
+### Guide 07 vs direkt Code-session
+
+**Använd Guide 07** när uppgiften:
+- Är komplex nog att behöva specas ut i förväg (fler steg, oklara krav, kräver designbeslut)
+- Ska sparas som spår i Notion (changelog-värdig, del av backlog)
+- Involverar flera filer eller ett flöde med staging → godkännande → live
+
+**Gå direkt till Claude Code** (beskriv uppgiften muntligt i Code-sessionen) när:
+- Ändringen är enkel och väldefinierad ("ändra den här CSS-regeln", "lägg till detta attribut")
+- Ingen spec behövs — Martin kan beskriva allt direkt i Code-chatten
+- Notion-overhead vore oproportionerligt mot uppgiftens storlek
+
+Tumregel: om uppgiften tar längre tid att speca i Notion än att utföra i Code, hoppa över Guide 07.
 
 ---
 
@@ -86,16 +100,12 @@ Claude (both claude.ai and Claude Code) must flag and propose updates to these i
 
 **Always edit staging first. Never touch live files until Martin approves.**
 
-**In Claude Code:** when working on a feature branch, only edit the staging file (`staging/staging_*.html`). Never edit the live file (`index.html`, `player.html`, etc.) in the same commit or branch as staging — live edits must be a separate step after explicit approval. A branch merge to main must not include live file changes unless Martin has approved staging.
-
 1. **Always fetch the live file via `github:get_file_contents`** (owner: martinmellstrom, repo: martinmellstrom.github.io) — this is the only reliable source of truth. **Never use `web_fetch` from raw.githubusercontent.com** — CDN-cached and may be hours stale. Never use the existing staging file as a base.
 2. Apply the intended changes to the fetched live content.
 3. Add staging-specific modifications (see `docs/staging.md`).
 4. Push to `staging/staging_[file].html` via `github:create_or_update_file` (fetch SHA first).
 5. **Always end with a clickable preview link.**
 6. Wait for explicit approval.
-7. Push the same change (without staging modifications) to the live file.
-8. **Always end with a clickable live link.**
 
 ### Preview links
 
@@ -119,6 +129,66 @@ Format: `🔗 [Kontrollera i Safari](URL)` — never plain text.
 - Red diagonal-stripe banner fixed at top (`height: 36px`)
 - `body { padding-top: 36px }` and `nav { top: 36px }`
 - Banner links to corresponding live page
+
+---
+
+## Live deploy workflow
+
+**Only deploy to live when Martin explicitly says so** — phrases like "deploya till live", "kör live", "go" or similar.
+
+Never deploy to live automatically after staging approval.
+
+When Martin gives the go-ahead:
+
+1. Increment `PLAYER_VERSION` by 1 (player.html only).
+2. Update the build number displayed in the help modal (see "Build number versioning" below).
+3. Push the change (without staging modifications) directly to `main`.
+4. **Document the change** — see "Dokumentation vid live-deploy" below.
+5. **Always end with a clickable live link.**
+
+### Dokumentation vid live-deploy
+
+After every live deploy of `player.html`, Claude Code **must** add a changelog entry to the Prototype — Dokumentation page in Notion (ID: `324bf76e-302d-81ee-9e04-fbe2770a664f`), inserted at the top of the `# 📋 Changelog` section.
+
+**Format:**
+```
+## Build [N] — [YYYY-MM-DD]
+**[Kort rubrik som beskriver vad som ändrades]**
+- [Bullet per förändring — vad som gjordes och varför]
+- [Teknisk detalj om relevant]
+```
+
+Rules:
+- Build number = `PLAYER_VERSION` from the deployed `player.html`
+- Date = today's date
+- Be specific — "fixed bug" is not enough; describe what the bug was and how it was fixed
+- If the task came from Guide 07, note which feature/fix it relates to
+- Do NOT log staging deploys — only live
+
+### Rollback
+
+If something is broken after a live deploy, Martin can ask Claude Code to roll back. Claude Code handles the entire rollback — Martin never needs to touch git manually.
+
+**When Martin says "backa till build N", "rulla tillbaka" or similar:**
+
+```bash
+# Find the commit SHA for the target build
+git log --oneline player.html
+
+# Restore that version of the file
+git checkout <commit-sha> -- player.html
+
+# Commit and push — no staging needed for rollbacks
+git add player.html
+git commit -m "rollback: återställ player.html till build N"
+git push
+```
+
+Rules:
+- Rollbacks go **directly to live** — no staging step, speed is the priority
+- `PLAYER_VERSION` in the rolled-back file stays as-is — do not re-increment
+- Add a brief Notion changelog entry noting the rollback: `## Rollback — [date] — återställd till Build N`
+- If Martin doesn't specify a build number, show the last 5 commits and ask which one to restore
 
 ---
 
@@ -154,18 +224,22 @@ const PLAYER_VERSION = 42;
 ---
 
 ## Claude Code / terminal workflow
+
+Both staging and live are pushed **directly to `main`** — no branches, no pull requests.
+
 ```bash
 git pull
 # STEP 1 — edit ONLY the staging file, never the live file
 git add staging/staging_*.html
 git commit -m "staging: short description"
 git push
-# Wait for Martin's explicit approval before touching live files
+# Wait for Martin to say "deploya till live" / "kör live" / "go"
 
 # STEP 2 — after approval only:
 git add index.html   # or player.html etc — NEVER in same commit as staging
-git commit -m "live: short description"
+git commit -m "live: short description (build N)"
 git push
+# Then: add changelog entry to Notion (Prototype — Dokumentation) for player.html
 ```
 
 ## claude.ai browser workflow (GitHub MCP)
@@ -182,6 +256,7 @@ In `martinmellstrom/martinmellstrom.github.io`:
 - `docs/blog.md` — blog workflow, Notion source, HTML templates
 - `docs/packs.md` — music packs, SoundCloud architecture, release checklist
 - `docs/style.md` — CSS variables, fonts, design principles
+- `docs/debug-panel.md` — debug panel pattern for staging pages
 
 ---
 
@@ -193,6 +268,20 @@ In `martinmellstrom/martinmellstrom.github.io`:
 - **Guide 01 (website management):** `31fbf76e-302d-81b8-a87f-e47034c14088`
 - **Guide 07 (Claude Code tasks):** `32bbf76e-302d-81fa-8493-f1ed576ce381`
 - **Music Player documentation:** `324bf76e-302d-81ee-9e04-fbe2770a664f`
+
+### Music Player — Notion-hierarki
+
+| Sida | ID | Syfte |
+|---|---|---|
+| 🎵 Music Player (master) | `329bf76e-302d-810ab206ced9b7dd7bf8` | Auktoritativ källa för alla strategiska beslut: affärsmodell, ledstjärna, roadmap, syfte, konkurrentanalys |
+| Prototype — Dokumentation | `324bf76e-302d-81ee-9e04-fbe2770a664f` | Teknisk dokumentation för webbprototypen (player.html): changelog, backlog, arkitektur, setup. Work in progress. |
+| 🎵 iOS Music Player | `330bf76e-302d-818c9459ca271975a016` | Framtida native iOS-app — används när Swift-implementationen påbörjas |
+| Tech Spec | `330bf76e-302d-814992e8ef24268c8cbe` | Teknisk spec för iOS-appen. Undersida till iOS Music Player. |
+| A/B-lyssning — Spec | `329bf76e-302d-8122a39cf6ee28ebe539` | Detaljerad spec för A/B-läget. Undersida till Tech Spec. |
+| 📣 Marknadsföring | `330bf76e-302d-8197-8b31-d45a7d260394` | Allt som rör marknadsföring inför och efter lansering. Undersida till iOS Music Player. |
+| Konkurrentanalys — Samply, Boombox, Mixup | `32abf76e-302d-8132-a927-f91066e1d2cc` | Konkurrent- och marknadsanalys inför lansering. Undersida till Marknadsföring. |
+
+**Regel:** Alla beslut om affärsmodell, scope, roadmap och produktstrategi loggas på mastern (🎵 Music Player). Prototype-sidan används enbart för teknisk dokumentation av webbprototypen.
 
 Rules:
 - Log only when explicitly asked.
@@ -208,5 +297,6 @@ Rules:
 - When in doubt, read the relevant `docs/` file before proceeding
 - **Proactively flag instruction updates** — see "Instruction maintenance" above
 - **claude.ai never writes HTML** — delegate to Claude Code via Guide 07
-- **Never edit live files on a feature branch** — staging and live are always separate commits; live is only touched after Martin's explicit approval of staging
+- **Never deploy to live automatically** — always wait for Martin's explicit go-ahead ("deploya till live", "kör live", "go" or similar)
+- **No branches, no pull requests** — both staging and live push directly to `main`
 - **player.html build number** — always read `PLAYER_VERSION` from live, increment by 1, include in staging banner, commit message, and report to Martin. See "Build number versioning" section above.
