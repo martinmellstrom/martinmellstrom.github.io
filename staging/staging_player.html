@@ -1906,7 +1906,7 @@ async function playTrack(idx) {
       blob = stored.blob;
     } else {
       if (stored && !revMatch) setStatus('loading',`Updating: ${t.name}…`);
-      else setStatus('loading',`Loading: ${t.name}…`);
+      else setStatus('loading',`Downloading: ${t.name}…`);
       const link=await getTmpLink(t.path);
       blob=await (await fetch(link)).blob();
       await idbPut(t.path, blob, t.rev);
