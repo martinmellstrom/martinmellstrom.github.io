@@ -600,7 +600,7 @@
 
 <script>
 
-const PLAYER_VERSION = 76;
+const PLAYER_VERSION = 78;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -1896,10 +1896,13 @@ async function playTrack(idx) {
     if (stored && revMatch) {
       blob = stored.blob;
     } else {
+      if (stored && !revMatch) setStatus('loading',`Updating: ${t.name}…`);
+      else setStatus('loading',`Downloading: ${t.name}…`);
       const link=await getTmpLink(t.path);
       blob=await (await fetch(link)).blob();
       await idbPut(t.path, blob, t.rev);
       syncedPaths.set(t.path, t.rev||null);
+      setStatus('ok', stored && !revMatch ? `Updated: ${t.name}` : '');
     }
     stopRegular();
     ensureAudioCtx();
