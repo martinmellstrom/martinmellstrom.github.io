@@ -21,7 +21,7 @@
     --green:     #4a7c59;
     --red:       #7c4a4a;
     --radius:    12px;
-    --player-h:  122px;
+    --player-h:  130px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -94,7 +94,7 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
   /* ── MAIN ── */
-  #main-content { flex: 1; overflow-y: auto; padding-bottom: calc(var(--player-h) + 24px); scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  #main-content { flex: 1; overflow-y: auto; padding-bottom: calc(var(--player-h) + 16px); scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
   #main-content::-webkit-scrollbar { width: 4px; }
   #main-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
@@ -175,7 +175,7 @@
   .search-results-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
   /* ── PLAYER ── */
-  #player { position: fixed; bottom: 8px; left: 0; right: 0; height: var(--player-h); background: rgba(10,13,11,0.95); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); border-top: 1px solid var(--border); z-index: 100; display: flex; flex-direction: column; }
+  #player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-h); padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)); background: rgba(10,13,11,0.95); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); border-top: 1px solid var(--border); z-index: 100; display: flex; flex-direction: column; }
   #progress-wrap { position: relative; height: 10px; background: var(--border); cursor: pointer; flex-shrink: 0; transition: height 0.15s; }
   #progress-wrap:hover { height: 12px; }
   #progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.25s linear; pointer-events: none; position: relative; border-radius: 0 2px 2px 0; }
