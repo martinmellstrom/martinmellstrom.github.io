@@ -20,7 +20,7 @@
     --green:     #4a7c59;
     --red:       #7c4a4a;
     --radius:    12px;
-    --player-h:  110px;
+    --player-h:  196px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -169,18 +169,18 @@
   .search-results-header::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
   /* ── PLAYER ── */
-  #player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-h); background: rgba(10,13,11,0.95); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); border-top: 1px solid var(--border); z-index: 100; display: flex; flex-direction: column; }
-  #progress-wrap { position: relative; height: 6px; background: var(--border); cursor: pointer; flex-shrink: 0; transition: height 0.15s; }
-  #progress-wrap:hover { height: 10px; }
+  #player { position: fixed; bottom: 0; left: 0; right: 0; height: var(--player-h); padding-bottom: max(36px, env(safe-area-inset-bottom, 0px)); background: rgba(10,13,11,0.95); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5); border-top: 1px solid var(--border); z-index: 100; display: flex; flex-direction: column; }
+  #progress-wrap { position: relative; height: 10px; background: var(--border); cursor: pointer; flex-shrink: 0; transition: height 0.15s; }
+  #progress-wrap:hover { height: 12px; }
   #progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.25s linear; pointer-events: none; position: relative; border-radius: 0 2px 2px 0; }
   #progress-fill::after { content: ''; position: absolute; right: -5px; top: 50%; transform: translateY(-50%); width: 10px; height: 10px; background: var(--gold); border-radius: 50%; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
   #progress-wrap:hover #progress-fill::after { opacity: 1; }
-  .player-info-row { display: flex; align-items: center; padding: 8px 14px 2px; gap: 10px; overflow: hidden; flex-shrink: 0; }
+  .player-info-row { display: flex; align-items: center; padding: 12px 14px 6px; gap: 10px; overflow: hidden; flex-shrink: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
   .now-playing { flex: 1; min-width: 0; }
   .np-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 400; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
   .np-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .time-display { font-size: 10px; color: var(--text-dim); font-variant-numeric: tabular-nums; flex-shrink: 0; letter-spacing: 0.03em; }
-  .player-controls { display: flex; align-items: center; justify-content: center; padding: 2px 8px 8px; flex-shrink: 0; }
+  .player-controls { display: flex; align-items: center; justify-content: center; padding: 40px 8px 8px; gap: 8px; flex-shrink: 0; }
   .ctrl { background: none; border: none; color: var(--text-dim); width: 52px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: color 0.15s, background 0.15s; flex-shrink: 0; -webkit-tap-highlight-color: transparent; position: relative; }
   .ctrl svg { width: 18px; height: 18px; fill: currentColor; display: block; }
   .ctrl:active { background: var(--card); color: var(--text); }
@@ -595,7 +595,9 @@
 <audio id="airplay-bridge" playsinline webkit-playsinline></audio>
 
 <script>
-const PLAYER_VERSION = 69;
+
+const PLAYER_VERSION = 70;
+
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════
