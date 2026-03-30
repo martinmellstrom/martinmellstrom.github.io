@@ -864,6 +864,13 @@ function ensureAudioCtx() {
   const created = !audioCtx;
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Automatiskt resume vid CarPlay/iOS audio session-avbrott (WebKit Bug #261554)
+    audioCtx.addEventListener('statechange', () => {
+      console.log('[AudioCtx statechange]', audioCtx.state);
+      if (audioCtx.state === 'suspended' && (regularIsPlaying || abIsPlaying)) {
+        audioCtx.resume().catch(() => {});
+      }
+    });
     // Skapa MediaStreamDestination för att brygga Web Audio → <audio> → AirPlay
     streamDest = audioCtx.createMediaStreamDestination();
     airplayBridge.srcObject = streamDest.stream;
@@ -1091,7 +1098,7 @@ function startRegularRaf() {
       saveState();
     }
     const now = performance.now();
-    if (now - lastPositionSyncTime >= 1000) {
+    if (now - lastPositionSyncTime >= 5000) {
       lastPositionSyncTime = now;
       syncPositionState();
     }
@@ -1119,6 +1126,29 @@ const audio     = document.getElementById('audio-el');
 audio.addEventListener('ended', () => {
   if (regularIsPlaying) { regularIsPlaying = false; nextTrack(true); }
 });
+
+// ── CarPlay / iOS audio recovery ──
+// WebKit kan stall:a blob URL-buffring (Bug #238113) — särskilt via trådlös CarPlay.
+// Utan recovery-logik leder det till ~1 sek ljud / ~1 sek tystnad i loop.
+audio.addEventListener('stalled', () => {
+  if (!regularIsPlaying) return;
+  console.warn('[CarPlay recovery] audio stalled — reloading from current position');
+  const pos = audio.currentTime;
+  audio.load();
+  audio.currentTime = pos;
+  audio.play().catch(e => console.warn('[CarPlay recovery] play failed:', e));
+});
+
+audio.addEventListener('waiting', () => {
+  if (!regularIsPlaying) return;
+  console.warn('[CarPlay recovery] audio waiting at', audio.currentTime.toFixed(2));
+});
+
+audio.addEventListener('error', () => {
+  if (!regularIsPlaying) return;
+  console.warn('[CarPlay recovery] audio error:', audio.error?.message || audio.error?.code);
+});
+
 const npName    = document.getElementById('np-name');
 const npSub     = document.getElementById('np-sub');
 const progFill  = document.getElementById('progress-fill');
@@ -1910,7 +1940,15 @@ async function playTrack(idx) {
     if (activeObjUrl) { URL.revokeObjectURL(activeObjUrl); }
     activeObjUrl = URL.createObjectURL(blob);
     audio.loop = false;
-    audio.src = activeObjUrl;
+    // Använd <source>-element istället för audio.src — workaround för iOS/WebKit
+    // blob URL range request-bugg (bytes=0-* → 416) som orsakar stuttering i CarPlay.
+    audio.removeAttribute('src');
+    while (audio.firstChild) audio.removeChild(audio.firstChild);
+    const _src = document.createElement('source');
+    _src.src = activeObjUrl;
+    _src.type = blob.type || 'audio/mpeg';
+    audio.appendChild(_src);
+    audio.load();
     const _arrBuf = await blob.arrayBuffer();
     regularBuf = await audioCtx.decodeAudioData(_arrBuf);
     if (!t.duration) { t.duration = regularBuf.duration; saveDurationToCache(t.rev, regularBuf.duration); }
