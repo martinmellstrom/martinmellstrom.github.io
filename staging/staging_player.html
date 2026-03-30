@@ -1,9 +1,10 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>[STAGING] Audrig</title>
-<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -350,15 +351,29 @@
     to { opacity: 1; transform: translateX(0); }
   }
 
-  .staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 11px; font-family: monospace; color: #fff; background: repeating-linear-gradient(45deg, #c00 0px, #c00 10px, #900 10px, #900 20px); }
-  .staging-banner a { color: #fff; text-decoration: underline; }
+  /* ── STAGING BANNER ── */
+  .staging-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 36px;
+    background: repeating-linear-gradient(
+      45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px
+    );
+    border-bottom: 2px solid #ff4444;
+    padding: 8px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: .15em;
+    text-transform: uppercase; color: #ff8888;
+  }
+  .staging-banner strong { color: #ff4444; font-weight: 700; }
+  .staging-banner a { color: #ff8888; text-decoration: underline; }
   body { padding-top: 36px; }
 </style>
 </head>
 <body>
+
 <div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 77 — This is a preview.
-  <a href="/player.html">Go to live →</a>
+  <strong>⚠ STAGING</strong> — build 79 — Detta är en förhandsvisning.
+  <a href="/player.html">Gå till live-sidan →</a>
 </div>
 
 <!-- APP -->
@@ -557,12 +572,6 @@
   <div class="ab-blind-btn-row" id="ab-blind-btn-row" style="display:none;">
     <button class="btn" id="ab-blind-btn">Hide &amp; Shuffle</button>
   </div>
-  <div class="exp-gain-row" id="exp-gain-row">
-    <label class="exp-gain-label">GAIN</label>
-    <input type="range" class="exp-gain-slider" id="exp-gain-slider"
-      min="-6" max="6" step="0.5" value="0">
-    <span class="exp-gain-value" id="exp-gain-value" style="visibility:hidden;">0.0 dB</span>
-  </div>
   <div class="exp-controls">
     <button class="ctrl" id="prev-btn-exp">
       <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
@@ -609,7 +618,7 @@
 
 <script>
 
-const PLAYER_VERSION = 77;
+const PLAYER_VERSION = 79;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -749,7 +758,7 @@ function idbCoverPut(path, blob, rev) {
 //   coverPathMap, coverUrlMap, allSongsCoverUrl
 //   linkCache, activeObjUrl
 //   durationCache, waveformCache, gainCache
-//   currentGainDb, gainDbA, gainDbB
+//   gainDbA, gainDbB
 //   audioCtx, streamDest, airplayBridge
 //   abMode, abA, abB, abActiveSlot, waveformDataA, waveformDataB
 //   abAudioBufA, abAudioBufB, abSourceA, abSourceB
@@ -758,8 +767,8 @@ function idbCoverPut(path, blob, rev) {
 //   abBlindActive, abBlindSwapped
 // Constants: LS_KEY, LS_DUR_KEY, LS_WAVE_KEY, LS_GAIN_KEY
 // FUNCTIONS:
-//   Gain: loadGainCache, saveGainToCache, getGainFromCache, applyGain, dbToGain
-//         ensureAudioGraph, syncGainSlider, syncABGainSliders
+//   Gain: loadGainCache, saveGainToCache, getGainFromCache, dbToGain
+//         syncABGainSliders
 //   A/B buffered playback: loadABBuffer, startABPlayback, switchABSlot,
 //         getABCurrentTime, applyABGain, startABRaf, stopABRaf
 //   Waveform: buildWaveform, buildWaveformForA, buildWaveformForB,
@@ -793,7 +802,6 @@ let linkCache   = {};
 let activeObjUrl= null;
 let durationCache  = {}; // rev → seconds (in-memory, backed by localStorage)
 let gainCache      = {}; // rev → dB (in-memory, backed by localStorage)
-let currentGainDb  = 0.0;
 let gainDbA        = 0.0;
 let gainDbB        = 0.0;
 
@@ -896,9 +904,6 @@ function ensureAudioCtx() {
 
 function dbToGain(db) { return Math.pow(10, db / 20); }
 
-function applyGain(db) {
-  // Gain är inaktiverat i regular mode — används bara av A/B-slidern
-}
 
 // ── A/B parallel buffered playback ──
 async function loadABBuffer(gi) {
@@ -1420,6 +1425,9 @@ async function fetchTracks() {
     if (currentIdx>=tracks.length) currentIdx=-1;
     await refreshSynced();
     // Vid ↻ tvingar vi nedladdning av alla omslag (rev kan ha ändrats)
+    // Revoke old object URLs to free memory before re-fetching
+    for (const url of Object.values(coverUrlMap)) URL.revokeObjectURL(url);
+    if (allSongsCoverUrl) { URL.revokeObjectURL(allSongsCoverUrl); allSongsCoverUrl = null; }
     coverUrlMap = {};
     _allSongsCoverNeedsRefresh = true;
     fetchAllSongsCover();
@@ -1628,7 +1636,7 @@ async function renderLibrary() {
   const allCoverHtml = allSongsCoverUrl
     ? `<img src="${allSongsCoverUrl}" alt="All tracks">`
     : `<span class="cover-placeholder">♬</span>`;
-  let html = `<div class="pkg-card all-songs" onclick="showPlaylist('all')">
+  let html = `<div class="pkg-card all-songs" data-pkg="all">
     <div class="pkg-card-cover" id="card-cover-all">${allCoverHtml}${syncBadge(allSynced,tracks.length)}</div>
     <div class="pkg-card-info">
       <div class="pkg-card-name">All tracks</div>
@@ -1639,15 +1647,21 @@ async function renderLibrary() {
   for (const p of pkgs) {
     const pt = tracks.filter(t=>t.package===p);
     const ns = pt.filter(t=>isSynced(t)).length;
-    html += `<div class="pkg-card" data-pkg="${p}" onclick="showPlaylist('${p}')">
-      <div class="pkg-card-cover" id="card-cover-${p}"><span class="cover-placeholder">♩</span>${syncBadge(ns,pt.length)}</div>
+    html += `<div class="pkg-card" data-pkg="${escHtml(p)}">
+      <div class="pkg-card-cover" id="card-cover-${escHtml(p)}"><span class="cover-placeholder">♩</span>${syncBadge(ns,pt.length)}</div>
       <div class="pkg-card-info">
-        <div class="pkg-card-name">${formatPkgName(p)}</div>
+        <div class="pkg-card-name">${escHtml(formatPkgName(p))}</div>
         <div class="pkg-card-meta">${pt.length} tracks</div>
       </div>
     </div>`;
   }
   grid.innerHTML = html;
+
+  // Event delegation for package cards — avoids inline onclick with unescaped names
+  grid.addEventListener('click', e => {
+    const card = e.target.closest('.pkg-card[data-pkg]');
+    if (card) showPlaylist(card.dataset.pkg);
+  });
 
   if (!allSongsCoverUrl) fetchAllSongsCover();
   for (const p of pkgs) {
@@ -1779,7 +1793,7 @@ function playTrackFromSearch(idx) {
 function refreshView() {
   if (searchQuery) { renderSearchResults(searchQuery); return; }
   if (activePkg===null) { renderLibrary(); }
-  else { renderTrackList(activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg)); }
+  else { renderTrackList(activePkg==='all'?[...tracks].sort((a,b)=>a.name.localeCompare(b.name)):tracks.filter(t=>t.package===activePkg)); }
 }
 
 function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -1922,8 +1936,6 @@ async function playTrack(idx) {
     const _arrBuf = await blob.arrayBuffer();
     regularBuf = await audioCtx.decodeAudioData(_arrBuf);
     if (!t.duration) { t.duration = regularBuf.duration; saveDurationToCache(t.rev, regularBuf.duration); }
-    currentGainDb = getGainFromCache(t.rev);
-    syncGainSlider(currentGainDb);
     updateMediaSession(t);
     if (!searchQuery) renderTrackList(pool);
     saveState();
@@ -1971,7 +1983,10 @@ function nextTrack(fromEnded=false){
   if (repeatMode==='one'&&fromEnded){playTrack(currentIdx);return;}
   const pool=getPool();
   if (shuffle&&fromEnded){
-    if (!shuffleQueue.length) shuffleQueue=pool.map((_,i)=>i).sort(()=>Math.random()-0.5);
+    if (!shuffleQueue.length) {
+      shuffleQueue=pool.map((_,i)=>i);
+      for (let i=shuffleQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleQueue[i],shuffleQueue[j]]=[shuffleQueue[j],shuffleQueue[i]];}
+    }
     playTrack(tracks.indexOf(pool[shuffleQueue.shift()]));return;
   }
   const ci=pool.indexOf(tracks[currentIdx]),ni=(ci+1)%pool.length;
@@ -2093,7 +2108,6 @@ function syncExpandedMeta() {
   setExpandedPlayIcon(isPlaying);
   document.getElementById('repeat-btn-exp').classList.toggle('active', repeatMode !== 'none');
   document.getElementById('shuffle-btn-exp').classList.toggle('active', shuffle);
-  syncGainSlider(currentGainDb);
 }
 
 function setExpandedPlayIcon(p) {
@@ -2101,35 +2115,13 @@ function setExpandedPlayIcon(p) {
   document.getElementById('icon-pause-exp').style.display = p ? 'block' : 'none';
 }
 
-// ── Gain slider — normal mode ──
-const gainSlider   = document.getElementById('exp-gain-slider');
-const gainValueEl  = document.getElementById('exp-gain-value');
+// ── AB gain sliders ──
 const abGainSliderA = document.getElementById('ab-gain-slider-a');
 const abGainSliderB = document.getElementById('ab-gain-slider-b');
 const abGainValueA  = document.getElementById('ab-gain-value-a');
 const abGainValueB  = document.getElementById('ab-gain-value-b');
 
-gainSlider.addEventListener('input', () => {
-  const db = parseFloat(gainSlider.value);
-  currentGainDb = db;
-  applyGain(db);
-  gainValueEl.style.visibility = 'visible';
-  gainValueEl.textContent = (db >= 0 ? '+' : '') + db.toFixed(1) + ' dB';
-  const t = tracks[currentIdx];
-  if (t?.rev) saveGainToCache(t.rev, db);
-});
-gainSlider.addEventListener('pointerup', () => {
-  setTimeout(() => { gainValueEl.style.visibility = 'hidden'; }, 1200);
-});
-
-function syncGainSlider(db) {
-  gainSlider.value = db;
-  gainValueEl.style.visibility = 'hidden';
-  gainValueEl.textContent = (db >= 0 ? '+' : '') + db.toFixed(1) + ' dB';
-}
-
-// ── AB gain sliders ──
-[abGainSliderA, abGainSliderB, gainSlider].forEach(sl => {
+[abGainSliderA, abGainSliderB].forEach(sl => {
   sl.addEventListener('click', e => e.stopPropagation());
   sl.addEventListener('pointerdown', e => e.stopPropagation());
   sl.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
@@ -2197,6 +2189,23 @@ document.getElementById('exp-seek-wrap').addEventListener('click', e => {
 let waveformData = null;
 let waveformPath = null;
 
+function computePeaks(decoded, bins = 200) {
+  const ch   = decoded.getChannelData(0);
+  const step = Math.floor(ch.length / bins);
+  const peaks = new Float32Array(bins);
+  for (let i = 0; i < bins; i++) {
+    let max = 0;
+    for (let j = 0; j < step; j++) {
+      const v = Math.abs(ch[i * step + j] || 0);
+      if (v > max) max = v;
+    }
+    peaks[i] = max;
+  }
+  const maxPeak = Math.max(...peaks, 0.001);
+  for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
+  return peaks;
+}
+
 async function buildWaveform(audioBufferOrUrl, track) {
   const rev = track?.rev || null;
 
@@ -2222,24 +2231,10 @@ async function buildWaveform(audioBufferOrUrl, track) {
       decoded = await tempCtx.decodeAudioData(buf);
       if (!audioCtx) tempCtx.close();
     }
-    const ch   = decoded.getChannelData(0);
-    const bins = 200;
-    const step = Math.floor(ch.length / bins);
-    const peaks = new Float32Array(bins);
-    for (let i = 0; i < bins; i++) {
-      let max = 0;
-      for (let j = 0; j < step; j++) {
-        const v = Math.abs(ch[i * step + j] || 0);
-        if (v > max) max = v;
-      }
-      peaks[i] = max;
-    }
-    const maxPeak = Math.max(...peaks, 0.001);
-    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
+    const peaks = computePeaks(decoded);
     waveformData = peaks;
     waveformPath = track.path;
     if (abMode) { if (abActiveSlot === 'a') waveformDataA = peaks; else waveformDataB = peaks; }
-    // Spara i cache om vi har en rev att knyta till
     if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
     if (expOpen) drawWaveform();
   } catch(e) {
@@ -2306,15 +2301,14 @@ document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
 //  A/B COMPARISON MODE
 // ═══════════════════════════════════════════════
 function showABExpandedLayout() {
-  const _m = document.getElementById('exp-meta'), _w = document.getElementById('exp-waveform-wrap'), _g = document.getElementById('exp-gain-row');
-  if (_m) _m.style.marginTop = ''; if (_w) _w.style.marginTop = ''; if (_g) _g.style.marginTop = '';
+  const _m = document.getElementById('exp-meta'), _w = document.getElementById('exp-waveform-wrap');
+  if (_m) _m.style.marginTop = ''; if (_w) _w.style.marginTop = '';
   document.getElementById('ab-expanded-content').classList.add('ab-visible');
   document.getElementById('exp-cover-wrap').style.display = 'none';
   document.getElementById('exp-meta').style.display = 'none';
   document.getElementById('exp-waveform-wrap').style.display = 'none';
   document.getElementById('exp-time-row').style.display = 'none';
   document.getElementById('exp-seek-wrap').style.display = 'none';
-  document.getElementById('exp-gain-row').style.display = 'none';
   document.getElementById('ab-blind-btn-row').style.display = '';
 }
 function hideABExpandedLayout() {
@@ -2324,7 +2318,6 @@ function hideABExpandedLayout() {
   document.getElementById('exp-waveform-wrap').style.display = '';
   document.getElementById('exp-time-row').style.display = '';
   document.getElementById('exp-seek-wrap').style.display = '';
-  document.getElementById('exp-gain-row').style.display = 'none';  // Gain är dolt i regular mode
   document.getElementById('ab-blind-btn-row').style.display = 'none';
 }
 
@@ -2636,12 +2629,13 @@ function setABSlot(slot, gi, event) {
   renderTrackList(pool);
 }
 
-async function preloadAWaveform(gi) {
+async function preloadSlotWaveform(slot, gi) {
   const t = tracks[gi];
   if (!t) return;
+  const setData = (peaks) => { if (slot === 'a') waveformDataA = peaks; else waveformDataB = peaks; };
   if (t.rev) {
     const cached = await idbWaveformGet(t.rev);
-    if (cached) { waveformDataA = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
+    if (cached) { setData(new Float32Array(cached)); if (expOpen && abMode) drawABWaveforms(); return; }
   }
   try {
     let url, shouldRevoke = false;
@@ -2649,86 +2643,21 @@ async function preloadAWaveform(gi) {
     const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
     if (stored && revMatch) { url = URL.createObjectURL(stored.blob); shouldRevoke = true; }
     else { url = await getTmpLink(t.path); }
-    await buildWaveformForA(url, t);
-    if (shouldRevoke) URL.revokeObjectURL(url);
-  } catch(e) {}
-}
-
-async function buildWaveformForA(objUrl, track) {
-  const rev = track?.rev || null;
-  if (rev) {
-    const cached = await idbWaveformGet(rev);
-    if (cached) { waveformDataA = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
-  }
-  try {
+    const rev = t?.rev || null;
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const resp = await fetch(objUrl);
+    const resp = await fetch(url);
     const buf  = await resp.arrayBuffer();
     const decoded = await ctx.decodeAudioData(buf);
     ctx.close();
-    const ch   = decoded.getChannelData(0);
-    const bins = 200;
-    const step = Math.floor(ch.length / bins);
-    const peaks = new Float32Array(bins);
-    for (let i = 0; i < bins; i++) {
-      let max = 0;
-      for (let j = 0; j < step; j++) { const v = Math.abs(ch[i * step + j] || 0); if (v > max) max = v; }
-      peaks[i] = max;
-    }
-    const maxPeak = Math.max(...peaks, 0.001);
-    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
-    waveformDataA = peaks;
+    const peaks = computePeaks(decoded);
+    setData(peaks);
     if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
     if (expOpen && abMode) drawABWaveforms();
-  } catch(e) { console.warn('buildWaveformForA error:', e); }
-}
-
-async function preloadBWaveform(gi) {
-  const t = tracks[gi];
-  if (!t) return;
-  if (t.rev) {
-    const cached = await idbWaveformGet(t.rev);
-    if (cached) { waveformDataB = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
-  }
-  try {
-    let url, shouldRevoke = false;
-    const stored = await idbGet(t.path);
-    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
-    if (stored && revMatch) { url = URL.createObjectURL(stored.blob); shouldRevoke = true; }
-    else { url = await getTmpLink(t.path); }
-    await buildWaveformForB(url, t);
     if (shouldRevoke) URL.revokeObjectURL(url);
-  } catch(e) {}
+  } catch(e) { console.warn(`preloadSlotWaveform(${slot}) error:`, e); }
 }
-
-async function buildWaveformForB(objUrl, track) {
-  const rev = track?.rev || null;
-  if (rev) {
-    const cached = await idbWaveformGet(rev);
-    if (cached) { waveformDataB = new Float32Array(cached); if (expOpen && abMode) drawABWaveforms(); return; }
-  }
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const resp = await fetch(objUrl);
-    const buf  = await resp.arrayBuffer();
-    const decoded = await ctx.decodeAudioData(buf);
-    ctx.close();
-    const ch   = decoded.getChannelData(0);
-    const bins = 200;
-    const step = Math.floor(ch.length / bins);
-    const peaks = new Float32Array(bins);
-    for (let i = 0; i < bins; i++) {
-      let max = 0;
-      for (let j = 0; j < step; j++) { const v = Math.abs(ch[i * step + j] || 0); if (v > max) max = v; }
-      peaks[i] = max;
-    }
-    const maxPeak = Math.max(...peaks, 0.001);
-    for (let i = 0; i < bins; i++) peaks[i] /= maxPeak;
-    waveformDataB = peaks;
-    if (rev) idbWaveformPut(rev, peaks).catch(()=>{});
-    if (expOpen && abMode) drawABWaveforms();
-  } catch(e) { console.warn('buildWaveformForB error:', e); }
-}
+function preloadAWaveform(gi) { return preloadSlotWaveform('a', gi); }
+function preloadBWaveform(gi) { return preloadSlotWaveform('b', gi); }
 
 // ═══════════════════════════════════════════════
 //  SEARCH
