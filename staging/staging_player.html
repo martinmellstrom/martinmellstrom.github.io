@@ -1975,23 +1975,34 @@ function togglePlay(){
 
 function prevTrack(){
   if (getRegularCurrentTime()>3){seekRegular(0);return;}
-  const pool=getPool(),ci=pool.indexOf(tracks[currentIdx]);
+  const pool=getPool();
+  if (shuffle) {
+    if (!shuffleQueue.length) rebuildShuffleQueue(pool);
+    playTrack(tracks.indexOf(pool[shuffleQueue.shift()]));return;
+  }
+  const ci=pool.indexOf(tracks[currentIdx]);
   playTrack(tracks.indexOf(pool[(ci-1+pool.length)%pool.length]));
 }
 
 function nextTrack(fromEnded=false){
   if (repeatMode==='one'&&fromEnded){playTrack(currentIdx);return;}
   const pool=getPool();
-  if (shuffle&&fromEnded){
+  if (shuffle){
     if (!shuffleQueue.length) {
-      shuffleQueue=pool.map((_,i)=>i);
-      for (let i=shuffleQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleQueue[i],shuffleQueue[j]]=[shuffleQueue[j],shuffleQueue[i]];}
+      if (fromEnded&&repeatMode==='none'){isPlaying=false;setPlayIcon(false);return;}
+      rebuildShuffleQueue(pool);
     }
     playTrack(tracks.indexOf(pool[shuffleQueue.shift()]));return;
   }
   const ci=pool.indexOf(tracks[currentIdx]),ni=(ci+1)%pool.length;
   if (ni===0&&fromEnded&&repeatMode==='none'){isPlaying=false;setPlayIcon(false);return;}
   playTrack(tracks.indexOf(pool[ni]));
+}
+
+function rebuildShuffleQueue(pool) {
+  const ci = pool.indexOf(tracks[currentIdx]);
+  shuffleQueue = pool.map((_,i)=>i).filter(i=>i!==ci);
+  for (let i=shuffleQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleQueue[i],shuffleQueue[j]]=[shuffleQueue[j],shuffleQueue[i]];}
 }
 
 function cycleRepeat(){repeatMode=repeatMode==='none'?'all':repeatMode==='all'?'one':'none';updateRepeatUI();document.getElementById('repeat-btn-exp').classList.toggle('active',repeatMode!=='none');saveState();}
