@@ -94,7 +94,7 @@ Claude (both claude.ai and Claude Code) must flag and propose updates to these i
 | A new SoundCloud player is added | `docs/packs.md` — player ID table + fallback config |
 | A key rule is agreed on in conversation | `CLAUDE.md` key rules section |
 | The tool responsibility split changes | `CLAUDE.md` tool responsibility section |
-| A new pack is publicerad (Status: Live i Publicerade paket DB) | `CLAUDE.md` — uppdatera Notion-sektionen om nytt ID tillkommer |
+| A new pack publiceras (Status: Live i Publicerade paket DB) | `CLAUDE.md` — uppdatera Notion-sektionen om nytt ID tillkommer |
 
 **How to flag:** At the end of a response where a trigger applies, add:
 
@@ -273,7 +273,7 @@ In `martinmellstrom/martinmellstrom.github.io`:
 - **Changelog:** `321bf76e-302d-81c0-8e6a-fa628ecb3af3`
 - **Blog Posts DB:** `322bf76e-302d-8149-ae22-e2773dca4a73`
 - **Musikpaket DB:** `314bf76e-302d-80b7-b299-ee85d8455929`
-- **Publicerade paket DB:** `5fd0b8e6-8187-4a9d-9c40-c9b9eca769c9` — live-paket med pris, filer, speltid, butiker. Läses av dashboarden. Lägg till nytt paket här när det publiceras (Status: Live).
+- **Publicerade paket DB:** `a6f7af37-e9e1-4ba4-b4a1-71b48ac9afef` — live-paket med pris, filer, speltid, butiker. Läses av dashboarden via `NOTION_PACKS_DATABASE_ID`. **Viktigt:** använd page-ID (`a6f7af37`), inte collection-ID — det är page-ID:t som fungerar med Dashboard-integrationen. Lägg till nytt paket här (Status: Live) när ett paket publiceras — dashboarden uppdateras automatiskt inom 1 minut.
 - **Guides index:** `31fbf76e-302d-81fe-8098-f394ed0b8392`
 - **Guide 01 (website management):** `31fbf76e-302d-81b8-a87f-e47034c14088`
 - **Guide 07 (Claude Code tasks):** `32bbf76e-302d-81fa-8493-f1ed576ce381`
@@ -311,4 +311,4 @@ Rules:
 - **Never deploy to live automatically** — always wait for Martin's explicit go-ahead ("deploya till live", "kör live", "go" or similar)
 - **No branches, no pull requests** — both staging and live push directly to `main`
 - **player.html build number** — always read `PLAYER_VERSION` from live, increment by 1, include in staging banner, commit message, and report to Martin. See "Build number versioning" section above.
-- **Publicerade paket** — läggs till i Notion DB `5fd0b8e6...` (inte i kod). Dashboarden uppdateras automatiskt inom 1 minut via ISR.
+- **Publicerade paket** — läggs till i Notion DB `a6f7af37` (page-ID, inte collection-ID). Dashboarden uppdateras automatiskt inom 1 minut via ISR.
