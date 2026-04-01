@@ -300,6 +300,32 @@ Rules:
 
 ---
 
+## Dashboard (mellstrom-dashboard)
+
+Allt dashboard-arbete sker i **claude.ai**, aldrig i Claude Code.
+
+- **Repo:** `martinmellstrom/mellstrom-dashboard` (privat — GitHub MCP når det ej)
+- **Hosting:** Vercel → `mellstrom-dashboard.vercel.app`
+- **Dokumentation:** Notion `333bf76e-302d-816b-a3d6-ce1a351ea2c7` — läs alltid denna i början av varje dashboard-session
+- **Stack:** Next.js (App Router), TypeScript, Tailwind CSS, npm
+- **Deploy:** push till `main` → Vercel auto-deployer
+
+### Viktiga Notion-ID:n för dashboarden
+- **MOS-dokumentation:** `333bf76e-302d-816b-a3d6-ce1a351ea2c7` — setup, roadmap, kända problem, överlämning
+- **Musikpaket DB:** `314bf76e-302d-80b7-b299-ee85d8455929` — property `Type:` (med kolon), `Paketnamn`, `Stämning`
+- **Publicerade paket DB:** `a6f7af37-e9e1-4ba4-b4a1-71b48ac9afef` — live-paket, läses via `NOTION_PACKS_DATABASE_ID`
+
+### Dashboard-regler
+- Läs alltid Notion `333bf76e-302d-816b-a3d6-ce1a351ea2c7` i början av en ny session — den innehåller aktuell status, kända problem och nästa steg
+- Kod skrivs direkt i claude.ai och klistras in av Martin, eller beskrivs så att Martin kör det i terminalen
+- Git-kommandon för dashboard: `git add -A && git commit -m "..." && git push` direkt på `main`, inga branches
+- Uppdatera alltid Notion `333bf76e-302d-816b-a3d6-ce1a351ea2c7` efter avslutat arbete — roadmap, överlämning och kända problem ska vara aktuella
+- `console.log` i server components (t.ex. `getTracks()`) orsakar minneslöcka i Next.js dev — ta alltid bort direkt efter felsökning
+- PayPal Transactions API: max 31 dagars spann per anrop — hämta i 30-dagars-bitar
+- Notion property `Type:` har kolon i namnet — mappas som `props['Type:']?.select?.name`
+
+---
+
 ## Key rules
 - Instrument = **celesta** / Game = **Celeste**
 - All packs tagged `No AI` and `Royalty-free`
