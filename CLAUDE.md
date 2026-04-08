@@ -274,6 +274,7 @@ In `martinmellstrom/martinmellstrom.github.io`:
 - **Blog Posts DB:** `322bf76e-302d-8149-ae22-e2773dca4a73`
 - **Musikpaket DB:** `314bf76e-302d-80b7-b299-ee85d8455929`
 - **Publicerade paket DB:** `a6f7af37-e9e1-4ba4-b4a1-71b48ac9afef` — live-paket med pris, filer, speltid, butiker. Läses av dashboarden via `NOTION_PACKS_DATABASE_ID`. **Viktigt:** använd page-ID (`a6f7af37`), inte collection-ID — det är page-ID:t som fungerar med Dashboard-integrationen. Lägg till nytt paket här (Status: Live) när ett paket publiceras — dashboarden uppdateras automatiskt inom 1 minut.
+- **Content Pipeline DB:** `33cbf76e-302d-80cd-9dbd-e9a46e2badb7` (data source: `33cbf76e-302d-8079-920a-000b68bc12f0`) — marknadsföringsklipp per låt. Brief genereras av Claude i chatten, sparas i Notion via MCP när Martin godkänner. Prompten fungerar från **båda projekten** (Dashboard och Musikpaket) — CLAUDE.md har direktiven. Flöde: hämta låtdata från Musikpaket DB → generera brief i chatten → spara i Notion.
 - **Guides index:** `31fbf76e-302d-81fe-8098-f394ed0b8392`
 - **Guide 01 (website management):** `31fbf76e-302d-81b8-a87f-e47034c14088`
 - **Guide 07 (Claude Code tasks):** `32bbf76e-302d-81fa-8493-f1ed576ce381`
@@ -314,6 +315,7 @@ Allt dashboard-arbete sker i **claude.ai**, aldrig i Claude Code.
 - **MOS-dokumentation:** `333bf76e-302d-816b-a3d6-ce1a351ea2c7` — setup, roadmap, kända problem, överlämning
 - **Musikpaket DB:** `314bf76e-302d-80b7-b299-ee85d8455929` — property `Type:` (med kolon), `Paketnamn`, `Stämning`
 - **Publicerade paket DB:** `a6f7af37-e9e1-4ba4-b4a1-71b48ac9afef` — live-paket, läses via `NOTION_PACKS_DATABASE_ID`
+- **Content Pipeline DB:** `33cbf76e-302d-80cd-9dbd-e9a46e2badb7` — DB-ID hårdkodat i `lib/content.ts`, ingen extra env-variabel behövs
 
 ### Dashboard-regler
 - Läs alltid Notion `333bf76e-302d-816b-a3d6-ce1a351ea2c7` i början av en ny session — den innehåller aktuell status, kända problem och nästa steg
@@ -323,6 +325,30 @@ Allt dashboard-arbete sker i **claude.ai**, aldrig i Claude Code.
 - `console.log` i server components (t.ex. `getTracks()`) orsakar minneslöcka i Next.js dev — ta alltid bort direkt efter felsökning
 - PayPal Transactions API: max 31 dagars spann per anrop — hämta i 30-dagars-bitar
 - Notion property `Type:` har kolon i namnet — mappas som `props['Type:']?.select?.name`
+
+---
+
+## Content Pipeline — brief-flöde
+
+Prompten för att skapa ett video-brief fungerar från **båda projekten** (Dashboard-projektet och Musikpaket-projektet). CLAUDE.md är den som har direktiven.
+
+**Promptformel:**
+```
+Skapa ett video-brief för låten [LÅTNAMN] ur [PAKET]
+```
+
+**Flöde:**
+1. Hämta låtdata från Musikpaket DB (`314bf76e-302d-80b7-b299-ee85d8455929`) — stämning, BPM, intensitet, beskrivning
+2. Generera komplett brief i chatten (filmstil, visuell identitet, hook, målgrupp, captions för Instagram + Bluesky)
+3. Iterera med Martin tills briefen är godkänd
+4. Spara i Content Pipeline DB via Notion MCP
+
+**Tekniska specs (beslutade):**
+- Längd: 30 sekunder
+- Format: MP4, H.264, 9:16 vertikal, 1080×1920 px, 30 fps
+- Max filstorlek: 50 MB (Bluesky-begränsningen — samma fil fungerar på båda plattformarna)
+- Bildtempo (fotosequens): ~2 sek/bild för lugna/atmosfäriska låtar, aldrig under 1 sek/bild
+- Safe zone Instagram: inget viktigt inom 250 px från toppen och 440 px från botten
 
 ---
 
