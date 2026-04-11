@@ -32,22 +32,7 @@
     font-family: 'Space Mono', monospace; font-size: 13px;
     min-height: 100dvh; display: flex; flex-direction: column;
     overflow-x: hidden; max-width: 100vw;
-    padding-top: 36px;
   }
-  .staging-banner {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-    height: 36px;
-    background: repeating-linear-gradient(
-      45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px
-    );
-    border-bottom: 2px solid #ff4444;
-    padding: 8px 16px;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .2em;
-    text-transform: uppercase; color: #ff8888;
-  }
-  .staging-banner strong { color: #ff4444; font-weight: 700; }
-  .staging-banner a { color: #ff8888; text-decoration: underline; }
   body::before {
     content: ''; position: fixed; inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
@@ -366,14 +351,32 @@
     to { opacity: 1; transform: translateX(0); }
   }
 
+  /* ── STAGING BANNER ── */
+  #staging-banner {
+    position: fixed; top: 0; left: 0; right: 0; height: 36px;
+    background: repeating-linear-gradient(
+      -45deg,
+      rgba(180,0,0,0.85),
+      rgba(180,0,0,0.85) 10px,
+      rgba(120,0,0,0.85) 10px,
+      rgba(120,0,0,0.85) 20px
+    );
+    color: #fff; font-family: 'Space Mono', monospace; font-size: 11px;
+    font-weight: 700; letter-spacing: 0.08em;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    z-index: 9999; flex-shrink: 0;
+  }
+  #staging-banner a { color: #ffd; text-decoration: underline; }
+  body { padding-top: 36px; }
+  nav, header { top: 36px; }
+
 </style>
 </head>
 <body>
-<div class="staging-banner">
-  <strong>⚠ STAGING</strong> — build 81 — Detta är en förhandsvisning.
-  <a href="/player.html">Gå till live-sidan →</a>
+<!-- STAGING BANNER -->
+<div id="staging-banner">
+  ⚠ STAGING — build 83 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">→ Live</a>
 </div>
-
 <!-- APP -->
 <div id="app">
 
@@ -616,7 +619,7 @@
 
 <script>
 
-const PLAYER_VERSION = 81;
+const PLAYER_VERSION = 83;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -839,6 +842,11 @@ let regularStartOffset      = 0;
 let regularIsPlaying        = false;
 let regularPausedOffset     = 0;
 let regularRafId            = null;
+
+// ── Gapless preload state ──
+let nextIdx      = null;   // index för nästa låt att spela
+let nextBlob     = null;   // förladdad blob för nästa låt
+let preloadTimer = null;   // setTimeout-referens för preload-trigger
 
 function loadDurationCache() {
   try { durationCache = JSON.parse(localStorage.getItem(LS_DUR_KEY)||'{}'); } catch(e){ durationCache={}; }
@@ -1096,6 +1104,74 @@ function stopRegular() {
   regularBuf = null;
   regularPausedOffset = 0;
   stopRegularRaf();
+}
+
+// ── Gapless preload helpers ──
+
+function cancelPreload() {
+  if (preloadTimer) { clearTimeout(preloadTimer); preloadTimer = null; }
+  nextIdx  = null;
+  nextBlob = null;
+}
+
+// Beräkna index för nästa låt ett steg i förväg (peek, inte consume).
+// Returnerar null om ingen nästa låt finns (sista låt + repeat-off, etc.).
+function computeNextIdx() {
+  if (currentIdx < 0) return null;
+  if (repeatMode === 'one') return currentIdx;
+  const pool = getPool();
+  if (shuffle) {
+    // Titta på nästa i kön utan att konsumera — nextTrack(true) gör shift() senare
+    if (!shuffleQueue.length) return null; // kön tömd, vet ej ännu
+    return tracks.indexOf(pool[shuffleQueue[0]]);
+  }
+  const ci = pool.indexOf(tracks[currentIdx]);
+  if (ci < 0) return null;
+  const ni = (ci + 1) % pool.length;
+  if (ni === 0 && repeatMode === 'none') return null; // sista låt, ingen repeat
+  return tracks.indexOf(pool[ni]);
+}
+
+// Ladda ner och buffra nästa låts blob. Lagrar i nextBlob.
+async function preloadNext(idx) {
+  if (idx === null || idx !== nextIdx) return;
+  const t = tracks[idx];
+  if (!t) return;
+  try {
+    const stored  = await idbGet(t.path);
+    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+    if (stored && revMatch) {
+      if (nextIdx === idx) nextBlob = stored.blob;
+    } else {
+      const link = await getTmpLink(t.path);
+      const resp = await fetch(link);
+      const blob = await resp.blob();
+      idbPut(t.path, blob, t.rev).catch(() => {});
+      if (nextIdx === idx) nextBlob = blob; // check fortfarande giltigt
+    }
+  } catch(e) {
+    console.warn('[preload] Misslyckades för idx', idx, e);
+    if (nextIdx === idx) nextBlob = null;
+  }
+}
+
+// Schemalägg preload-timer baserat på duration för aktuell låt.
+function schedulePreload() {
+  cancelPreload();
+  const idx = computeNextIdx();
+  if (idx === null) return; // ingen nästa låt
+  nextIdx = idx;
+  const setupTimer = () => {
+    const dur = isFinite(audio.duration) ? audio.duration : 0;
+    if (dur <= 0) return;
+    const delay = Math.max(0, (dur - 20) * 1000);
+    preloadTimer = setTimeout(() => preloadNext(nextIdx), delay);
+  };
+  if (isFinite(audio.duration) && audio.duration > 0) {
+    setupTimer();
+  } else {
+    audio.addEventListener('loadedmetadata', setupTimer, { once: true });
+  }
 }
 
 function startRegularRaf() {
@@ -1939,28 +2015,37 @@ async function playTrack(gi, fromAb = false) {
     navigator.mediaSession.playbackState = "playing";
   }
 
-  // 2. Hämta fil (Cache eller Dropbox)
-  const stored = await idbGet(t.path);
+  // 2. Hämta fil (Cache, förladdad blob, eller Dropbox)
+  // Kolla om vi har en förladdad blob för exakt detta spår — gripa den
+  // innan cancelPreload() nollar state.
   let blob;
-  const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+  const preloaded = (gi === nextIdx && nextBlob !== null) ? nextBlob : null;
+  cancelPreload(); // avbryt pågående preload för annat spår
 
-  if (stored && revMatch) {
-    blob = stored.blob;
+  if (preloaded) {
+    // Gapless-sökväg: blob redan nedladdad, inga nätverksanrop
+    blob = preloaded;
   } else {
-    setStatus('loading', `Downloading: ${t.name}...`);
-    try {
-      const link = await getTmpLink(t.path);
-      const resp = await fetch(link);
-      blob = await resp.blob();
-      await idbPut(t.path, blob, t.rev);
-    } catch(e) {
-      setStatus('error', "Download failed");
-      return;
+    const stored = await idbGet(t.path);
+    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+    if (stored && revMatch) {
+      blob = stored.blob;
+    } else {
+      setStatus('loading', `Downloading: ${t.name}...`);
+      try {
+        const link = await getTmpLink(t.path);
+        const resp = await fetch(link);
+        blob = await resp.blob();
+        await idbPut(t.path, blob, t.rev);
+      } catch(e) {
+        setStatus('error', "Download failed");
+        return;
+      }
     }
   }
 
   // 3. Setup Audio Engine
-  stopRegular(); 
+  stopRegular();
   if (activeObjUrl) URL.revokeObjectURL(activeObjUrl);
   activeObjUrl = URL.createObjectURL(blob);
 
@@ -1974,6 +2059,8 @@ async function playTrack(gi, fromAb = false) {
     isPlaying = true;
     setPlayIcon(true);
     setStatus('ok', 'Playing from Dropbox');
+    // Schemalägg preload av nästa låt ~20 sek innan slutet
+    schedulePreload();
   } catch (e) {
     console.error("Playback failed:", e);
     regularIsPlaying = false;
@@ -2094,7 +2181,7 @@ function rebuildShuffleQueue(pool) {
   for (let i=shuffleQueue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleQueue[i],shuffleQueue[j]]=[shuffleQueue[j],shuffleQueue[i]];}
 }
 
-function cycleRepeat(){repeatMode=repeatMode==='none'?'all':repeatMode==='all'?'one':'none';updateRepeatUI();document.getElementById('repeat-btn-exp').classList.toggle('active',repeatMode!=='none');saveState();}
+function cycleRepeat(){repeatMode=repeatMode==='none'?'all':repeatMode==='all'?'one':'none';cancelPreload();updateRepeatUI();document.getElementById('repeat-btn-exp').classList.toggle('active',repeatMode!=='none');saveState();}
 function updateRepeatUI(){
   repeatBtn.classList.toggle('active',repeatMode!=='none');
   document.getElementById('repeat-btn-exp').classList.toggle('active',repeatMode!=='none');
@@ -2108,7 +2195,7 @@ function updateRepeatUI(){
     if(exExp) exExp.remove();
   }
 }
-function toggleShuffle(){shuffle=!shuffle;shuffleQueue=[];shuffleBtn.classList.toggle('active',shuffle);document.getElementById('shuffle-btn-exp').classList.toggle('active',shuffle);saveState();}
+function toggleShuffle(){shuffle=!shuffle;shuffleQueue=[];cancelPreload();shuffleBtn.classList.toggle('active',shuffle);document.getElementById('shuffle-btn-exp').classList.toggle('active',shuffle);saveState();}
 
 // ═══════════════════════════════════════════════
 //  AUDIO EVENTS
