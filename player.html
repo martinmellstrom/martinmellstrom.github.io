@@ -353,7 +353,6 @@
 </style>
 </head>
 <body>
-
 <!-- APP -->
 <div id="app">
 
@@ -596,7 +595,7 @@
 
 <script>
 
-const PLAYER_VERSION = 80;
+const PLAYER_VERSION = 82;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -1126,6 +1125,17 @@ const audio     = document.getElementById('audio-el');
 audio.addEventListener('ended', () => {
   if (regularIsPlaying) { regularIsPlaying = false; nextTrack(true); }
 });
+
+audio.addEventListener('play', () => {
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
+});
+
+audio.addEventListener('pause', () => {
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
+});
+
+
+
 
 // ── CarPlay / iOS audio recovery ──
 // WebKit kan stall:a blob URL-buffring (Bug #238113) — särskilt via trådlös CarPlay.
@@ -1897,72 +1907,114 @@ function updateMediaSession(t) {
 // ═══════════════════════════════════════════════
 //  PLAYBACK
 // ═══════════════════════════════════════════════
-async function playTrack(idx) {
-  if (idx<0||idx>=tracks.length) return;
-  // iOS Safari: AudioContext.resume() måste anropas synkront i gesture-handleren
-  // — INNAN några await-steg. Om resume() anropas senare (t.ex. i ensureAudioGraph()
-  // efter idbGet/fetch) hinner iOS stänga gesture-fönstret och nekar unlock.
-  // Resultat utan detta: AudioContext körs men Web Audio-noder (A/B) ger inget ljud
-  // tills playTrack anropats minst två gånger.
-  ensureAudioCtx();
-  lastSavedPosition = getRegularCurrentTime() || 0;
-  saveState();
-  currentIdx=idx;
-  if (abMode) {
-    // Klick på valfri låt i spellistan inaktiverar alltid A/B-läget —
-    // oavsett om låten är A, B eller annan. Förhindrar att audio-elementet
-    // startar parallellt med pågående A/B WebAudio-källor.
-    toggleABMode();
+async function playTrack(gi, fromAb = false) {
+  if (gi < 0 || gi >= tracks.length) return;
+  const t = tracks[gi];
+  currentIdx = gi;
+
+  // 1. Synka CarPlay metadata omedelbart
+  updateMediaSession(t);
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.playbackState = "playing";
   }
-  const t=tracks[idx];
-  npName.textContent=t.name;
-  npSub.textContent=t.package?formatPkgName(t.package):'All tracks';
-  const pool = activePkg==='all'||activePkg===null?tracks:tracks.filter(x=>x.package===activePkg);
-  if (!searchQuery) renderTrackList(pool);
-  try {
-    if (activeObjUrl){URL.revokeObjectURL(activeObjUrl);activeObjUrl=null;}
-    const stored = await idbGet(t.path);
-    let blob;
-    const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
-    if (stored && revMatch) {
-      blob = stored.blob;
-    } else {
-      if (stored && !revMatch) setStatus('loading',`Updating: ${t.name}…`);
-      else setStatus('loading',`Downloading: ${t.name}…`);
-      const link=await getTmpLink(t.path);
-      blob=await (await fetch(link)).blob();
+
+  // 2. Hämta fil (Cache eller Dropbox)
+  const stored = await idbGet(t.path);
+  let blob;
+  const revMatch = stored && (!stored.rev || !t.rev || stored.rev === t.rev);
+
+  if (stored && revMatch) {
+    blob = stored.blob;
+  } else {
+    setStatus('loading', `Downloading: ${t.name}...`);
+    try {
+      const link = await getTmpLink(t.path);
+      const resp = await fetch(link);
+      blob = await resp.blob();
       await idbPut(t.path, blob, t.rev);
-      syncedPaths.set(t.path, t.rev||null);
-      setStatus('ok', stored && !revMatch ? `Updated: ${t.name}` : '');
+    } catch(e) {
+      setStatus('error', "Download failed");
+      return;
     }
-    stopRegular();
-    ensureAudioCtx();
-    if (activeObjUrl) { URL.revokeObjectURL(activeObjUrl); }
-    activeObjUrl = URL.createObjectURL(blob);
-    audio.loop = false;
-    // Använd <source>-element istället för audio.src — workaround för iOS/WebKit
-    // blob URL range request-bugg (bytes=0-* → 416) som orsakar stuttering i CarPlay.
-    audio.removeAttribute('src');
-    while (audio.firstChild) audio.removeChild(audio.firstChild);
-    const _src = document.createElement('source');
-    _src.src = activeObjUrl;
-    _src.type = blob.type || 'audio/mpeg';
-    audio.appendChild(_src);
-    audio.load();
-    const _arrBuf = await blob.arrayBuffer();
-    regularBuf = await audioCtx.decodeAudioData(_arrBuf);
-    if (!t.duration) { t.duration = regularBuf.duration; saveDurationToCache(t.rev, regularBuf.duration); }
-    updateMediaSession(t);
-    if (!searchQuery) renderTrackList(pool);
-    saveState();
-    if (expOpen) syncExpandedMeta();
-    waveformData = null; waveformPath = null;
-    const _startOff = restoredPosition > 0 ? restoredPosition : 0;
-    restoredPosition = 0;
-    startRegularPlayback(_startOff);
-    buildWaveform(regularBuf, t);
-  } catch(e){setStatus('error',`Cannot play: ${e.message}`);}
+  }
+
+  // 3. Setup Audio Engine
+  stopRegular(); 
+  if (activeObjUrl) URL.revokeObjectURL(activeObjUrl);
+  activeObjUrl = URL.createObjectURL(blob);
+
+  // BUILD 82: Source-tag fix för iOS-stutter
+  audio.innerHTML = `<source src="${activeObjUrl}" type="${blob.type}">`;
+  audio.load();
+
+  try {
+    await audio.play();
+    regularIsPlaying = true;
+    isPlaying = true;
+    setPlayIcon(true);
+    setStatus('ok', 'Playing from Dropbox');
+  } catch (e) {
+    console.error("Playback failed:", e);
+    regularIsPlaying = false;
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
+  }
+
+  updateUI();
+  saveState();
 }
+
+function setupMediaSessionHandlers() {
+  const s = navigator.mediaSession;
+  
+  s.setActionHandler('play', async () => {
+    await audio.play();
+    s.playbackState = "playing";
+    regularIsPlaying = true;
+    updateUI();
+  });
+
+  s.setActionHandler('pause', () => {
+    audio.pause();
+    s.playbackState = "paused";
+    regularIsPlaying = false;
+    updateUI();
+  });
+
+  s.setActionHandler('previoustrack', () => prevTrack());
+  s.setActionHandler('nexttrack', () => nextTrack(false));
+  
+  // Gör att man kan spola från CarPlay-menyn
+  s.setActionHandler('seekbackward', (details) => {
+    audio.currentTime = Math.max(audio.currentTime - (details.seekOffset || 10), 0);
+  });
+  s.setActionHandler('seekforward', (details) => {
+    audio.currentTime = Math.min(audio.currentTime + (details.seekOffset || 10), audio.duration);
+  });
+}
+
+(async () => {
+  stopRegular(); 
+  if (activeObjUrl) URL.revokeObjectURL(activeObjUrl);
+  activeObjUrl = URL.createObjectURL(blob);
+
+  // BUILD 82: Tvinga omladdning med source-tagg för att undvika iOS "stutter"
+  audio.innerHTML = `<source src="${activeObjUrl}" type="${blob.type}">`;
+  audio.load();
+
+  try {
+    // Vänta på att iOS faktiskt godkänner uppspelningen
+    await audio.play();
+    regularIsPlaying = true;
+  } catch (e) {
+    console.error("Playback failed:", e);
+    regularIsPlaying = false;
+    // Om det skiter sig, berätta för CarPlay att vi pausat
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
+  }
+
+  updateUI();
+  saveState();
+})();
 
 function getPool(){return !activePkg||activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg);}
 
