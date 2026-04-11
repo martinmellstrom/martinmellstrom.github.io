@@ -2125,6 +2125,19 @@ function setupMediaSessionHandlers() {
 
 function getPool(){return !activePkg||activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg);}
 
+// Uppdaterar UI efter spårbyte: tracknamn, expanded player, listan, progress-RAF, waveform.
+function updateUI() {
+  const t = currentIdx >= 0 ? tracks[currentIdx] : null;
+  if (t) {
+    npName.textContent = t.name;
+    npSub.textContent  = t.package ? formatPkgName(t.package) : 'All tracks';
+  }
+  syncExpandedMeta();      // no-op om expOpen === false
+  refreshView();           // markera aktiv låt i listan
+  if (regularIsPlaying) startRegularRaf();
+  if (t && activeObjUrl) buildWaveform(activeObjUrl, t).catch(() => {});
+}
+
 function togglePlay(){
   if (abMode && abAudioBufA && abAudioBufB) {
     if (abIsPlaying) {
@@ -2201,9 +2214,9 @@ function toggleShuffle(){shuffle=!shuffle;shuffleQueue=[];cancelPreload();shuffl
 // ═══════════════════════════════════════════════
 // Audio element events ersatta av RAF-loop i startRegularRaf() + startABRaf().
 document.getElementById('progress-wrap').addEventListener('click',e=>{
-  if(!regularBuf)return;
+  if(!isFinite(audio.duration)||!audio.duration)return;
   const r=e.currentTarget.getBoundingClientRect();
-  seekRegular(((e.clientX-r.left)/r.width)*regularBuf.duration);
+  seekRegular(((e.clientX-r.left)/r.width)*audio.duration);
 });
 
 // ═══════════════════════════════════════════════
@@ -2364,9 +2377,9 @@ document.getElementById('repeat-btn-exp').addEventListener('click', cycleRepeat)
 document.getElementById('shuffle-btn-exp').addEventListener('click', toggleShuffle);
 
 document.getElementById('exp-seek-wrap').addEventListener('click', e => {
-  if (!regularBuf) return;
+  if (!isFinite(audio.duration) || !audio.duration) return;
   const r = e.currentTarget.getBoundingClientRect();
-  seekRegular(((e.clientX - r.left) / r.width) * regularBuf.duration);
+  seekRegular(((e.clientX - r.left) / r.width) * audio.duration);
 });
 
 // ═══════════════════════════════════════════════
@@ -2445,7 +2458,8 @@ function drawWaveform() {
   const bins = waveformData ? waveformData.length : 200;
   const barW = Math.max(1, (W / bins) - 0.5);
   const gap  = (W / bins) - barW;
-  const prog = regularBuf ? (getRegularCurrentTime() / regularBuf.duration) : 0;
+  const _wfDur = isFinite(audio.duration) ? audio.duration : 0;
+  const prog = _wfDur > 0 ? (getRegularCurrentTime() / _wfDur) : 0;
   const progX = prog * W;
 
   const gold     = '#c9a84c';
@@ -2478,9 +2492,9 @@ function drawWaveform() {
 }
 
 document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
-  if (!regularBuf) return;
+  if (!isFinite(audio.duration) || !audio.duration) return;
   const r = e.currentTarget.getBoundingClientRect();
-  seekRegular(((e.clientX - r.left) / r.width) * regularBuf.duration);
+  seekRegular(((e.clientX - r.left) / r.width) * audio.duration);
 });
 
 // ═══════════════════════════════════════════════
