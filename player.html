@@ -162,6 +162,7 @@
   .track-sync.synced svg { fill: var(--green); }
   .track-sync.syncing svg { fill: var(--gold); animation: pulse 1s infinite; }
   .track-sync.unsynced svg { fill: var(--border); }
+  .track-update-pending { flex-shrink: 0; font-size: 11px; color: var(--gold); width: 14px; text-align: center; line-height: 22px; }
 
   /* ── SEARCH RESULTS VIEW ── */
   #search-results-view { display: none; padding: 0 10px 0; }
@@ -596,7 +597,7 @@
 
 <script>
 
-const PLAYER_VERSION = 84;
+const PLAYER_VERSION = 86;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -770,6 +771,7 @@ let shuffle     = false;
 let shuffleQueue= [];
 let activePkg   = null; // null = library, 'all' or pkg name = playlist
 let syncedPaths = new Map();
+let pendingUpdatePaths = new Set(); // paths with new Dropbox rev not yet locally re-synced
 let restoredPosition = 0;
 let lastSavedPosition = 0;
 let coverPathMap= {}; // pkg → { path, rev }
@@ -1516,6 +1518,7 @@ async function fetchTracks() {
 
     if (currentIdx>=tracks.length) currentIdx=-1;
     await refreshSynced();
+    updatePendingUpdates();
     // Vid ↻ tvingar vi nedladdning av alla omslag (rev kan ha ändrats)
     // Revoke old object URLs to free memory before re-fetching
     for (const url of Object.values(coverUrlMap)) URL.revokeObjectURL(url);
@@ -1525,6 +1528,13 @@ async function fetchTracks() {
     fetchAllSongsCover();
     saveState();
     renderLibrary();
+    if (activePkg !== null) {
+      const pkgTracks = activePkg === 'all'
+        ? [...tracks].sort((a,b) => a.name.localeCompare(b.name))
+        : tracks.filter(t => t.package === activePkg);
+      renderTrackList(pkgTracks);
+      preloadDurations(pkgTracks);
+    }
     setStatus('ok',`${tracks.length} tracks fetched`);
   } catch(e){setStatus('error',`Error: ${e.message}`);}
 }
@@ -1533,6 +1543,16 @@ async function refreshSynced() {
   const all = await idbGetAll();
   // syncedPaths: path → stored rev (or true if no rev stored)
   syncedPaths = new Map(all.map(r => [r.path, r.rev||null]));
+}
+
+function updatePendingUpdates() {
+  pendingUpdatePaths.clear();
+  for (const t of tracks) {
+    const storedRev = syncedPaths.get(t.path);
+    if (storedRev !== undefined && storedRev && t.rev && storedRev !== t.rev) {
+      pendingUpdatePaths.add(t.path);
+    }
+  }
 }
 
 function isSynced(track) {
@@ -1791,6 +1811,7 @@ function renderTrackList(pkgTracks) {
     const isActive= gi===currentIdx;
     const isPlay  = isActive&&isPlaying;
     const synced  = isSynced(t);
+    const pendingUpdate = pendingUpdatePaths.has(t.path);
     const abBtns  = `<div class="track-ab-btns">
       <button class="track-ab-btn${abA===gi?' ab-sel':''}" onclick="setABSlot('a',${gi},event)">A</button>
       <button class="track-ab-btn${abB===gi?' ab-sel':''}" onclick="setABSlot('b',${gi},event)">B</button>
@@ -1804,6 +1825,7 @@ function renderTrackList(pkgTracks) {
       </div>
       ${abBtns}
       <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
+      ${pendingUpdate ? '<div class="track-update-pending">⚠</div>' : ''}
       <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
     </div>`;
   });
@@ -1859,6 +1881,7 @@ function renderSearchResults(q) {
     const isActive = gi === currentIdx;
     const isPlay = isActive && isPlaying;
     const synced = isSynced(t);
+    const pendingUpdate = pendingUpdatePaths.has(t.path);
     const pkgLabel = t.package ? formatPkgName(t.package) : 'All tracks';
     html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrackFromSearch(${gi})">
       <div class="track-num">${i+1}</div>
@@ -1868,6 +1891,7 @@ function renderSearchResults(q) {
         <div class="track-meta">${pkgLabel} · ${t.ext}</div>
       </div>
       <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
+      ${pendingUpdate ? '<div class="track-update-pending">⚠</div>' : ''}
       <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
     </div>`;
   });
@@ -2008,12 +2032,19 @@ async function playTrack(gi, fromAb = false) {
     if (stored && revMatch) {
       blob = stored.blob;
     } else {
-      setStatus('loading', `Downloading: ${t.name}...`);
+      const isUpdate = !!(stored && !revMatch);
+      setStatus('loading', isUpdate ? `Updating: ${t.name}…` : `Downloading: ${t.name}…`);
       try {
         const link = await getTmpLink(t.path);
         const resp = await fetch(link);
         blob = await resp.blob();
         await idbPut(t.path, blob, t.rev);
+        syncedPaths.set(t.path, t.rev || null);
+        if (isUpdate) {
+          pendingUpdatePaths.delete(t.path);
+          const pendingEl = document.querySelector(`.track-item[data-idx="${gi}"] .track-update-pending`);
+          if (pendingEl) pendingEl.remove();
+        }
       } catch(e) {
         setStatus('error', "Download failed");
         return;
@@ -2986,9 +3017,11 @@ openIDB().then(async()=>{
         restoredPosition = 0;
       }
     }
+    if (isOAuthConnected()) fetchTracks();
   } else {
     renderLibrary();
-    setStatus('','Connect Dropbox via ⚙ to get started');
+    if (isOAuthConnected()) fetchTracks();
+    else setStatus('','Connect Dropbox via ⚙ to get started');
   }
 
   const hv = document.getElementById('help-version');
