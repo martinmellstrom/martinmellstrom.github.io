@@ -813,6 +813,7 @@ let abBlindActive    = false;  // blind test is active (names/waveforms hidden)
 let abBlindSwapped   = false;  // slots were randomly swapped during blind test
 
 // ── Regular buffered playback state ──
+let regularBuf              = null;
 let regularIsPlaying        = false;
 let regularPausedOffset     = 0;
 let regularRafId            = null;
@@ -2463,14 +2464,16 @@ function drawWaveform() {
     ctx.fill();
   }
 
-  ctx.strokeStyle = gold;
-  ctx.globalAlpha = 0.9;
-  ctx.lineWidth   = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(progX, 0);
-  ctx.lineTo(progX, H);
-  ctx.stroke();
-  ctx.globalAlpha = 1;
+  if (regularBuf) {
+    ctx.strokeStyle = gold;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(progX, 0);
+    ctx.lineTo(progX, H);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
 }
 
 document.getElementById('exp-waveform-wrap').addEventListener('click', e => {
