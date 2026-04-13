@@ -360,7 +360,7 @@
 </style>
 </head>
 <body>
-<div id="staging-banner"><span>⚠ STAGING — build 87 — This is a preview. <a href="/player.html" style="color:#ffd;text-decoration:underline;pointer-events:auto;">Go to live →</a></span></div>
+<div id="staging-banner"><span>⚠ STAGING — build 88 — This is a preview. <a href="/player.html" style="color:#ffd;text-decoration:underline;pointer-events:auto;">Go to live →</a></span></div>
 <!-- APP -->
 <div id="app">
 
@@ -603,7 +603,7 @@
 
 <script>
 
-const PLAYER_VERSION = 87;
+const PLAYER_VERSION = 88;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -1080,6 +1080,7 @@ function seekRegular(time) {
       expSeekFill.style.width = pct;
       expTimeCur.textContent = fmtTime(regularPausedOffset);
     }
+    if (expOpen) drawWaveform();
   }
 }
 
@@ -2176,7 +2177,7 @@ function togglePlay(){
   }
   if (currentIdx<0&&tracks.length){playTrack(0);return;}
   if (regularIsPlaying) { pauseRegular(); }
-  else if (regularBuf) { startRegularPlayback(regularPausedOffset); }
+  else if (activeObjUrl) { startRegularPlayback(regularPausedOffset); }
   else if (currentIdx >= 0) { playTrack(currentIdx); }
 }
 
@@ -2631,6 +2632,15 @@ function handleABSectionClick(e, slot) {
       startABPlayback(abActiveSlot, seekTime);
     } else {
       abPausedOffset = seekTime;
+      const dur = buf.duration;
+      if (dur) {
+        const pct = (seekTime / dur * 100) + '%';
+        progFill.style.width = pct;
+        timeDisp.textContent = fmtTime(seekTime) + ' / ' + fmtTime(dur);
+        expSeekFill.style.width = pct;
+        expTimeCur.textContent = fmtTime(seekTime);
+      }
+      if (expOpen) drawABWaveforms();
     }
   }
 }
