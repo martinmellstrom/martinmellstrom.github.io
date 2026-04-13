@@ -352,17 +352,15 @@
     to { opacity: 1; transform: translateX(0); }
   }
 
-
   /* ── STAGING BANNER ── */
   #staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; color: #fff; pointer-events: none; overflow: hidden; }
   #staging-banner::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-45deg, rgba(180,0,0,0.85) 0px, rgba(180,0,0,0.85) 10px, rgba(120,0,0,0.85) 10px, rgba(120,0,0,0.85) 20px); }
   #staging-banner span { position: relative; z-index: 1; }
   body { padding-top: 36px; }
-  nav, #nav { top: 36px !important; }
 </style>
 </head>
 <body>
-<div id="staging-banner"><span>⚠ STAGING — build 85 — This is a preview. <a href="/player.html" style="color:#ffd;text-decoration:underline;pointer-events:auto;">Go to live →</a></span></div>
+<div id="staging-banner"><span>⚠ STAGING — build 87 — This is a preview. <a href="/player.html" style="color:#ffd;text-decoration:underline;pointer-events:auto;">Go to live →</a></span></div>
 <!-- APP -->
 <div id="app">
 
@@ -605,7 +603,7 @@
 
 <script>
 
-const PLAYER_VERSION = 85;
+const PLAYER_VERSION = 87;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -741,7 +739,7 @@ function idbCoverPut(path, blob, rev) {
 // ═══════════════════════════════════════════════
 // STATE:
 //   tracks, currentIdx, isPlaying, repeatMode, shuffle, shuffleQueue, activePkg
-//   syncedPaths, pendingUpdatePaths, restoredPosition, lastSavedPosition
+//   syncedPaths, restoredPosition, lastSavedPosition
 //   coverPathMap, coverUrlMap, allSongsCoverUrl
 //   linkCache, activeObjUrl
 //   durationCache, waveformCache, gainCache
@@ -761,7 +759,7 @@ function idbCoverPut(path, blob, rev) {
 //   Waveform: buildWaveform, buildWaveformForA, buildWaveformForB,
 //             preloadAWaveform, preloadBWaveform
 //   Playback: playTrack, togglePlay, nextTrack, prevTrack
-//   A/B mode: setABSlot, toggleABMode, updateABExpandedUI, drawABWaveforms,
+//   A/B mode: exitABMode, setABSlot, toggleABMode, updateABExpandedUI, drawABWaveforms,
 //             drawOneABCanvas, handleABSectionClick
 //   A/B blind test: revealTitle, ab-blind-btn click handler
 // ═══════════════════════════════════════════════
@@ -1553,6 +1551,16 @@ async function refreshSynced() {
   syncedPaths = new Map(all.map(r => [r.path, r.rev||null]));
 }
 
+function updatePendingUpdates() {
+  pendingUpdatePaths.clear();
+  for (const t of tracks) {
+    const storedRev = syncedPaths.get(t.path);
+    if (storedRev !== undefined && storedRev && t.rev && storedRev !== t.rev) {
+      pendingUpdatePaths.add(t.path);
+    }
+  }
+}
+
 function isSynced(track) {
   if (!syncedPaths.has(track.path)) return false;
   const storedRev = syncedPaths.get(track.path);
@@ -1560,17 +1568,6 @@ function isSynced(track) {
   if (storedRev && track.rev) return storedRev === track.rev;
   // Fallback: file exists in IDB, assume ok
   return true;
-}
-
-function updatePendingUpdates() {
-  pendingUpdatePaths.clear();
-  for (const t of tracks) {
-    const storedRev = syncedPaths.get(t.path);
-    // File is in IDB, both revs known, and they differ → needs re-sync
-    if (storedRev !== undefined && storedRev && t.rev && storedRev !== t.rev) {
-      pendingUpdatePaths.add(t.path);
-    }
-  }
 }
 
 // ═══════════════════════════════════════════════
@@ -2019,6 +2016,7 @@ function updateMediaSession(t) {
 // ═══════════════════════════════════════════════
 async function playTrack(gi, fromAb = false) {
   if (gi < 0 || gi >= tracks.length) return;
+  exitABMode(); // stop A/B playback before starting regular mode
   const t = tracks[gi];
   currentIdx = gi;
 
@@ -2741,6 +2739,42 @@ function switchABSlot(slot) {
     updateMediaSession(t);
   }
   updateABExpandedUI();
+}
+
+function exitABMode() {
+  if (!abMode) return;
+  abMode = false;
+  // Stop sources
+  [abSourceA, abSourceB].forEach(s => { try { s?.stop(); } catch(e) {} });
+  abSourceA = null; abSourceB = null;
+  // Disconnect gain nodes
+  abGainNodeA?.disconnect(); abGainNodeA = null;
+  abGainNodeB?.disconnect(); abGainNodeB = null;
+  // Clear buffers
+  abAudioBufA = null; abAudioBufB = null;
+  // Stop RAF loop and bridge
+  stopABRaf();
+  airplayBridge.pause();
+  // Restore audio volume
+  audio.volume = 1;
+  // Reset state
+  abIsPlaying = false; abPausedOffset = 0;
+  abA = null; abB = null; waveformDataA = null; waveformDataB = null;
+  abActiveSlot = 'a';
+  // Reset blind mode if active
+  if (abBlindActive) {
+    abBlindActive = false; abBlindSwapped = false;
+    document.getElementById('ab-canvas-a')?.classList.remove('blind');
+    document.getElementById('ab-canvas-b')?.classList.remove('blind');
+    const blindBtn = document.getElementById('ab-blind-btn');
+    if (blindBtn) { blindBtn.textContent = 'Hide \u0026 Shuffle'; blindBtn.classList.remove('btn-ab-active'); }
+  }
+  // Hide A/B badge
+  document.getElementById('np-ab-badge')?.classList.remove('ab-visible');
+  // Update A/B button
+  document.getElementById('ab-mode-btn')?.classList.remove('btn-ab-active');
+  // Restore expanded player if open
+  if (expOpen) { hideABExpandedLayout(); syncExpandedMeta(); drawWaveform(); adjustExpandedSpacing(); }
 }
 
 function toggleABMode() {
