@@ -1536,6 +1536,13 @@ async function fetchTracks() {
     fetchAllSongsCover();
     saveState();
     renderLibrary();
+    if (activePkg !== null) {
+      const pkgTracks = activePkg === 'all'
+        ? [...tracks].sort((a,b) => a.name.localeCompare(b.name))
+        : tracks.filter(t => t.package === activePkg);
+      renderTrackList(pkgTracks);
+      preloadDurations(pkgTracks);
+    }
     setStatus('ok',`${tracks.length} tracks fetched`);
   } catch(e){setStatus('error',`Error: ${e.message}`);}
 }
