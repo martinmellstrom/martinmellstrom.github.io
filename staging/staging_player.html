@@ -3026,9 +3026,11 @@ openIDB().then(async()=>{
         restoredPosition = 0;
       }
     }
+    if (isOAuthConnected()) fetchTracks();
   } else {
     renderLibrary();
-    setStatus('','Connect Dropbox via ⚙ to get started');
+    if (isOAuthConnected()) fetchTracks();
+    else setStatus('','Connect Dropbox via ⚙ to get started');
   }
 
   const hv = document.getElementById('help-version');
