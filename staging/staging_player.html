@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
 <title>[STAGING] Audrig</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -163,6 +163,7 @@
   .track-sync.synced svg { fill: var(--green); }
   .track-sync.syncing svg { fill: var(--gold); animation: pulse 1s infinite; }
   .track-sync.unsynced svg { fill: var(--border); }
+  .track-update-pending { flex-shrink: 0; font-size: 11px; color: var(--gold); width: 14px; text-align: center; line-height: 22px; }
 
   /* ── SEARCH RESULTS VIEW ── */
   #search-results-view { display: none; padding: 0 10px 0; }
@@ -351,31 +352,17 @@
     to { opacity: 1; transform: translateX(0); }
   }
 
-  /* ── STAGING BANNER ── */
-  #staging-banner {
-    position: fixed; top: 0; left: 0; right: 0; height: 36px;
-    background: repeating-linear-gradient(
-      -45deg,
-      rgba(180,0,0,0.85),
-      rgba(180,0,0,0.85) 10px,
-      rgba(120,0,0,0.85) 10px,
-      rgba(120,0,0,0.85) 20px
-    );
-    color: #fff; font-family: 'Space Mono', monospace; font-size: 11px;
-    font-weight: 700; letter-spacing: 0.08em;
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    z-index: 9999; flex-shrink: 0;
-  }
-  #staging-banner a { color: #ffd; text-decoration: underline; }
-  body { padding-top: 36px; }
 
+  /* ── STAGING BANNER ── */
+  #staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; color: #fff; pointer-events: none; overflow: hidden; }
+  #staging-banner::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-45deg, rgba(180,0,0,0.85) 0px, rgba(180,0,0,0.85) 10px, rgba(120,0,0,0.85) 10px, rgba(120,0,0,0.85) 20px); }
+  #staging-banner span { position: relative; z-index: 1; }
+  body { padding-top: 36px; }
+  nav, #nav { top: 36px !important; }
 </style>
 </head>
 <body>
-<!-- STAGING BANNER -->
-<div id="staging-banner">
-  ⚠ STAGING — build 83 — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/player.html">→ Live</a>
-</div>
+<div id="staging-banner"><span>⚠ STAGING — build 85 — This is a preview. <a href="/player.html" style="color:#ffd;text-decoration:underline;pointer-events:auto;">Go to live →</a></span></div>
 <!-- APP -->
 <div id="app">
 
@@ -618,7 +605,7 @@
 
 <script>
 
-const PLAYER_VERSION = 83;
+const PLAYER_VERSION = 85;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -754,7 +741,7 @@ function idbCoverPut(path, blob, rev) {
 // ═══════════════════════════════════════════════
 // STATE:
 //   tracks, currentIdx, isPlaying, repeatMode, shuffle, shuffleQueue, activePkg
-//   syncedPaths, restoredPosition, lastSavedPosition
+//   syncedPaths, pendingUpdatePaths, restoredPosition, lastSavedPosition
 //   coverPathMap, coverUrlMap, allSongsCoverUrl
 //   linkCache, activeObjUrl
 //   durationCache, waveformCache, gainCache
@@ -792,6 +779,7 @@ let shuffle     = false;
 let shuffleQueue= [];
 let activePkg   = null; // null = library, 'all' or pkg name = playlist
 let syncedPaths = new Map();
+let pendingUpdatePaths = new Set(); // paths with new Dropbox rev not yet locally re-synced
 let restoredPosition = 0;
 let lastSavedPosition = 0;
 let coverPathMap= {}; // pkg → { path, rev }
@@ -1538,6 +1526,7 @@ async function fetchTracks() {
 
     if (currentIdx>=tracks.length) currentIdx=-1;
     await refreshSynced();
+    updatePendingUpdates();
     // Vid ↻ tvingar vi nedladdning av alla omslag (rev kan ha ändrats)
     // Revoke old object URLs to free memory before re-fetching
     for (const url of Object.values(coverUrlMap)) URL.revokeObjectURL(url);
@@ -1564,6 +1553,17 @@ function isSynced(track) {
   if (storedRev && track.rev) return storedRev === track.rev;
   // Fallback: file exists in IDB, assume ok
   return true;
+}
+
+function updatePendingUpdates() {
+  pendingUpdatePaths.clear();
+  for (const t of tracks) {
+    const storedRev = syncedPaths.get(t.path);
+    // File is in IDB, both revs known, and they differ → needs re-sync
+    if (storedRev !== undefined && storedRev && t.rev && storedRev !== t.rev) {
+      pendingUpdatePaths.add(t.path);
+    }
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1813,6 +1813,7 @@ function renderTrackList(pkgTracks) {
     const isActive= gi===currentIdx;
     const isPlay  = isActive&&isPlaying;
     const synced  = isSynced(t);
+    const pendingUpdate = pendingUpdatePaths.has(t.path);
     const abBtns  = `<div class="track-ab-btns">
       <button class="track-ab-btn${abA===gi?' ab-sel':''}" onclick="setABSlot('a',${gi},event)">A</button>
       <button class="track-ab-btn${abB===gi?' ab-sel':''}" onclick="setABSlot('b',${gi},event)">B</button>
@@ -1826,6 +1827,7 @@ function renderTrackList(pkgTracks) {
       </div>
       ${abBtns}
       <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
+      ${pendingUpdate ? '<div class="track-update-pending">⚠</div>' : ''}
       <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
     </div>`;
   });
@@ -1881,6 +1883,7 @@ function renderSearchResults(q) {
     const isActive = gi === currentIdx;
     const isPlay = isActive && isPlaying;
     const synced = isSynced(t);
+    const pendingUpdate = pendingUpdatePaths.has(t.path);
     const pkgLabel = t.package ? formatPkgName(t.package) : 'All tracks';
     html += `<div class="track-item${isActive?' active':''}${isPlay?' playing':''}" data-idx="${gi}" onclick="playTrackFromSearch(${gi})">
       <div class="track-num">${i+1}</div>
@@ -1890,6 +1893,7 @@ function renderSearchResults(q) {
         <div class="track-meta">${pkgLabel} · ${t.ext}</div>
       </div>
       <div class="track-sync ${synced?'synced':'unsynced'}">${synced?checkSvg:cloudSvg}</div>
+      ${pendingUpdate ? '<div class="track-update-pending">⚠</div>' : ''}
       <div class="track-duration">${t.duration?fmtTime(t.duration):'—'}</div>
     </div>`;
   });
@@ -2030,12 +2034,19 @@ async function playTrack(gi, fromAb = false) {
     if (stored && revMatch) {
       blob = stored.blob;
     } else {
-      setStatus('loading', `Downloading: ${t.name}...`);
+      const isUpdate = !!(stored && !revMatch);
+      setStatus('loading', isUpdate ? `Updating: ${t.name}…` : `Downloading: ${t.name}…`);
       try {
         const link = await getTmpLink(t.path);
         const resp = await fetch(link);
         blob = await resp.blob();
         await idbPut(t.path, blob, t.rev);
+        syncedPaths.set(t.path, t.rev || null);
+        if (isUpdate) {
+          pendingUpdatePaths.delete(t.path);
+          const pendingEl = document.querySelector(`.track-item[data-idx="${gi}"] .track-update-pending`);
+          if (pendingEl) pendingEl.remove();
+        }
       } catch(e) {
         setStatus('error', "Download failed");
         return;
