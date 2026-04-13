@@ -814,9 +814,6 @@ let abBlindSwapped   = false;  // slots were randomly swapped during blind test
 
 // ── Regular buffered playback state ──
 let regularBuf              = null;
-let regularSource           = null;
-let regularStartContextTime = 0;
-let regularStartOffset      = 0;
 let regularIsPlaying        = false;
 let regularPausedOffset     = 0;
 let regularRafId            = null;
@@ -1020,7 +1017,7 @@ function stopABRaf() {
 // ── Regular buffered playback ──
 function startRegularPlayback(offsetSeconds) {
   stopRegularRaf();
-  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+  const dur = isFinite(audio.duration) ? audio.duration : 0;
   const offset = Math.max(0, dur ? Math.min(offsetSeconds, dur) : offsetSeconds);
   regularPausedOffset = offset;
   // Regular mode: native <audio> playback (AirPlay-kompatibel, ingen Web Audio-routing)
@@ -1065,7 +1062,7 @@ function seekRegular(time) {
   if (wasPlaying) {
     startRegularPlayback(regularPausedOffset);
   } else {
-    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+    const dur = isFinite(audio.duration) ? audio.duration : 0;
     if (dur) {
       const pct = (regularPausedOffset / dur * 100) + '%';
       progFill.style.width = pct;
@@ -1080,7 +1077,6 @@ function seekRegular(time) {
 function stopRegular() {
   audio.pause();
   regularIsPlaying = false;
-  regularBuf = null;
   regularPausedOffset = 0;
   stopRegularRaf();
 }
@@ -1159,7 +1155,7 @@ function startRegularRaf() {
   function tick() {
     if (!regularIsPlaying) { regularRafId = null; return; }
     const ct = audio.currentTime;
-    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+    const dur = isFinite(audio.duration) ? audio.duration : 0;
     if (dur) {
       const pct = (ct / dur * 100) + '%';
       progFill.style.width = pct;
@@ -1189,7 +1185,7 @@ function stopRegularRaf() {
 function syncPositionState() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (abMode) return;
-  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+  const dur = isFinite(audio.duration) ? audio.duration : 0;
   if (!dur || !isFinite(dur)) return;
   const pos = Math.min(Math.max(audio.currentTime, 0), dur);
   try {
@@ -1254,7 +1250,7 @@ function saveState() {
     localStorage.setItem(LS_KEY, JSON.stringify({
       config,
       currentIdx, repeatMode, shuffle, activePkg,
-      lastPosition: regularBuf ? (regularIsPlaying ? getRegularCurrentTime() : (regularPausedOffset > 0 ? regularPausedOffset : undefined)) : undefined
+      lastPosition: currentIdx >= 0 ? (regularIsPlaying ? getRegularCurrentTime() : (regularPausedOffset > 0 ? regularPausedOffset : undefined)) : undefined
     }));
     idbStatePut('tracks', tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null}))).catch(()=>{});
     idbStatePut('coverPathMap', coverPathMap).catch(()=>{});
@@ -2111,30 +2107,6 @@ function setupMediaSessionHandlers() {
     audio.currentTime = Math.min(audio.currentTime + (details.seekOffset || 10), audio.duration);
   });
 }
-
-(async () => {
-  stopRegular(); 
-  if (activeObjUrl) URL.revokeObjectURL(activeObjUrl);
-  activeObjUrl = URL.createObjectURL(blob);
-
-  // BUILD 82: Tvinga omladdning med source-tagg för att undvika iOS "stutter"
-  audio.innerHTML = `<source src="${activeObjUrl}" type="${blob.type}">`;
-  audio.load();
-
-  try {
-    // Vänta på att iOS faktiskt godkänner uppspelningen
-    await audio.play();
-    regularIsPlaying = true;
-  } catch (e) {
-    console.error("Playback failed:", e);
-    regularIsPlaying = false;
-    // Om det skiter sig, berätta för CarPlay att vi pausat
-    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
-  }
-
-  updateUI();
-  saveState();
-})();
 
 function getPool(){return !activePkg||activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg);}
 

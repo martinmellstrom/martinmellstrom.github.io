@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>[STAGING] Audrig</title>
-<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -25,7 +25,24 @@
     --player-h:  196px;
   }
 
+  .staging-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 36px;
+    background: repeating-linear-gradient(
+      45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px
+    );
+    border-bottom: 2px solid #ff4444;
+    padding: 8px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    font-family: 'Space Mono', monospace; font-size: .62rem; letter-spacing: .2em;
+    text-transform: uppercase; color: #ff8888;
+  }
+  .staging-banner strong { color: #ff4444; font-weight: 700; }
+  .staging-banner a { color: #ff8888; text-decoration: underline; }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { padding-top: 36px; }
 
   body {
     background: var(--bg); color: var(--text);
@@ -352,15 +369,13 @@
     to { opacity: 1; transform: translateX(0); }
   }
 
-  /* ── STAGING BANNER ── */
-  #staging-banner { position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 11px; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; color: #fff; pointer-events: none; overflow: hidden; }
-  #staging-banner::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-45deg, rgba(180,0,0,0.85) 0px, rgba(180,0,0,0.85) 10px, rgba(120,0,0,0.85) 10px, rgba(120,0,0,0.85) 20px); }
-  #staging-banner span { position: relative; z-index: 1; }
-  body { padding-top: 36px; }
 </style>
 </head>
 <body>
-<div id="staging-banner"><span>⚠ STAGING — build 88 — This is a preview. <a href="/player.html" style="color:#ffd;text-decoration:underline;pointer-events:auto;">Go to live →</a></span></div>
+<div class="staging-banner">
+  <strong>⚠ STAGING — build 90</strong> — Detta är en förhandsvisning.
+  <a href="/player.html">Gå till live-sidan →</a>
+</div>
 <!-- APP -->
 <div id="app">
 
@@ -603,7 +618,7 @@
 
 <script>
 
-const PLAYER_VERSION = 88;
+const PLAYER_VERSION = 90;
 
 // ═══════════════════════════════════════════════
 //  SERVICE WORKER REGISTRATION
@@ -821,9 +836,6 @@ let abBlindSwapped   = false;  // slots were randomly swapped during blind test
 
 // ── Regular buffered playback state ──
 let regularBuf              = null;
-let regularSource           = null;
-let regularStartContextTime = 0;
-let regularStartOffset      = 0;
 let regularIsPlaying        = false;
 let regularPausedOffset     = 0;
 let regularRafId            = null;
@@ -1027,7 +1039,7 @@ function stopABRaf() {
 // ── Regular buffered playback ──
 function startRegularPlayback(offsetSeconds) {
   stopRegularRaf();
-  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+  const dur = isFinite(audio.duration) ? audio.duration : 0;
   const offset = Math.max(0, dur ? Math.min(offsetSeconds, dur) : offsetSeconds);
   regularPausedOffset = offset;
   // Regular mode: native <audio> playback (AirPlay-kompatibel, ingen Web Audio-routing)
@@ -1072,7 +1084,7 @@ function seekRegular(time) {
   if (wasPlaying) {
     startRegularPlayback(regularPausedOffset);
   } else {
-    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+    const dur = isFinite(audio.duration) ? audio.duration : 0;
     if (dur) {
       const pct = (regularPausedOffset / dur * 100) + '%';
       progFill.style.width = pct;
@@ -1087,7 +1099,6 @@ function seekRegular(time) {
 function stopRegular() {
   audio.pause();
   regularIsPlaying = false;
-  regularBuf = null;
   regularPausedOffset = 0;
   stopRegularRaf();
 }
@@ -1166,7 +1177,7 @@ function startRegularRaf() {
   function tick() {
     if (!regularIsPlaying) { regularRafId = null; return; }
     const ct = audio.currentTime;
-    const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+    const dur = isFinite(audio.duration) ? audio.duration : 0;
     if (dur) {
       const pct = (ct / dur * 100) + '%';
       progFill.style.width = pct;
@@ -1196,7 +1207,7 @@ function stopRegularRaf() {
 function syncPositionState() {
   if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState) return;
   if (abMode) return;
-  const dur = isFinite(audio.duration) ? audio.duration : (regularBuf ? regularBuf.duration : 0);
+  const dur = isFinite(audio.duration) ? audio.duration : 0;
   if (!dur || !isFinite(dur)) return;
   const pos = Math.min(Math.max(audio.currentTime, 0), dur);
   try {
@@ -1261,7 +1272,7 @@ function saveState() {
     localStorage.setItem(LS_KEY, JSON.stringify({
       config,
       currentIdx, repeatMode, shuffle, activePkg,
-      lastPosition: regularBuf ? (regularIsPlaying ? getRegularCurrentTime() : (regularPausedOffset > 0 ? regularPausedOffset : undefined)) : undefined
+      lastPosition: currentIdx >= 0 ? (regularIsPlaying ? getRegularCurrentTime() : (regularPausedOffset > 0 ? regularPausedOffset : undefined)) : undefined
     }));
     idbStatePut('tracks', tracks.map(t=>({id:t.id,name:t.name,path:t.path,package:t.package,ext:t.ext,duration:t.duration,rev:t.rev||null}))).catch(()=>{});
     idbStatePut('coverPathMap', coverPathMap).catch(()=>{});
@@ -2118,30 +2129,6 @@ function setupMediaSessionHandlers() {
     audio.currentTime = Math.min(audio.currentTime + (details.seekOffset || 10), audio.duration);
   });
 }
-
-(async () => {
-  stopRegular(); 
-  if (activeObjUrl) URL.revokeObjectURL(activeObjUrl);
-  activeObjUrl = URL.createObjectURL(blob);
-
-  // BUILD 82: Tvinga omladdning med source-tagg för att undvika iOS "stutter"
-  audio.innerHTML = `<source src="${activeObjUrl}" type="${blob.type}">`;
-  audio.load();
-
-  try {
-    // Vänta på att iOS faktiskt godkänner uppspelningen
-    await audio.play();
-    regularIsPlaying = true;
-  } catch (e) {
-    console.error("Playback failed:", e);
-    regularIsPlaying = false;
-    // Om det skiter sig, berätta för CarPlay att vi pausat
-    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "paused";
-  }
-
-  updateUI();
-  saveState();
-})();
 
 function getPool(){return !activePkg||activePkg==='all'?tracks:tracks.filter(t=>t.package===activePkg);}
 
