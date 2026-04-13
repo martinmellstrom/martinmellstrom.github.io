@@ -1074,6 +1074,7 @@ function seekRegular(time) {
       expSeekFill.style.width = pct;
       expTimeCur.textContent = fmtTime(regularPausedOffset);
     }
+    if (expOpen) drawWaveform();
   }
 }
 
@@ -2169,7 +2170,7 @@ function togglePlay(){
   }
   if (currentIdx<0&&tracks.length){playTrack(0);return;}
   if (regularIsPlaying) { pauseRegular(); }
-  else if (regularBuf) { startRegularPlayback(regularPausedOffset); }
+  else if (activeObjUrl) { startRegularPlayback(regularPausedOffset); }
   else if (currentIdx >= 0) { playTrack(currentIdx); }
 }
 
@@ -2624,6 +2625,15 @@ function handleABSectionClick(e, slot) {
       startABPlayback(abActiveSlot, seekTime);
     } else {
       abPausedOffset = seekTime;
+      const dur = buf.duration;
+      if (dur) {
+        const pct = (seekTime / dur * 100) + '%';
+        progFill.style.width = pct;
+        timeDisp.textContent = fmtTime(seekTime) + ' / ' + fmtTime(dur);
+        expSeekFill.style.width = pct;
+        expTimeCur.textContent = fmtTime(seekTime);
+      }
+      if (expOpen) drawABWaveforms();
     }
   }
 }
