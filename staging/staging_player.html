@@ -1099,6 +1099,7 @@ function seekRegular(time) {
 function stopRegular() {
   audio.pause();
   regularIsPlaying = false;
+  regularBuf = null;
   regularPausedOffset = 0;
   stopRegularRaf();
 }
