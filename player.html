@@ -1942,6 +1942,9 @@ async function syncPackage(pkg) {
       const blob = await (await fetch(link)).blob();
       await idbPut(t.path, blob, t.rev);
       syncedPaths.set(t.path, t.rev||null);
+      pendingUpdatePaths.delete(t.path);
+      const pendingEl = document.querySelector(`.track-item[data-idx="${gi}"] .track-update-pending`);
+      if (pendingEl) pendingEl.remove();
       setTrackSyncState(gi, 'synced');
       setStatus('loading',`${hasStale?'Updating':'Syncing'} ${++done}/${toSync.length}…`);
     } catch(e){
