@@ -18,6 +18,12 @@ Staging files in `staging/`:
 
 Hosted on GitHub Pages → martinmellstrom.com
 
+### iOS app repo
+`martinmellstrom/iOS-app` (privat)
+
+Native iOS music player — Swift + SwiftUI + AVFoundation.
+OBS: GitHub MCP har haft 404-problem med detta repo trots konfigurerade behörigheter — om åtkomst misslyckas, informera Martin.
+
 ### Dashboard repo
 `martinmellstrom/mellstrom-dashboard` (privat)
 
@@ -54,6 +60,7 @@ Instruction files live alongside the site code:
 - All staging builds and live promotions
 - Batch operations (multiple blog posts, releasing a pack, etc.)
 - Reading tasks from Guide 07 in Notion and executing them
+- All Swift/Xcode work on the iOS app
 
 **The rule:** claude.ai never writes or edits HTML directly. When a task requires changes to site files, claude.ai describes the task, creates a Guide 07 entry in Notion if needed, and directs Martin to Claude Code. Claude Code never makes decisions about what to build — that happens in claude.ai first.
 
@@ -73,6 +80,49 @@ If Martin asks claude.ai to make a code change directly, respond with:
 - Notion-overhead vore oproportionerligt mot uppgiftens storlek
 
 Tumregel: om uppgiften tar längre tid att speca i Notion än att utföra i Code, hoppa över Guide 07.
+
+---
+
+## iOS Music Player — app-utveckling
+
+Native iOS-app i separat privat repo (`martinmellstrom/iOS-app`).
+
+**Stack:** Swift + SwiftUI + AVFoundation  
+**Affärsmodell:** Engångskøp (no subscription)  
+**Appnamnskandidat:** Audrig (föredragen), Solum, Canor  
+**Cloud storage:** Dropbox (v1), Google Drive (v2); iCloud undviks pga arkitekturkrav
+
+### Ansvarsfördelning för iOS
+
+- **claude.ai:** Planering, spec-skrivning, Notion-uppdateringar, beslut om arkitektur och features
+- **Claude Code:** All Swift/Xcode-kod, exekvering av uppgifter från Notion-backloggen
+
+### Uppgiftsflöde — iOS-uppgifter
+
+När en ny iOS-uppgift ska skapas sker detta **inte** via Guide 07. iOS-uppgifter läggs istället direkt som **egna undersidor** i Notion under:
+
+**Notion-sökväg:** Utveckling → Music Player → iOS Music Player → Backlog & To-do
+
+Varje uppgift är en egen sida med namnformatet:
+```
+[CC] Uppgift N — [Kort beskrivning]
+```
+Exempel: `[CC] Uppgift 1 — Xcode-projekt: grundsetup`
+
+**Claude Code-prompt för iOS-uppgifter:**
+```
+Läs uppgiften '[Uppgiftsnamn]' i Notion under iOS Music Player / Backlog & To-do och utför den
+```
+
+### Viktiga Notion-ID:n för iOS
+
+| Sida | ID |
+|---|---|
+| 🎵 iOS Music Player (master) | `330bf76e-302d-818c-9459-ca271975a016` |
+| Tech Spec | `330bf76e-302d-8149-92e8-ef24268c8cbe` |
+| A/B-lyssning — Spec | `329bf76e-302d-8122-a39c-f6ee28ebe539` |
+| 📣 Marknadsföring | `330bf76e-302d-8197-8b31-d45a7d260394` |
+| Konkurrentanalys | `32abf76e-302d-8132-a927-f91066e1d2cc` |
 
 ---
 
@@ -277,7 +327,7 @@ In `martinmellstrom/martinmellstrom.github.io`:
 - **Content Pipeline DB:** `33cbf76e-302d-80cd-9dbd-e9a46e2badb7` (data source: `33cbf76e-302d-8079-920a-000b68bc12f0`) — marknadsföringsklipp per låt. Brief genereras av Claude i chatten, sparas i Notion via MCP när Martin godkänner. Prompten fungerar från **båda projekten** (Dashboard och Musikpaket) — CLAUDE.md har direktiven. Flöde: hämta låtdata från Musikpaket DB → generera brief i chatten → spara i Notion.
 - **Guides index:** `31fbf76e-302d-81fe-8098-f394ed0b8392`
 - **Guide 01 (website management):** `31fbf76e-302d-81b8-a87f-e47034c14088`
-- **Guide 07 (Claude Code tasks):** `32bbf76e-302d-81fa-8493-f1ed576ce381`
+- **Guide 07 (Claude Code tasks — web player):** `32bbf76e-302d-81fa-8493-f1ed576ce381`
 - **Music Player documentation:** `324bf76e-302d-81ee-9e04-fbe2770a664f`
 - **Mellström Dashboard (MOS) dokumentation:** `333bf76e-302d-816b-a3d6-ce1a351ea2c7`
 
@@ -287,9 +337,9 @@ In `martinmellstrom/martinmellstrom.github.io`:
 |---|---|---|
 | 🎵 Music Player (master) | `329bf76e-302d-810ab206ced9b7dd7bf8` | Auktoritativ källa för alla strategiska beslut: affärsmodell, ledstjärna, roadmap, syfte, konkurrentanalys |
 | Prototype — Dokumentation | `324bf76e-302d-81ee-9e04-fbe2770a664f` | Teknisk dokumentation för webbprototypen (player.html): changelog, backlog, arkitektur, setup. Work in progress. |
-| 🎵 iOS Music Player | `330bf76e-302d-818c9459ca271975a016` | Framtida native iOS-app — används när Swift-implementationen påbörjas |
-| Tech Spec | `330bf76e-302d-814992e8ef24268c8cbe` | Teknisk spec för iOS-appen. Undersida till iOS Music Player. |
-| A/B-lyssning — Spec | `329bf76e-302d-8122a39cf6ee28ebe539` | Detaljerad spec för A/B-läget. Undersida till Tech Spec. |
+| 🎵 iOS Music Player | `330bf76e-302d-818c-9459-ca271975a016` | Framtida native iOS-app — används när Swift-implementationen påbörjas |
+| Tech Spec | `330bf76e-302d-8149-92e8-ef24268c8cbe` | Teknisk spec för iOS-appen. Undersida till iOS Music Player. |
+| A/B-lyssning — Spec | `329bf76e-302d-8122-a39c-f6ee28ebe539` | Detaljerad spec för A/B-läget. Undersida till Tech Spec. |
 | 📣 Marknadsföring | `330bf76e-302d-8197-8b31-d45a7d260394` | Allt som rör marknadsföring inför och efter lansering. Undersida till iOS Music Player. |
 | Konkurrentanalys — Samply, Boombox, Mixup | `32abf76e-302d-8132-a927-f91066e1d2cc` | Konkurrent- och marknadsanalys inför lansering. Undersida till Marknadsföring. |
 
@@ -364,3 +414,4 @@ Skapa ett video-brief för låten [LÅTNAMN] ur [PAKET]
 - **No branches, no pull requests** — both staging and live push directly to `main`
 - **player.html build number** — always read `PLAYER_VERSION` from live, increment by 1, include in staging banner, commit message, and report to Martin. See "Build number versioning" section above.
 - **Publicerade paket** — läggs till i Notion DB `a6f7af37` (page-ID, inte collection-ID). Dashboarden uppdateras automatiskt inom 1 minut via ISR.
+- **iOS-uppgifter** — skapas som egna Notion-sidor under iOS Music Player / Backlog & To-do, inte i Guide 07. Format: `[CC] Uppgift N — [beskrivning]`.
