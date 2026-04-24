@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms and Conditions — Audrig</title>
+  <meta name="description" content="Terms and Conditions for Audrig, an iOS music player by Martin Mellström.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f7f5f0;
+      --ink: #1a1816;
+      --ink-mid: #5a5652;
+      --ink-faint: #b0aaa3;
+      --rule: #d8d3cc;
+      --accent: #2c4a3e;
+      --accent-light: #e8eeeb;
+      --max: 680px;
+      --serif: 'Libre Baskerville', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 24px;
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 80px 0 120px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Header ── */
+    .header {
+      margin-bottom: 64px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .app-label {
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .app-label::after {
+      content: '';
+      display: block;
+      height: 1px;
+      width: 40px;
+      background: var(--accent);
+      opacity: 0.4;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-size: clamp(28px, 5vw, 38px);
+      font-weight: 400;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      margin-bottom: 20px;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: var(--ink-mid);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 24px;
+    }
+
+    .meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta span::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--ink-faint);
+    }
+
+    .meta span:first-child::before {
+      display: none;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--accent-light);
+      border-left: 3px solid var(--accent);
+      padding: 24px 28px;
+      margin-bottom: 60px;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .toc-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+    }
+
+    .toc ol li {
+      counter-increment: toc;
+      font-size: 13.5px;
+      color: var(--ink-mid);
+      padding: 3px 0;
+    }
+
+    .toc ol li::before {
+      content: counter(toc) '. ';
+      color: var(--ink-faint);
+      font-variant-numeric: tabular-nums;
+      min-width: 22px;
+      display: inline-block;
+    }
+
+    .toc ol li a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .toc ol li a:hover {
+      color: var(--accent);
+    }
+
+    /* ── Sections ── */
+    .section {
+      margin-bottom: 52px;
+      padding-bottom: 52px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .section:last-of-type {
+      border-bottom: none;
+    }
+
+    .section-number {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 13px;
+      color: var(--ink-faint);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    h2 {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1.3;
+      color: var(--ink);
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      font-size: 15px;
+      color: #3a3733;
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    ul {
+      list-style: none;
+      margin: 14px 0;
+    }
+
+    ul li {
+      font-size: 15px;
+      color: #3a3733;
+      line-height: 1.8;
+      padding: 4px 0 4px 20px;
+      position: relative;
+    }
+
+    ul li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--ink-faint);
+      font-size: 12px;
+      top: 7px;
+    }
+
+    /* ── Contact box ── */
+    .contact-box {
+      background: white;
+      border: 1px solid var(--rule);
+      padding: 24px 28px;
+      border-radius: 4px;
+      margin-top: 16px;
+    }
+
+    .contact-box .name {
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+
+    .contact-box a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .contact-box a:hover {
+      border-color: var(--accent);
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 80px;
+      padding-top: 32px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-brand {
+      font-family: var(--serif);
+      font-size: 14px;
+      font-style: italic;
+      color: var(--ink-mid);
+    }
+
+    .footer-note {
+      font-size: 12px;
+      color: var(--ink-faint);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      body { padding: 0 20px; }
+      .page { padding: 52px 0 80px; }
+      .toc { padding: 20px; }
+      .contact-box { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="header">
+    <div class="app-label">Audrig for iOS</div>
+    <h1>Terms and Conditions</h1>
+    <div class="meta">
+      <span>Martin Mellström</span>
+      <span>Last updated: April 2026</span>
+      <span>Governing law: Sweden</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Table of contents">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Acceptance of Terms</a></li>
+      <li><a href="#s2">Description of the App</a></li>
+      <li><a href="#s3">In-App Purchase</a></li>
+      <li><a href="#s4">Dropbox Integration</a></li>
+      <li><a href="#s5">Privacy and Data Collection</a></li>
+      <li><a href="#s6">User Responsibilities</a></li>
+      <li><a href="#s7">Intellectual Property</a></li>
+      <li><a href="#s8">Disclaimer of Warranties</a></li>
+      <li><a href="#s9">Limitation of Liability</a></li>
+      <li><a href="#s10">Changes to the App and Terms</a></li>
+      <li><a href="#s11">Governing Law</a></li>
+      <li><a href="#s12">Contact</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section class="section" id="s1">
+      <span class="section-number">§ 1</span>
+      <h2>Acceptance of Terms</h2>
+      <p>By downloading, installing, or using this app ("the App"), you agree to these Terms and Conditions. If you do not agree, do not use the App.</p>
+    </section>
+
+    <section class="section" id="s2">
+      <span class="section-number">§ 2</span>
+      <h2>Description of the App</h2>
+      <p>The App is a music player for iOS that connects to your personal Dropbox account, allowing you to browse and play audio files stored there. The App does not host, distribute, or provide any music content itself.</p>
+    </section>
+
+    <section class="section" id="s3">
+      <span class="section-number">§ 3</span>
+      <h2>In-App Purchase</h2>
+      <p>The App is available as a free download with limited functionality. Full access to all features can be unlocked through a one-time in-app purchase ("Premium Unlock") available via the Apple App Store.</p>
+      <ul>
+        <li>The purchase is a one-time payment and grants permanent access to all features.</li>
+        <li>There is no subscription, recurring charge, or auto-renewal.</li>
+        <li>All purchases are processed by Apple and are subject to Apple's own Terms of Service and refund policy. The developer has no access to your payment information.</li>
+        <li>If you purchase on one device, you can restore your purchase on other devices signed in to the same Apple ID at no extra cost, using the "Restore Purchases" option in the App.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="s4">
+      <span class="section-number">§ 4</span>
+      <h2>Dropbox Integration</h2>
+      <p>The App connects to Dropbox using the official Dropbox API with your explicit authorization. By connecting your Dropbox account, you acknowledge the following:</p>
+      <ul>
+        <li>The App requests access only to a dedicated app-specific folder created by Dropbox ("App folder"). It cannot access the rest of your Dropbox.</li>
+        <li>The App does not upload, modify, or delete any files in your Dropbox.</li>
+        <li>The App does not transmit your Dropbox credentials to the developer or any third party. Authentication is handled entirely by Dropbox.</li>
+        <li>Your Dropbox connection can be revoked at any time through your Dropbox account settings at dropbox.com under Connected Apps.</li>
+        <li>Your use of Dropbox is subject to Dropbox's own Terms of Service and Privacy Policy.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="s5">
+      <span class="section-number">§ 5</span>
+      <h2>Privacy and Data Collection</h2>
+      <p>The developer does not collect, store, process, or share any personal data about you. Specifically:</p>
+      <ul>
+        <li>No account registration is required.</li>
+        <li>No analytics or crash reporting tools are used that transmit data to the developer.</li>
+        <li>No usage data, listening history, or behavioral data is collected.</li>
+        <li>No advertising SDKs or third-party tracking is present in the App.</li>
+      </ul>
+      <p>The only network communication the App performs is directly between your device and Dropbox's servers, using your own authorization.</p>
+    </section>
+
+    <section class="section" id="s6">
+      <span class="section-number">§ 6</span>
+      <h2>User Responsibilities</h2>
+      <p>You are solely responsible for ensuring that you have the legal right to play and access the audio files in your Dropbox, complying with applicable copyright laws in your jurisdiction, and the content stored in your Dropbox account.</p>
+      <p>The App is intended for personal, private use with audio files you have the right to access.</p>
+    </section>
+
+    <section class="section" id="s7">
+      <span class="section-number">§ 7</span>
+      <h2>Intellectual Property</h2>
+      <p>All code, design, and assets in the App are the property of Martin Mellström and are protected by applicable intellectual property laws. You may not reverse-engineer, copy, modify, or redistribute the App or any part of it.</p>
+    </section>
+
+    <section class="section" id="s8">
+      <span class="section-number">§ 8</span>
+      <h2>Disclaimer of Warranties</h2>
+      <p>The App is provided "as is" without warranty of any kind, express or implied. The developer does not warrant that the App will be free from errors or interruptions, that it will be compatible with all iOS versions or devices, or that Dropbox API availability or behavior — which is outside the developer's control — will remain unchanged.</p>
+    </section>
+
+    <section class="section" id="s9">
+      <span class="section-number">§ 9</span>
+      <h2>Limitation of Liability</h2>
+      <p>To the fullest extent permitted by applicable law, the developer shall not be liable for any indirect, incidental, or consequential damages arising from your use of the App, including but not limited to data loss, service interruptions, or issues arising from Dropbox's platform.</p>
+    </section>
+
+    <section class="section" id="s10">
+      <span class="section-number">§ 10</span>
+      <h2>Changes to the App and Terms</h2>
+      <p>The developer reserves the right to update, modify, or discontinue the App or any feature at any time. These Terms and Conditions may also be updated periodically. Continued use of the App after changes constitutes acceptance of the updated Terms.</p>
+    </section>
+
+    <section class="section" id="s11">
+      <span class="section-number">§ 11</span>
+      <h2>Governing Law</h2>
+      <p>These Terms are governed by the laws of Sweden. Any disputes shall be subject to the jurisdiction of Swedish courts.</p>
+    </section>
+
+    <section class="section" id="s12">
+      <span class="section-number">§ 12</span>
+      <h2>Contact</h2>
+      <p>For questions or support regarding these Terms, please contact:</p>
+      <div class="contact-box">
+        <div class="name">Martin Mellström</div>
+        <a href="mailto:your@email.com">your@email.com</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <span class="footer-brand">Audrig</span>
+    <span class="footer-note">© 2026 Martin Mellström. All rights reserved.</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
