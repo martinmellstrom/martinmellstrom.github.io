@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audrig — iOS Music Player for Dropbox</title>
+<meta name="description" content="Audrig is a professional iOS music player for your Dropbox audio files. Stream demos, mixes, stems and recordings with A/B comparison, waveform scrubbing, frequency isolation and loop verification. Free to download. No subscription.">
+<meta name="keywords" content="iOS music player Dropbox, Dropbox audio player iPhone, A/B comparison music player iOS, professional music player iPhone, mix reference player iOS, stem player iOS, offline music player Dropbox">
+<meta name="author" content="Martin Mellström">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://www.martinmellstrom.com/audrig.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.martinmellstrom.com/audrig.html">
+<meta property="og:title" content="Audrig — iOS Music Player for Dropbox">
+<meta property="og:description" content="A professional iOS music player for your own audio files. Stream from Dropbox with A/B comparison, waveform scrubbing and offline sync. No subscription.">
+<meta name="twitter:card" content="summary_large_image">
+
+<script defer src="https://cloud.umami.is/script.js" data-website-id="1cd23595-3bb6-4290-ac23-bb14bbbe3204" data-domains="martinmellstrom.com,www.martinmellstrom.com"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #131714;
+  --surface: #191e1a;
+  --gold: #c9a84c;
+  --golddim: #7a6030;
+  --goldglow: rgba(201,168,76,.15);
+  --cream: #f0e8d4;
+  --muted: #6a7060;
+  --text: #c8c4b0;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 22px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 26px 64px;
+  background: linear-gradient(to bottom, rgba(12,18,12,.97), transparent);
+  transition: transform .4s ease;
+}
+.logo {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: .85rem; letter-spacing: .35em; text-transform: uppercase;
+  color: var(--gold); text-decoration: none;
+}
+.nav-back {
+  font-family: 'Syne', sans-serif; font-size: .68rem; letter-spacing: .15em;
+  text-transform: uppercase; color: var(--muted); text-decoration: none;
+  transition: color .3s; display: flex; align-items: center; gap: 8px;
+}
+.nav-back:hover { color: var(--gold); }
+.nav-back::before { content: '←'; font-family: inherit; }
+
+/* Hero */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 55% 60% at 75% 45%, rgba(201,168,76,.08) 0%, transparent 65%),
+    radial-gradient(ellipse 35% 45% at 15% 75%, rgba(201,168,76,.04) 0%, transparent 60%),
+    radial-gradient(ellipse 25% 35% at 45% 12%, rgba(120,100,60,.05) 0%, transparent 55%),
+    linear-gradient(160deg, #131714 0%, #0e120c 40%, #131714 100%);
+}
+.hero-grain {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: .4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+}
+.hero-left {
+  position: relative; z-index: 10;
+  padding: 140px 80px 90px;
+  max-width: 860px;
+}
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 36px;
+  opacity: 0; animation: reveal-up .9s .2s cubic-bezier(.16,1,.3,1) forwards;
+}
+.eyebrow-line {
+  width: 0; height: 1px; background: var(--gold);
+  animation: line-grow .8s .6s ease forwards;
+}
+@keyframes line-grow { to { width: 44px; } }
+.eyebrow-text {
+  font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .45em;
+  text-transform: uppercase; color: var(--gold);
+}
+.hero-title {
+  font-size: clamp(4.5rem, 9vw, 8rem);
+  font-weight: 300;
+  line-height: .92;
+  color: var(--cream);
+  letter-spacing: -.02em;
+  margin-bottom: 0;
+  opacity: 0; animation: reveal-up .9s .4s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hero-title em { font-style: italic; color: var(--gold); }
+.hero-tagline {
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 300; font-style: italic;
+  color: var(--gold); letter-spacing: .01em;
+  margin-top: 20px;
+  opacity: 0; animation: reveal-up .9s .6s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hero-desc {
+  font-size: 1.15rem; font-weight: 300;
+  color: var(--muted); letter-spacing: .02em;
+  margin-top: 24px; max-width: 480px;
+  opacity: 0; animation: reveal-up .9s .8s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hero-cta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  margin-top: 48px;
+  opacity: 0; animation: reveal-up .9s 1s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes reveal-up { to { opacity: 1; } }
+
+/* Buttons */
+.btn-appstore {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 15px 40px;
+  background: var(--gold); color: #0e140e;
+  font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase; text-decoration: none;
+  transition: all .35s cubic-bezier(.16,1,.3,1);
+  position: relative; overflow: hidden;
+}
+.btn-appstore::after {
+  content: ''; position: absolute; inset: 0;
+  background: rgba(255,255,255,.15);
+  transform: translateX(-100%); transition: transform .35s;
+}
+.btn-appstore:hover::after { transform: translateX(0); }
+.btn-appstore:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(201,168,76,.25); }
+.btn-g {
+  display: inline-block; padding: 14px 40px;
+  border: 1px solid var(--golddim); color: var(--gold);
+  font-family: 'Syne', sans-serif; font-size: .68rem; font-weight: 500;
+  letter-spacing: .22em; text-transform: uppercase; text-decoration: none;
+  transition: all .35s;
+}
+.btn-g:hover { border-color: var(--gold); background: rgba(201,168,76,.07); transform: translateY(-2px); }
+
+/* Sections */
+.sec { padding: 120px 64px; }
+.sec-inner { max-width: 860px; margin: 0 auto; }
+.sec-label {
+  display: block; font-family: 'Syne', sans-serif; font-size: .6rem;
+  letter-spacing: .4em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px;
+}
+.sec-title { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; color: var(--cream); line-height: 1.05; }
+.sec-title em { font-style: italic; color: var(--gold); }
+.rule { width: 60px; height: 1px; background: var(--golddim); margin: 0 64px; }
+
+/* Surface sections */
+.sec-surface { background: var(--surface); position: relative; }
+.sec-surface::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(to right, transparent, var(--golddim), transparent);
+}
+.sec-surface::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(to right, transparent, var(--golddim), transparent);
+}
+
+/* Prose */
+.prose { margin-top: 40px; }
+.prose p { font-size: 1.15rem; line-height: 1.95; color: var(--text); margin-bottom: 18px; font-weight: 300; }
+.prose p:last-child { margin-bottom: 0; }
+
+/* For who */
+.for-who-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 48px; }
+.for-who-item {
+  background: var(--surface); padding: 32px 36px;
+  border-left: 2px solid transparent; transition: border-color .3s;
+}
+.for-who-item:hover { border-left-color: var(--gold); }
+.for-who-label {
+  font-family: 'Syne', sans-serif; font-size: .58rem; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 12px;
+}
+.for-who-title { font-size: 1.4rem; font-weight: 400; color: var(--cream); margin-bottom: 10px; line-height: 1.2; }
+.for-who-desc { font-size: 1rem; color: var(--text); line-height: 1.8; font-weight: 300; font-style: italic; }
+
+/* Features */
+.features-split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 56px; align-items: start; }
+.features-col-title {
+  font-family: 'Syne', sans-serif; font-size: .65rem; letter-spacing: .3em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 24px; display: block;
+}
+.feature-list { list-style: none; }
+.feature-list li {
+  padding: 12px 0; border-bottom: 1px solid rgba(201,168,76,.08);
+  font-size: 1.05rem; color: var(--text); font-weight: 300; line-height: 1.6;
+  display: flex; gap: 14px; align-items: baseline;
+}
+.feature-list li:first-child { border-top: 1px solid rgba(201,168,76,.08); }
+.feature-list li::before {
+  content: '—'; color: var(--golddim); flex-shrink: 0;
+  font-family: 'Syne', sans-serif; font-size: .8rem;
+}
+.features-premium { background: rgba(201,168,76,.04); border: 1px solid rgba(201,168,76,.12); padding: 32px 36px; }
+.features-premium .features-col-title { margin-bottom: 8px; }
+.premium-price-note {
+  font-size: .9rem; font-style: italic; color: var(--muted);
+  margin-bottom: 24px; display: block;
+}
+.feature-highlight { color: var(--cream); }
+.feature-note { font-size: .85rem; color: var(--muted); font-style: italic; }
+.try-note {
+  margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(201,168,76,.1);
+  font-size: .95rem; font-style: italic; color: var(--muted); line-height: 1.7;
+}
+
+/* How it works */
+.steps { display: flex; gap: 0; margin-top: 56px; }
+.step {
+  flex: 1; padding: 36px 40px; position: relative;
+}
+.step + .step { border-left: 1px solid rgba(201,168,76,.1); }
+.step-num {
+  font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .35em;
+  text-transform: uppercase; color: var(--golddim); display: block; margin-bottom: 16px;
+}
+.step-title { font-size: 1.5rem; font-weight: 400; color: var(--cream); margin-bottom: 12px; line-height: 1.2; }
+.step-title em { font-style: italic; color: var(--gold); }
+.step-desc { font-size: 1rem; color: var(--text); line-height: 1.85; font-weight: 300; }
+.step-code {
+  display: inline-block; margin-top: 10px; padding: 6px 14px;
+  background: rgba(201,168,76,.07); border: 1px solid rgba(201,168,76,.18);
+  font-family: 'Syne', sans-serif; font-size: .62rem; letter-spacing: .1em;
+  color: var(--gold);
+}
+
+/* Download / App Store */
+.download-inner { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 540px; margin: 0 auto; }
+.download-inner .sec-label { align-self: center; }
+.download-inner .sec-title { margin-bottom: 24px; }
+.download-desc { font-size: 1.1rem; color: var(--text); line-height: 1.9; font-weight: 300; font-style: italic; margin-bottom: 40px; }
+.price-note {
+  margin-top: 24px;
+  font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--muted);
+}
+.price-note strong { color: var(--gold); }
+
+/* FAQ */
+.faq-item { border-top: 1px solid rgba(201,168,76,.12); padding: 28px 0; }
+.faq-item summary {
+  font-family: 'Syne', sans-serif; font-size: .85rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--cream); cursor: pointer;
+  list-style: none; display: flex; justify-content: space-between; align-items: center;
+}
+.faq-item p { margin-top: 18px; color: var(--text); font-size: 1.1rem; line-height: 1.9; font-weight: 300; }
+
+/* Footer */
+footer {
+  padding: 80px 64px 50px;
+  border-top: 1px solid rgba(201,168,76,.1);
+}
+.foot-inner {
+  max-width: 860px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px;
+}
+.foot-logo {
+  font-family: 'Cormorant Garamond', serif; font-weight: 300;
+  font-size: .85rem; letter-spacing: .35em; text-transform: uppercase;
+  color: var(--gold); text-decoration: none;
+}
+.foot-links {
+  display: flex; gap: 32px; list-style: none;
+}
+.foot-links a {
+  font-family: 'Syne', sans-serif; font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color .3s;
+}
+.foot-links a:hover { color: var(--gold); }
+.foot-copy {
+  font-family: 'Syne', sans-serif; font-size: .55rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--muted);
+}
+
+/* Fade animation */
+.fade { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s ease; }
+.fade.in { opacity: 1; transform: translateY(0); }
+
+@media(max-width:900px) {
+  nav { padding: 18px 24px; }
+  .hero-left { padding: 120px 24px 80px; }
+  .sec { padding: 80px 24px; }
+  .rule { margin: 0 24px; }
+  .for-who-grid { grid-template-columns: 1fr; }
+  .features-split { grid-template-columns: 1fr; gap: 32px; }
+  .steps { flex-direction: column; }
+  .step + .step { border-left: none; border-top: 1px solid rgba(201,168,76,.1); }
+  footer { padding: 60px 24px 40px; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="index.html" class="logo">Martin Mellström</a>
+  <a href="index.html" class="nav-back">Back to site</a>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-grain"></div>
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-line"></div>
+      <span class="eyebrow-text">iOS App &middot; Dropbox</span>
+    </div>
+    <h1 class="hero-title">Audrig</h1>
+    <p class="hero-tagline">Your files. Your player.</p>
+    <p class="hero-desc">A native iOS music player for your personal Dropbox. Stream your demos, mixes, stems and recordings with tools built for critical listening.</p>
+    <div class="hero-cta">
+      <a href="#" class="btn-appstore">Coming to App Store</a>
+      <a href="#features" class="btn-g">See Features</a>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- Why Audrig -->
+<section class="sec" id="why">
+  <div class="sec-inner fade">
+    <span class="sec-label">The Idea</span>
+    <h2 class="sec-title">Built because <em>nothing else fit</em></h2>
+    <div class="prose">
+      <p>I'm a composer. My work lives in Dropbox — demos, mixes, stems, reference tracks, things I'm not done with. To actually listen to them on the go, I had to forward files to myself, use apps that couldn't handle folders, or settle for whatever the system player offered.</p>
+      <p>None of it was right. A streaming service doesn't know about your personal files. A DAW is too heavy. The stock player has no tools. So I built the thing I wanted: a proper listening environment for your own audio, not someone else's library.</p>
+      <p>Audrig connects directly to your Dropbox, respects your folder structure, and gives you the kind of controls that matter for critical listening — without getting in the way.</p>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- For who -->
+<section class="sec sec-surface" id="for-who">
+  <div class="sec-inner">
+    <div class="fade">
+      <span class="sec-label">Who It's For</span>
+      <h2 class="sec-title">For anyone who <em>makes</em> audio</h2>
+    </div>
+    <div class="for-who-grid fade">
+      <article class="for-who-item">
+        <span class="for-who-label">Primary</span>
+        <h3 class="for-who-title">Composers &amp; producers</h3>
+        <p class="for-who-desc">Game audio, film, library, pop — if you're bouncing stems and comparing mixes in the field, Audrig gives you the reference tools to do it properly on your phone.</p>
+      </article>
+      <article class="for-who-item">
+        <span class="for-who-label">Primary</span>
+        <h3 class="for-who-title">Mix engineers</h3>
+        <p class="for-who-desc">A/B two mix versions instantly, check mono compatibility, isolate a frequency band. The same critical listening habits you practice at the desk — on the go.</p>
+      </article>
+      <article class="for-who-item">
+        <span class="for-who-label">Also</span>
+        <h3 class="for-who-title">Sound designers</h3>
+        <p class="for-who-desc">Your sfx library is in Dropbox. Browse folders as playlists, loop a sample, scrub to a specific moment — without pulling out your laptop.</p>
+      </article>
+      <article class="for-who-item">
+        <span class="for-who-label">Also</span>
+        <h3 class="for-who-title">Anyone with audio files</h3>
+        <p class="for-who-desc">Recordings, podcasts, voice memos, field recordings — if you have audio in Dropbox that isn't on any streaming service, Audrig can play it the way it deserves.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- Features -->
+<section class="sec" id="features">
+  <div class="sec-inner">
+    <div class="fade">
+      <span class="sec-label">Features</span>
+      <h2 class="sec-title">Free and <em>Audrig All</em></h2>
+    </div>
+    <div class="features-split fade">
+      <div>
+        <span class="features-col-title">Included free</span>
+        <ul class="feature-list">
+          <li>Browse and play all files in <span class="feature-highlight">Dropbox/Apps/AudRig/</span></li>
+          <li>Folders work as playlists — your structure, respected</li>
+          <li>Album artwork auto-loaded from an image file in the folder</li>
+          <li>Shuffle and queue management</li>
+          <li>Offline download — up to 10 files</li>
+          <li>Background playback and Lock Screen controls</li>
+        </ul>
+      </div>
+      <div>
+        <div class="features-premium">
+          <span class="features-col-title">Audrig All</span>
+          <span class="premium-price-note">One-time purchase &middot; ~$9.99 &middot; No subscription, ever</span>
+          <ul class="feature-list">
+            <li>
+              <span><span class="feature-highlight">A/B Mode</span> — load two tracks, switch instantly at zero latency. Independent gain control (±6 dB). For comparing mixes, versions and references.</span>
+            </li>
+            <li>
+              <span><span class="feature-highlight">Blind Test</span> — hide track names and shuffle A/B assignment. Reveal with an animation. Removes bias from your comparison.</span>
+            </li>
+            <li>
+              <span><span class="feature-highlight">Waveform + Scrubbing</span> — visual waveform, fully clickable and draggable. Played sections in gold, unplayed in gray.</span>
+            </li>
+            <li>
+              <span><span class="feature-highlight">Freq Mode</span> — bandpass filter for frequency isolation: Sub, Bass, Low Mid, Mid, High Mid, High/Air. Works in both regular and A/B mode.</span>
+            </li>
+            <li>
+              <span><span class="feature-highlight">Loop Mode</span> — define in and out points for seamless loop verification. Essential for game audio composers.</span>
+            </li>
+            <li>
+              <span><span class="feature-highlight">Mono Mode</span> — collapse stereo to mono for critical listening and mono compatibility checks.</span>
+            </li>
+            <li>
+              <span><span class="feature-highlight">Speed Control</span> — 0.5× to 2.0×, pitch-preserved (Keep Pitch on/off).</span>
+            </li>
+            <li>
+              <span><span class="feature-highlight">Unlimited Offline Sync</span> — no cap on downloaded files.</span>
+            </li>
+          </ul>
+          <p class="try-note">Try before you buy: every premium feature can be tested 5 times without purchasing.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- How it works -->
+<section class="sec sec-surface" id="how">
+  <div class="sec-inner">
+    <div class="fade">
+      <span class="sec-label">Getting Started</span>
+      <h2 class="sec-title">Three <em>steps</em></h2>
+    </div>
+    <div class="steps fade">
+      <div class="step">
+        <span class="step-num">Step 01</span>
+        <h3 class="step-title">Connect <em>Dropbox</em></h3>
+        <p class="step-desc">Sign in with your Dropbox account when you first open the app. Audrig only reads from its designated folder — it doesn't touch anything else.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">Step 02</span>
+        <h3 class="step-title">Add your <em>files</em></h3>
+        <p class="step-desc">Put your audio files in Dropbox at the path below. Organize with subfolders — Audrig treats each folder as a playlist.</p>
+        <span class="step-code">Dropbox / Apps / AudRig /</span>
+      </div>
+      <div class="step">
+        <span class="step-num">Step 03</span>
+        <h3 class="step-title">Listen</h3>
+        <p class="step-desc">Open the app and your library is there. Tap to play, download for offline, or open the professional listening tools. That's it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- Download -->
+<section class="sec" id="download">
+  <div class="download-inner fade">
+    <span class="sec-label">Get the App</span>
+    <h2 class="sec-title">Free to <em>download</em></h2>
+    <p class="download-desc">Audrig is free to download with a fully functional base player. Audrig All unlocks the professional listening tools as a single one-time purchase.</p>
+    <a href="#" class="btn-appstore">Coming to App Store</a>
+    <p class="price-note"><strong>Free</strong> to download &nbsp;&middot;&nbsp; <strong>Audrig All</strong> ~$9.99 one-time &nbsp;&middot;&nbsp; No subscription, ever</p>
+    <p class="price-note" style="margin-top:10px;font-style:italic;text-transform:none;letter-spacing:.02em;font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--muted)">Requires iOS 16 or later. Dropbox account required (v1).</p>
+  </div>
+</section>
+
+<div class="rule"></div>
+
+<!-- FAQ -->
+<section class="sec" id="faq" style="max-width:860px;margin:0 auto">
+  <div class="fade">
+    <span class="sec-label">Common Questions</span>
+    <h2 class="sec-title">FAQ</h2>
+  </div>
+  <div style="margin-top:48px" class="fade">
+    <details class="faq-item">
+      <summary>Do I need to pay? <span style="color:var(--gold);font-size:1.4rem;font-weight:300">+</span></summary>
+      <p>No — the free version is a fully functional music player. You can browse your Dropbox library, play files, use folders as playlists, download up to 10 files for offline use and control playback from the Lock Screen. Audrig All ($9.99, one-time) unlocks the professional listening tools: A/B Mode, Waveform, Freq Mode, Loop Mode, Mono Mode, Speed Control and unlimited offline sync.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Do I need Dropbox? <span style="color:var(--gold);font-size:1.4rem;font-weight:300">+</span></summary>
+      <p>Yes — version 1 of Audrig uses Dropbox as its cloud storage backend. A free Dropbox account is enough for most use cases. Google Drive support is planned for a future version.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What's the difference from a regular music player? <span style="color:var(--gold);font-size:1.4rem;font-weight:300">+</span></summary>
+      <p>Regular music players work with a streaming service or your local device library. Audrig is designed for <em>your own audio files</em> stored in Dropbox — demos, mixes, stems, recordings. On top of that, it includes professional listening tools like A/B comparison, frequency isolation and loop verification that no consumer music player offers.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What is A/B Mode? <span style="color:var(--gold);font-size:1.4rem;font-weight:300">+</span></summary>
+      <p>A/B Mode lets you load two audio files — say, two mixes of the same song — and switch between them instantly with zero latency. Both files are buffered in memory and play at the same position, so you hear the difference exactly where it matters. You can also run a blind test: shuffle the A/B assignment randomly and listen without knowing which is which, then reveal with an animation.</p>
+    </details>
+    <details class="faq-item" style="border-bottom:1px solid rgba(201,168,76,.12)">
+      <summary>Is Audrig All a subscription? <span style="color:var(--gold);font-size:1.4rem;font-weight:300">+</span></summary>
+      <p>No. Audrig All is a one-time purchase. Pay once, own the features permanently. No recurring charges, no annual fees.</p>
+    </details>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-inner fade">
+    <a href="index.html" class="foot-logo">Martin Mellström</a>
+    <ul class="foot-links">
+      <li><a href="index.html">martinmellstrom.com</a></li>
+      <li><a href="terms.html">Terms &amp; Conditions</a></li>
+    </ul>
+    <p class="foot-copy">© 2026 Martin Mellström — All Rights Reserved</p>
+  </div>
+</footer>
+
+<script>
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade').forEach(el => io.observe(el));
+let lastY = 0;
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  nav.style.transform = (y > lastY && y > 80) ? 'translateY(-100%)' : 'translateY(0)';
+  lastY = y;
+}, { passive: true });
+</script>
+</body>
+</html>
