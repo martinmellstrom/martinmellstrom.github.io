@@ -8,12 +8,15 @@
 Live files in root:
 - `index.html` — main site
 - `blog.html` — blog
-- `player.html` — Dropbox music player
+- `audrig.html` — Audrig iOS app landing page
+- `terms.html` — Audrig terms and conditions (linked from audrig.html)
+- `player.html` — Dropbox music player (web prototype — no longer publicly promoted)
 - `oauth.html` — Dropbox OAuth callback handler (used by player.html)
 
 Staging files in `staging/`:
 - `staging/staging_index.html`
 - `staging/staging_blog.html`
+- `staging/staging_audrig.html`
 - `staging/staging_player.html`
 
 Hosted on GitHub Pages → martinmellstrom.com
@@ -56,7 +59,7 @@ Instruction files live alongside the site code:
 - All development of `mellstrom-dashboard` (code + Notion updates)
 
 **Claude Code** is for all coding and file editing. It runs in the Claude Code desktop app. It handles:
-- All HTML edits to `index.html`, `blog.html`, `player.html`, `oauth.html`
+- All HTML edits to `index.html`, `blog.html`, `audrig.html`, `terms.html`, `player.html`, `oauth.html`
 - All staging builds and live promotions
 - Batch operations (multiple blog posts, releasing a pack, etc.)
 - Reading tasks from Guide 07 in Notion and executing them
@@ -83,14 +86,18 @@ Tumregel: om uppgiften tar längre tid att speca i Notion än att utföra i Code
 
 ---
 
-## iOS Music Player — app-utveckling
+## Audrig — iOS app
 
-Native iOS-app i separat privat repo (`martinmellstrom/iOS-app`).
+Native iOS-musikspelare. Appnamn: **Audrig** (bekräftat).
+
+Separat privat repo: `martinmellstrom/iOS-app`
 
 **Stack:** Swift + SwiftUI + AVFoundation  
-**Affärsmodell:** Engångskøp (no subscription)  
-**Appnamnskandidat:** Audrig (föredragen), Solum, Canor  
+**Affärsmodell:** Engångsköp (no subscription). Gratis bas + *Audrig All* engångsköp (~$9.99).  
 **Cloud storage:** Dropbox (v1), Google Drive (v2); iCloud undviks pga arkitekturkrav
+
+**Hemsida för appen:** `audrig.html` på martinmellstrom.com — fristående landningssida för App Store-söktrafik.  
+**Terms:** `terms.html` — Audrig Terms and Conditions, länkad från `audrig.html`.
 
 ### Ansvarsfördelning för iOS
 
@@ -179,8 +186,8 @@ Format: `🔗 [Kontrollera i Safari](URL)` — never plain text.
 
 | Context | Internal links |
 |---|---|
-| Staging | `staging_index.html`, `staging_blog.html`, `staging_blog.html#slug` |
-| Live | `index.html`, `blog.html`, `blog.html#slug` |
+| Staging | `staging_index.html`, `staging_blog.html`, `staging_audrig.html`, `staging_blog.html#slug` |
+| Live | `index.html`, `blog.html`, `audrig.html`, `blog.html#slug` |
 
 ### Staging file properties
 - `<meta name="robots" content="noindex, nofollow">`
