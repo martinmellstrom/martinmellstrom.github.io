@@ -360,8 +360,7 @@
       <h2>Dropbox Integration</h2>
       <p>The App connects to Dropbox using the official Dropbox API with your explicit authorization. By connecting your Dropbox account, you acknowledge the following:</p>
       <ul>
-        <li>The App requests access to your Dropbox account ("Full Dropbox Access") in order to allow you to browse and link folders stored anywhere in your Dropbox. The App reads folder structure and streams audio files you select, but does not upload, move, or modify any files or folders outside of its own dedicated folder (<code>/AudRig</code>).</li>
-        <li>The App does not upload, modify, or delete any files in your Dropbox.</li>
+        <li>The App requests access to your Dropbox account ("Full Dropbox Access") in order to allow you to browse and link folders stored anywhere in your Dropbox. The App only reads folder structure and streams audio files you select. The only write operation performed is the one-time creation of an <code>/AudRig</code> folder in your Dropbox root if it does not already exist.</li>
         <li>The App does not transmit your Dropbox credentials to the developer or any third party. Authentication is handled entirely by Dropbox.</li>
         <li>Your Dropbox connection can be revoked at any time through your Dropbox account settings at dropbox.com under Connected Apps.</li>
         <li>Your use of Dropbox is subject to Dropbox's own Terms of Service and Privacy Policy.</li>
