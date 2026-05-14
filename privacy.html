@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Terms and Conditions — Audrig</title>
-  <meta name="description" content="Terms and Conditions for Audrig, an iOS music player by Martin Mellström.">
+  <title>Privacy Policy — Audrig</title>
+  <meta name="description" content="Privacy Policy for Audrig, an iOS music player by Martin Mellström.">
   <meta name="robots" content="index, follow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,7 +45,6 @@
       padding: 0 24px;
     }
 
-    /* ── Layout ── */
     .page {
       max-width: var(--max);
       margin: 0 auto;
@@ -59,7 +58,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Header ── */
     .header {
       margin-bottom: 64px;
       padding-bottom: 40px;
@@ -125,7 +123,6 @@
       display: none;
     }
 
-    /* ── TOC ── */
     .toc {
       background: var(--accent-light);
       border-left: 3px solid var(--accent);
@@ -173,7 +170,6 @@
       color: var(--accent);
     }
 
-    /* ── Sections ── */
     .section {
       margin-bottom: 52px;
       padding-bottom: 52px;
@@ -236,18 +232,19 @@
       top: 7px;
     }
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.15s;
+    .highlight-box {
+      background: var(--accent-light);
+      border-left: 3px solid var(--accent);
+      padding: 20px 24px;
+      border-radius: 0 4px 4px 0;
+      margin: 20px 0;
     }
 
-    a:hover {
-      border-color: var(--accent);
+    .highlight-box p {
+      margin-bottom: 0;
+      font-size: 14px;
     }
 
-    /* ── Contact box ── */
     .contact-box {
       background: white;
       border: 1px solid var(--rule);
@@ -275,7 +272,17 @@
       border-color: var(--accent);
     }
 
-    /* ── Footer ── */
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    a:hover {
+      border-color: var(--accent);
+    }
+
     .footer {
       margin-top: 80px;
       padding-top: 32px;
@@ -316,7 +323,6 @@
       color: var(--ink-faint);
     }
 
-    /* ── Responsive ── */
     @media (max-width: 480px) {
       body { padding: 0 20px; }
       .page { padding: 52px 0 80px; }
@@ -331,7 +337,7 @@
 
   <header class="header">
     <div class="app-label">Audrig for iOS</div>
-    <h1>Terms and Conditions</h1>
+    <h1>Privacy Policy</h1>
     <div class="meta">
       <span>Martin Mellström</span>
       <span>Last updated: May 2026</span>
@@ -342,18 +348,16 @@
   <nav class="toc" aria-label="Table of contents">
     <div class="toc-title">Contents</div>
     <ol>
-      <li><a href="#s1">Acceptance of Terms</a></li>
-      <li><a href="#s2">Description of the App</a></li>
-      <li><a href="#s3">In-App Purchase</a></li>
-      <li><a href="#s4">Dropbox Integration</a></li>
-      <li><a href="#s5">Privacy</a></li>
-      <li><a href="#s6">User Responsibilities</a></li>
-      <li><a href="#s7">Intellectual Property</a></li>
-      <li><a href="#s8">Disclaimer of Warranties</a></li>
-      <li><a href="#s9">Limitation of Liability</a></li>
-      <li><a href="#s10">Changes to the App and Terms</a></li>
-      <li><a href="#s11">Governing Law</a></li>
-      <li><a href="#s12">Contact</a></li>
+      <li><a href="#s1">Overview</a></li>
+      <li><a href="#s2">Data We Do Not Collect</a></li>
+      <li><a href="#s3">Dropbox Integration</a></li>
+      <li><a href="#s4">In-App Purchase and Apple</a></li>
+      <li><a href="#s5">Data Stored on Your Device</a></li>
+      <li><a href="#s6">Children's Privacy</a></li>
+      <li><a href="#s7">Third-Party Services</a></li>
+      <li><a href="#s8">Your Rights (GDPR)</a></li>
+      <li><a href="#s9">Changes to This Policy</a></li>
+      <li><a href="#s10">Contact</a></li>
     </ol>
   </nav>
 
@@ -361,88 +365,101 @@
 
     <section class="section" id="s1">
       <span class="section-number">§ 1</span>
-      <h2>Acceptance of Terms</h2>
-      <p>By downloading, installing, or using this app ("the App"), you agree to these Terms and Conditions. If you do not agree, do not use the App.</p>
+      <h2>Overview</h2>
+      <p>Audrig ("the App") is a music player for iOS developed by Martin Mellström, an individual developer based in Sweden. This Privacy Policy describes how the App handles your information.</p>
+      <div class="highlight-box">
+        <p>The short version: Audrig does not collect, store, or transmit any personal data to the developer. No account is required, and no tracking or analytics are used.</p>
+      </div>
     </section>
 
     <section class="section" id="s2">
       <span class="section-number">§ 2</span>
-      <h2>Description of the App</h2>
-      <p>The App is a music player for iOS that connects to your personal Dropbox account, allowing you to browse and play audio files stored there. The App does not host, distribute, or provide any music content itself.</p>
+      <h2>Data We Do Not Collect</h2>
+      <p>The developer does not collect any personal information from you. Specifically:</p>
+      <ul>
+        <li>No name, email address, or other identifying information is collected.</li>
+        <li>No usage data, listening history, or behavioral data is collected or transmitted to the developer.</li>
+        <li>No crash reporting or analytics SDKs that transmit data to the developer are present in the App.</li>
+        <li>No advertising identifiers (IDFA) are accessed or used.</li>
+        <li>No advertising networks or third-party trackers are integrated.</li>
+        <li>No account registration is required to use the App.</li>
+      </ul>
+      <p>The only network communication the App performs is directly between your device and Dropbox's servers, using your own Dropbox authorization.</p>
     </section>
 
     <section class="section" id="s3">
       <span class="section-number">§ 3</span>
-      <h2>In-App Purchase</h2>
-      <p>The App is available as a free download with limited functionality. Full access to all features can be unlocked through a one-time in-app purchase ("Premium Unlock") available via the Apple App Store.</p>
+      <h2>Dropbox Integration</h2>
+      <p>Audrig connects to your personal Dropbox account using the official Dropbox API and OAuth 2.0 authorization. The following applies to this integration:</p>
       <ul>
-        <li>The purchase is a one-time payment and grants permanent access to all features.</li>
-        <li>There is no subscription, recurring charge, or auto-renewal.</li>
-        <li>All purchases are processed by Apple and are subject to Apple's own Terms of Service and refund policy. The developer has no access to your payment information.</li>
-        <li>If you purchase on one device, you can restore your purchase on other devices signed in to the same Apple ID at no extra cost, using the "Restore Purchases" option in the App.</li>
+        <li>The App requests access to your Dropbox in order to allow you to browse folders and stream audio files you select. The App only reads folder structure and file content for playback purposes.</li>
+        <li>The only write operation the App performs is the one-time creation of an <code>/AudRig</code> folder in your Dropbox root, if it does not already exist.</li>
+        <li>Your Dropbox credentials are never transmitted to the developer. Authentication is handled entirely by Dropbox's own authorization flow.</li>
+        <li>An OAuth access token is stored locally on your device (in the iOS Keychain) solely to maintain your connection between sessions. This token never leaves your device to any server other than Dropbox's.</li>
+        <li>You can revoke the App's access to your Dropbox at any time via <a href="https://www.dropbox.com/account/connected_apps" target="_blank" rel="noopener noreferrer">dropbox.com → Connected Apps</a>. Revoking access removes the App's ability to read or write any data in your Dropbox.</li>
+        <li>Dropbox's own Privacy Policy governs how Dropbox handles your data. You can review it at <a href="https://www.dropbox.com/privacy" target="_blank" rel="noopener noreferrer">dropbox.com/privacy</a>.</li>
       </ul>
     </section>
 
     <section class="section" id="s4">
       <span class="section-number">§ 4</span>
-      <h2>Dropbox Integration</h2>
-      <p>The App connects to Dropbox using the official Dropbox API with your explicit authorization. By connecting your Dropbox account, you acknowledge the following:</p>
+      <h2>In-App Purchase and Apple</h2>
+      <p>Audrig offers a one-time in-app purchase ("Premium Unlock") processed entirely by Apple through the App Store. The developer has no access to your payment information or Apple ID details.</p>
       <ul>
-        <li>The App requests access to your Dropbox account in order to allow you to browse and link folders stored anywhere in your Dropbox. The App only reads folder structure and streams audio files you select. The only write operation performed is the one-time creation of an <code>/AudRig</code> folder in your Dropbox root if it does not already exist.</li>
-        <li>The App does not transmit your Dropbox credentials to the developer or any third party. Authentication is handled entirely by Dropbox.</li>
-        <li>Your Dropbox connection can be revoked at any time through your Dropbox account settings at dropbox.com under Connected Apps.</li>
-        <li>Your use of Dropbox is subject to Dropbox's own Terms of Service and Privacy Policy.</li>
+        <li>The App uses Apple's StoreKit framework to verify purchase entitlements. This verification occurs between your device and Apple's servers only.</li>
+        <li>No purchase or transaction data is transmitted to or stored by the developer.</li>
+        <li>Apple's Privacy Policy governs data collected in connection with your App Store purchase. You can review it at <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">apple.com/legal/privacy</a>.</li>
       </ul>
     </section>
 
     <section class="section" id="s5">
       <span class="section-number">§ 5</span>
-      <h2>Privacy</h2>
-      <p>The developer does not collect, store, process, or share any personal data about you. The App performs no analytics, crash reporting, or tracking of any kind. The only network communication is directly between your device and Dropbox's servers.</p>
-      <p>For full details on how the App handles your data, including local storage, Dropbox access, and your rights under GDPR, please read the <a href="/privacy.html">Privacy Policy</a>.</p>
+      <h2>Data Stored on Your Device</h2>
+      <p>Some information is stored locally on your device to provide a functional experience. This data never leaves your device to the developer's servers:</p>
+      <ul>
+        <li><strong>Dropbox OAuth token</strong> — stored in the iOS Keychain to maintain your Dropbox connection between sessions.</li>
+        <li><strong>Audio file cache</strong> — audio files you choose to make available offline are stored locally on your device. You can remove them at any time from within the App.</li>
+        <li><strong>Waveform and metadata cache</strong> — waveform visualizations and file metadata are cached locally to improve performance. This data is derived solely from your own files.</li>
+        <li><strong>Playback preferences</strong> — settings such as EQ, playback speed, and loop preferences are stored locally using iOS standard storage (UserDefaults).</li>
+      </ul>
+      <p>All locally stored data can be removed by deleting the App from your device.</p>
     </section>
 
     <section class="section" id="s6">
       <span class="section-number">§ 6</span>
-      <h2>User Responsibilities</h2>
-      <p>You are solely responsible for ensuring that you have the legal right to play and access the audio files in your Dropbox, complying with applicable copyright laws in your jurisdiction, and the content stored in your Dropbox account.</p>
-      <p>The App is intended for personal, private use with audio files you have the right to access.</p>
+      <h2>Children's Privacy</h2>
+      <p>Audrig is not directed at children under the age of 13. The App does not knowingly collect any personal information from children. If you believe a child under 13 has provided personal information through the App, please contact us so we can address the matter promptly.</p>
     </section>
 
     <section class="section" id="s7">
       <span class="section-number">§ 7</span>
-      <h2>Intellectual Property</h2>
-      <p>All code, design, and assets in the App are the property of Martin Mellström and are protected by applicable intellectual property laws. You may not reverse-engineer, copy, modify, or redistribute the App or any part of it.</p>
+      <h2>Third-Party Services</h2>
+      <p>The App interacts with the following third-party services:</p>
+      <ul>
+        <li><strong>Dropbox</strong> — for accessing your audio files. Their privacy practices are governed by <a href="https://www.dropbox.com/privacy" target="_blank" rel="noopener noreferrer">Dropbox's Privacy Policy</a>.</li>
+        <li><strong>Apple App Store / StoreKit</strong> — for processing in-app purchases. Their privacy practices are governed by <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple's Privacy Policy</a>.</li>
+      </ul>
+      <p>No other third-party services, SDKs, or APIs are used in the App.</p>
     </section>
 
     <section class="section" id="s8">
       <span class="section-number">§ 8</span>
-      <h2>Disclaimer of Warranties</h2>
-      <p>The App is provided "as is" without warranty of any kind, express or implied. The developer does not warrant that the App will be free from errors or interruptions, that it will be compatible with all iOS versions or devices, or that Dropbox API availability or behavior — which is outside the developer's control — will remain unchanged.</p>
+      <h2>Your Rights (GDPR)</h2>
+      <p>As the App is developed in Sweden and subject to the laws of the European Union, the General Data Protection Regulation (GDPR) applies. Because the developer does not collect or process any personal data about you, there is no personal data held by the developer for you to access, correct, or request deletion of.</p>
+      <p>If you have questions about the data Dropbox or Apple holds about you, please refer to their respective privacy policies and contact them directly.</p>
+      <p>If you have any concerns about your privacy in relation to the App, please contact us using the details below.</p>
     </section>
 
     <section class="section" id="s9">
       <span class="section-number">§ 9</span>
-      <h2>Limitation of Liability</h2>
-      <p>To the fullest extent permitted by applicable law, the developer shall not be liable for any indirect, incidental, or consequential damages arising from your use of the App, including but not limited to data loss, service interruptions, or issues arising from Dropbox's platform.</p>
+      <h2>Changes to This Policy</h2>
+      <p>This Privacy Policy may be updated from time to time. Any changes will be reflected on this page with an updated date. Continued use of the App after changes constitutes your acceptance of the updated policy.</p>
     </section>
 
     <section class="section" id="s10">
       <span class="section-number">§ 10</span>
-      <h2>Changes to the App and Terms</h2>
-      <p>The developer reserves the right to update, modify, or discontinue the App or any feature at any time. These Terms and Conditions may also be updated periodically. Continued use of the App after changes constitutes acceptance of the updated Terms.</p>
-    </section>
-
-    <section class="section" id="s11">
-      <span class="section-number">§ 11</span>
-      <h2>Governing Law</h2>
-      <p>These Terms are governed by the laws of Sweden. Any disputes shall be subject to the jurisdiction of Swedish courts.</p>
-    </section>
-
-    <section class="section" id="s12">
-      <span class="section-number">§ 12</span>
       <h2>Contact</h2>
-      <p>For questions or support regarding these Terms, please contact:</p>
+      <p>For questions or concerns regarding this Privacy Policy, please contact:</p>
       <div class="contact-box">
         <div class="name">Martin Mellström</div>
         <a href="mailto:hello@martinmellstrom.com">hello@martinmellstrom.com</a>
@@ -454,7 +471,7 @@
   <footer class="footer">
     <span class="footer-brand">Audrig</span>
     <div class="footer-links">
-      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms &amp; Conditions</a>
     </div>
     <span class="footer-note">© 2026 Martin Mellström. All rights reserved.</span>
   </footer>
