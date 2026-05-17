@@ -539,6 +539,9 @@
     .form-group textarea { background: rgba(201,168,76,0.03); border: 1px solid rgba(201,168,76,0.15); color: var(--text); font-family: 'Cormorant Garamond', serif; font-size: 1rem; padding: 14px 16px; outline: none; transition: border-color 0.3s; resize: none; appearance: none; -webkit-appearance: none; width: 100%; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold); }
     .form-group input::placeholder, .form-group textarea::placeholder { color: var(--text-faint); font-style: italic; }
+    .form-group input:-webkit-autofill,
+    .form-group input:-webkit-autofill:hover,
+    .form-group input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0px 1000px #1A1712 inset; -webkit-text-fill-color: #e8e0d0; transition: background-color 5000s ease-in-out 0s; }
     .form-group select option { background: var(--bg-2); color: var(--text); }
     .form-submit { display: flex; align-items: center; gap: 20px; margin-top: 8px; }
     .form-success { display: none; padding: 16px 20px; border: 1px solid var(--gold); background: rgba(201,168,76,0.06); font-style: italic; color: var(--text); font-size: 0.95rem; }
