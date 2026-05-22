@@ -22,12 +22,12 @@
 
 <style>
 :root {
-  --bg: #131714;
-  --surface: #191e1a;
-  --gold: #c9a84c;
-  --golddim: #7a6030;
-  --cream: #f0e8d4;
-  --muted: #6a7060;
+  --bg: #1a1a2e;
+  --surface: #1e1e36;
+  --gold: #7eb8a4;
+  --golddim: #4d8a79;
+  --cream: #f0ece4;
+  --muted: #8a96aa;
   --text: #c8c4b0;
 }
 
@@ -46,7 +46,7 @@ nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
   display: flex; justify-content: space-between; align-items: center;
   padding: 26px 64px;
-  background: linear-gradient(to bottom, rgba(12,18,12,.97), transparent);
+  background: linear-gradient(to bottom, rgba(26,26,46,.97), transparent);
   transition: transform .4s ease;
 }
 .logo {
@@ -65,14 +65,14 @@ nav {
 .blog-header {
   padding: 160px 64px 80px;
   position: relative;
-  border-bottom: 1px solid rgba(201,168,76,.1);
+  border-bottom: 1px solid rgba(126,184,164,.1);
 }
 .blog-header::before {
   content: '';
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 60% 80% at 90% 50%, rgba(201,168,76,.05) 0%, transparent 65%),
-    linear-gradient(160deg, #131714 0%, #0e120c 60%, #131714 100%);
+    radial-gradient(ellipse 60% 80% at 90% 50%, rgba(126,184,164,.05) 0%, transparent 65%),
+    linear-gradient(160deg, #1a1a2e 0%, #14142a 60%, #1a1a2e 100%);
   z-index: 0;
 }
 .blog-header-inner { position: relative; z-index: 1; max-width: 860px; }
@@ -87,7 +87,6 @@ nav {
   font-weight: 300; line-height: .95;
   color: var(--cream); letter-spacing: -.02em; margin-bottom: 24px;
 }
-.blog-header h1 em { font-style: italic; color: var(--gold); }
 .blog-header p { font-size: 1.15rem; font-style: italic; color: var(--muted); max-width: 480px; line-height: 1.75; }
 .back-link {
   display: inline-flex; align-items: center; gap: 10px;
@@ -100,7 +99,7 @@ nav {
 
 .blog-main { max-width: 860px; margin: 0 auto; padding: 80px 64px 140px; }
 
-.post { padding: 64px 0; border-bottom: 1px solid rgba(201,168,76,.1); }
+.post { padding: 64px 0; border-bottom: 1px solid rgba(126,184,164,.1); }
 .post:first-child { padding-top: 0; }
 .post:last-child { border-bottom: none; }
 
@@ -146,7 +145,6 @@ nav {
   font-weight: 300; color: var(--cream);
   line-height: 1.1; margin-bottom: 32px; letter-spacing: -.01em;
 }
-.post-title em { font-style: italic; color: var(--gold); }
 .post-body { font-size: 1.15rem; line-height: 1.95; color: var(--text); font-weight: 300; }
 .post-body p { margin-bottom: 22px; }
 .post-body p:last-child { margin-bottom: 0; }
@@ -160,7 +158,7 @@ nav {
 .blog-nav-bottom {
   display: flex; justify-content: space-between; align-items: center;
   margin-top: 64px; padding-top: 40px;
-  border-top: 1px solid rgba(201,168,76,.1);
+  border-top: 1px solid rgba(126,184,164,.1);
 }
 .blog-nav-link {
   font-family: 'Syne', sans-serif; font-size: .6rem;
@@ -171,7 +169,7 @@ nav {
 
 .blog-foot {
   padding: 40px 64px;
-  border-top: 1px solid rgba(201,168,76,.1);
+  border-top: 1px solid rgba(126,184,164,.1);
   display: flex; justify-content: space-between; align-items: center;
 }
 .foot-copy {
@@ -212,7 +210,7 @@ nav {
       <div class="eyebrow-line"></div>
       <span class="eyebrow-text">Notes &amp; Thoughts</span>
     </div>
-    <h1>From the <em>Studio</em></h1>
+    <h1>From the Studio</h1>
     <p>On composing, game audio and the occasional tool recommendation.</p>
   </div>
 </header>
