@@ -1,41 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>[STAGING] Audrig - iOS Music Player for Dropbox</title>
-  <meta name="description" content="Audrig is a professional iOS music player for your Dropbox audio files. Stream demos, mixes, stems and recordings with A/B comparison, waveform scrubbing, frequency isolation and loop verification. Free to download. No subscription.">
-  <meta name="keywords" content="iOS music player Dropbox, Dropbox audio player iPhone, A/B comparison music player iOS, professional music player iPhone, mix reference player iOS, stem player iOS, offline music player Dropbox">
+  <meta name="description"
+    content="Audrig is a professional iOS music player for your Dropbox audio files. Stream demos, mixes, stems and recordings with A/B comparison, waveform scrubbing, frequency isolation and loop verification. Free to download. No subscription.">
+  <meta name="keywords"
+    content="iOS music player Dropbox, Dropbox audio player iPhone, A/B comparison music player iOS, professional music player iPhone, mix reference player iOS, stem player iOS, offline music player Dropbox">
   <meta name="author" content="Martin Mellström">
   <meta name="robots" content="noindex, nofollow">
   <meta property="og:title" content="Audrig - iOS Music Player for Dropbox">
-  <meta property="og:description" content="A professional iOS music player for your own audio files. Stream from Dropbox with A/B comparison, waveform scrubbing and offline sync. No subscription.">
+  <meta property="og:description"
+    content="A professional iOS music player for your own audio files. Stream from Dropbox with A/B comparison, waveform scrubbing and offline sync. No subscription.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.martinmellstrom.com/audrig.html">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="https://www.martinmellstrom.com/audrig.html">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap"
+    rel="stylesheet">
 
   <style>
     :root {
-      --bg: #1A1712;
-      --bg-2: #211e18;
-      --bg-3: #2a2520;
-      --gold: #C9A84C;
-      --gold-dim: rgba(201,168,76,0.18);
-      --gold-dim2: rgba(201,168,76,0.08);
-      --text: #e8e0d0;
-      --text-muted: rgba(232,224,208,0.55);
-      --text-faint: rgba(232,224,208,0.3);
-      --border: rgba(201,168,76,0.15);
+      --bg: #1a1a2e;
+      --bg-2: #1e1e36;
+      --bg-3: #22223e;
+      --gold: #7eb8a4;
+      --gold-dim: rgba(126, 184, 164, 0.18);
+      --gold-dim2: rgba(126, 184, 164, 0.08);
+      --text: #f0ece4;
+      --text-muted: rgba(240, 236, 228, 0.6);
+      --text-faint: rgba(240, 236, 228, 0.3);
+      --border: rgba(255, 255, 255, 0.08);
       --radius: 3px;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       background: var(--bg);
@@ -44,19 +58,56 @@
       font-size: 17px;
       line-height: 1.7;
       -webkit-font-smoothing: antialiased;
+      padding-top: 36px;
+    }
+
+    /* ─── STAGING BANNER ─── */
+    .staging-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 36px;
+      z-index: 200;
+      background: repeating-linear-gradient(
+        -45deg,
+        #cc0000,
+        #cc0000 10px,
+        #aa0000 10px,
+        #aa0000 20px
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: white;
+      text-decoration: none;
+    }
+
+    .staging-banner a {
+      color: white;
+      text-decoration: underline;
+      margin-left: 8px;
+      opacity: 0.85;
     }
 
     /* ─── NAV ─── */
     nav {
       position: fixed;
-      top: 0; left: 0; right: 0;
+      top: 36px;
+      left: 0;
+      right: 0;
       z-index: 100;
       padding: 20px 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(to bottom, rgba(26,23,18,0.97) 60%, transparent);
+      background: linear-gradient(to bottom, rgba(26, 26, 46, 0.97) 60%, transparent);
     }
+
     nav a {
       font-family: 'DM Sans', sans-serif;
       font-size: 13px;
@@ -67,7 +118,11 @@
       text-decoration: none;
       transition: color 0.2s;
     }
-    nav a:hover { color: var(--gold); }
+
+    nav a:hover {
+      color: var(--gold);
+    }
+
     .nav-logo {
       font-family: 'Cormorant Garamond', serif;
       font-size: 20px;
@@ -88,15 +143,17 @@
       position: relative;
       overflow: hidden;
     }
+
     .hero::before {
       content: '';
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 60% 50% at 50% 60%, rgba(201,168,76,0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 30% 30% at 20% 80%, rgba(201,168,76,0.04) 0%, transparent 60%);
+        radial-gradient(ellipse 60% 50% at 50% 60%, rgba(126, 184, 164, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 30% 30% at 20% 80%, rgba(126, 184, 164, 0.04) 0%, transparent 60%);
       pointer-events: none;
     }
+
     .hero-eyebrow {
       font-family: 'DM Sans', sans-serif;
       font-size: 11px;
@@ -108,6 +165,7 @@
       opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.1s;
     }
+
     .hero h1 {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(64px, 10vw, 110px);
@@ -119,6 +177,7 @@
       opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.25s;
     }
+
     .hero-sub {
       font-size: 17px;
       font-weight: 300;
@@ -129,6 +188,7 @@
       opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.4s;
     }
+
     .hero-actions {
       display: flex;
       gap: 16px;
@@ -137,12 +197,13 @@
       opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.55s;
     }
+
     .btn-primary {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       background: var(--gold);
-      color: #1A1712;
+      color: #1a1a2e;
       font-family: 'DM Sans', sans-serif;
       font-size: 14px;
       font-weight: 500;
@@ -152,12 +213,17 @@
       text-decoration: none;
       transition: background 0.2s, transform 0.15s;
     }
-    .btn-primary:hover { background: #d9b85c; transform: translateY(-1px); }
+
+    .btn-primary:hover {
+      background: #8fc9b5;
+      transform: translateY(-1px);
+    }
+
     .btn-secondary {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      border: 1px solid var(--border);
+      border: 0.5px solid rgba(240, 236, 228, 0.25);
       color: var(--text-muted);
       font-family: 'DM Sans', sans-serif;
       font-size: 14px;
@@ -168,7 +234,13 @@
       text-decoration: none;
       transition: border-color 0.2s, color 0.2s, transform 0.15s;
     }
-    .btn-secondary:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-1px); }
+
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      transform: translateY(-1px);
+    }
+
     .hero-scroll {
       position: absolute;
       bottom: 36px;
@@ -177,6 +249,7 @@
       opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.9s;
     }
+
     .hero-scroll span {
       display: block;
       width: 1px;
@@ -192,7 +265,10 @@
       max-width: 1000px;
       margin: 0 auto;
     }
-    section + section { border-top: 1px solid var(--border); }
+
+    section+section {
+      border-top: 1px solid var(--border);
+    }
 
     .section-label {
       font-size: 11px;
@@ -202,6 +278,7 @@
       color: var(--gold);
       margin-bottom: 20px;
     }
+
     .section-heading {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(36px, 5vw, 52px);
@@ -210,6 +287,7 @@
       color: var(--text);
       margin-bottom: 32px;
     }
+
     .section-heading em {
       font-style: italic;
       color: var(--gold);
@@ -223,7 +301,10 @@
       line-height: 1.8;
       color: var(--text-muted);
     }
-    .story-text p + p { margin-top: 20px; }
+
+    .story-text p+p {
+      margin-top: 20px;
+    }
 
     /* ─── WHO ─── */
     .audience-grid {
@@ -232,22 +313,28 @@
       gap: 2px;
       margin-top: 48px;
     }
+
     .audience-card {
       background: var(--bg-2);
       padding: 36px 32px;
       position: relative;
       overflow: hidden;
     }
+
     .audience-card::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 1px;
       background: var(--border);
     }
+
     .audience-card.primary::before {
       background: var(--gold);
     }
+
     .card-tag {
       font-size: 10px;
       font-weight: 500;
@@ -257,7 +344,11 @@
       margin-bottom: 12px;
       opacity: 0.7;
     }
-    .card-tag.secondary { color: var(--text-muted); }
+
+    .card-tag.secondary {
+      color: var(--text-muted);
+    }
+
     .audience-card h3 {
       font-family: 'Cormorant Garamond', serif;
       font-size: 26px;
@@ -265,6 +356,7 @@
       color: var(--text);
       margin-bottom: 12px;
     }
+
     .audience-card p {
       font-size: 15px;
       line-height: 1.65;
@@ -280,22 +372,27 @@
       margin-top: 48px;
       align-items: start;
     }
+
     .feature-tier {
       background: var(--bg-2);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
     }
+
     .feature-tier.premium {
-      border-color: rgba(201,168,76,0.35);
+      border-color: rgba(126, 184, 164, 0.35);
     }
+
     .tier-header {
       padding: 28px 28px 22px;
       border-bottom: 1px solid var(--border);
     }
+
     .feature-tier.premium .tier-header {
-      border-bottom-color: rgba(201,168,76,0.2);
+      border-bottom-color: rgba(126, 184, 164, 0.2);
     }
+
     .tier-name {
       font-family: 'Cormorant Garamond', serif;
       font-size: 22px;
@@ -303,43 +400,54 @@
       color: var(--text);
       margin-bottom: 4px;
     }
+
     .tier-price {
       font-size: 13px;
       color: var(--text-muted);
       font-weight: 300;
     }
+
     .tier-price strong {
       color: var(--gold);
       font-weight: 500;
     }
+
     .tier-items {
       list-style: none;
       padding: 20px 28px 28px;
     }
+
     .tier-items li {
       font-size: 15px;
       line-height: 1.5;
       color: var(--text-muted);
       padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       display: flex;
       gap: 12px;
       font-weight: 300;
     }
-    .tier-items li:last-child { border-bottom: none; }
+
+    .tier-items li:last-child {
+      border-bottom: none;
+    }
+
     .tier-items li::before {
       content: '-';
       color: var(--text-faint);
       flex-shrink: 0;
       margin-top: 1px;
     }
+
     .feature-tier.premium .tier-items li::before {
       color: var(--gold);
       opacity: 0.5;
     }
+
     .feature-name {
       display: block;
     }
+
     .feature-desc {
       display: block;
       font-size: 13px;
@@ -347,6 +455,7 @@
       margin-top: 2px;
       font-weight: 300;
     }
+
     .trial-note {
       margin-top: 20px;
       font-size: 13px;
@@ -362,11 +471,13 @@
       gap: 2px;
       margin-top: 48px;
     }
+
     .step {
       background: var(--bg-2);
       padding: 40px 32px;
       position: relative;
     }
+
     .step-num {
       font-family: 'Cormorant Garamond', serif;
       font-size: 72px;
@@ -376,6 +487,7 @@
       margin-bottom: 16px;
       display: block;
     }
+
     .step h3 {
       font-family: 'Cormorant Garamond', serif;
       font-size: 22px;
@@ -383,13 +495,19 @@
       color: var(--text);
       margin-bottom: 12px;
     }
-    .step h3 em { font-style: italic; color: var(--gold); }
+
+    .step h3 em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
     .step p {
       font-size: 15px;
       line-height: 1.65;
       color: var(--text-muted);
       font-weight: 300;
     }
+
     .path-display {
       display: inline-flex;
       align-items: center;
@@ -412,20 +530,29 @@
       max-width: 1000px;
       margin: 0 auto;
     }
-    .cta-section .section-heading { margin-bottom: 16px; }
+
+    .cta-section .section-heading {
+      margin-bottom: 16px;
+    }
+
     .cta-sub {
       font-size: 16px;
       color: var(--text-muted);
       margin-bottom: 40px;
       font-weight: 300;
     }
+
     .cta-fine {
       margin-top: 24px;
       font-size: 13px;
       color: var(--text-faint);
       font-weight: 300;
     }
-    .cta-fine strong { color: var(--text-muted); font-weight: 400; }
+
+    .cta-fine strong {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
 
     /* ─── FAQ ─── */
     .faq-list {
@@ -434,6 +561,7 @@
       flex-direction: column;
       gap: 2px;
     }
+
     .faq-item {
       background: var(--bg-2);
       border: 1px solid transparent;
@@ -441,7 +569,11 @@
       overflow: hidden;
       transition: border-color 0.2s;
     }
-    .faq-item:hover { border-color: var(--border); }
+
+    .faq-item:hover {
+      border-color: var(--border);
+    }
+
     .faq-q {
       width: 100%;
       background: none;
@@ -458,7 +590,11 @@
       align-items: center;
       gap: 16px;
     }
-    .faq-q:hover { color: var(--gold); }
+
+    .faq-q:hover {
+      color: var(--gold);
+    }
+
     .faq-icon {
       font-size: 20px;
       color: var(--gold);
@@ -466,7 +602,11 @@
       line-height: 1;
       transition: transform 0.25s;
     }
-    .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+    }
+
     .faq-a {
       display: none;
       padding: 0 28px 24px;
@@ -475,7 +615,10 @@
       color: var(--text-muted);
       font-weight: 300;
     }
-    .faq-item.open .faq-a { display: block; }
+
+    .faq-item.open .faq-a {
+      display: block;
+    }
 
     /* ─── FOOTER ─── */
     footer {
@@ -489,6 +632,7 @@
       flex-wrap: wrap;
       gap: 20px;
     }
+
     .footer-brand {
       font-family: 'Cormorant Garamond', serif;
       font-size: 18px;
@@ -496,11 +640,13 @@
       color: var(--text-muted);
       text-decoration: none;
     }
+
     .footer-links {
       display: flex;
       gap: 28px;
       flex-wrap: wrap;
     }
+
     .footer-links a {
       font-size: 13px;
       color: var(--text-faint);
@@ -508,7 +654,11 @@
       letter-spacing: 0.04em;
       transition: color 0.2s;
     }
-    .footer-links a:hover { color: var(--gold); }
+
+    .footer-links a:hover {
+      color: var(--gold);
+    }
+
     .footer-copy {
       width: 100%;
       font-size: 12px;
@@ -518,82 +668,202 @@
 
     /* ─── ANIMATIONS ─── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     @keyframes scrollLine {
-      0%, 100% { opacity: 0.3; transform: scaleY(1); }
-      50%       { opacity: 1; transform: scaleY(0.6); }
+
+      0%,
+      100% {
+        opacity: 0.3;
+        transform: scaleY(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scaleY(0.6);
+      }
     }
 
     /* ─── CONTACT ─── */
-    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-    .contact-info-text { font-size: 1.1rem; line-height: 1.9; color: var(--text-muted); font-weight: 300; margin-bottom: 0; font-style: italic; }
-    .contact-form { display: flex; flex-direction: column; gap: 18px; }
-    .contact-form-col { padding-top: 34px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    .form-group { display: flex; flex-direction: column; gap: 8px; }
-    .form-group label { font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+
+    .contact-info-text {
+      font-size: 1.1rem;
+      line-height: 1.9;
+      color: var(--text-muted);
+      font-weight: 300;
+      margin-bottom: 0;
+      font-style: italic;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .contact-form-col {
+      padding-top: 34px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
     .form-group input,
     .form-group select,
-    .form-group textarea { background: rgba(201,168,76,0.03); border: 1px solid rgba(201,168,76,0.15); color: var(--text); font-family: 'Cormorant Garamond', serif; font-size: 1rem; padding: 14px 16px; outline: none; transition: border-color 0.3s; resize: none; appearance: none; -webkit-appearance: none; width: 100%; }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold); }
-    .form-group input::placeholder, .form-group textarea::placeholder { color: var(--text-faint); font-style: italic; }
+    .form-group textarea {
+      background: rgba(126, 184, 164, 0.03);
+      border: 1px solid rgba(126, 184, 164, 0.15);
+      color: var(--text);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      padding: 14px 16px;
+      outline: none;
+      transition: border-color 0.3s;
+      resize: none;
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--gold);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: var(--text-faint);
+      font-style: italic;
+    }
+
     .form-group input:-webkit-autofill,
     .form-group input:-webkit-autofill:hover,
-    .form-group input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0px 1000px #1A1712 inset; -webkit-text-fill-color: #e8e0d0; transition: background-color 5000s ease-in-out 0s; }
-    .form-group select option { background: var(--bg-2); color: var(--text); }
-    .form-submit { display: flex; align-items: center; gap: 20px; margin-top: 8px; }
-    .form-success { display: none; padding: 16px 20px; border: 1px solid var(--gold); background: rgba(201,168,76,0.06); font-style: italic; color: var(--text); font-size: 0.95rem; }
+    .form-group input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0px 1000px #1a1a2e inset;
+      -webkit-text-fill-color: #f0ece4;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
+    .form-group select option {
+      background: var(--bg-2);
+      color: var(--text);
+    }
+
+    .form-submit {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-top: 8px;
+    }
+
+    .form-success {
+      display: none;
+      padding: 16px 20px;
+      border: 1px solid var(--gold);
+      background: rgba(126, 184, 164, 0.06);
+      font-style: italic;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
 
     /* ─── MOBILE ─── */
     @media (max-width: 700px) {
-      nav { padding: 18px 20px; }
-      section { padding: 72px 20px; }
-      .hero { padding: 100px 20px 72px; }
-      .audience-grid { grid-template-columns: 1fr; }
-      .features-layout { grid-template-columns: 1fr; }
-      .steps { grid-template-columns: 1fr; }
-      footer { padding: 40px 20px; }
-      .cta-section { padding: 72px 20px; }
-      .contact-grid { grid-template-columns: 1fr; }
-      .contact-form-col { padding-top: 0; }
-      .form-row { grid-template-columns: 1fr; }
-    }
+      nav {
+        padding: 18px 20px;
+      }
 
-    /* ─── STAGING BANNER ─── */
-    .staging-banner {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-      height: 36px;
-      background: repeating-linear-gradient(45deg, #1a0000, #1a0000 10px, #2d0000 10px, #2d0000 20px);
-      border-bottom: 2px solid #ff4444;
-      display: flex; align-items: center; justify-content: center; gap: 12px;
-      font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 0.15em;
-      text-transform: uppercase; color: #ff8888;
+      section {
+        padding: 72px 20px;
+      }
+
+      .hero {
+        padding: 100px 20px 72px;
+      }
+
+      .audience-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .features-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      footer {
+        padding: 40px 20px;
+      }
+
+      .cta-section {
+        padding: 72px 20px;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-form-col {
+        padding-top: 0;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
     }
-    .staging-banner strong { color: #ff4444; font-weight: 700; }
-    .staging-banner a { color: #ff8888; text-decoration: underline; }
-    body { padding-top: 36px !important; }
-    nav { top: 36px !important; }
   </style>
 </head>
+
 <body>
 
   <div class="staging-banner">
-    <strong>⚠ STAGING</strong> — Detta är en förhandsvisning.
-    <a href="/audrig.html">Gå till live-sidan →</a>
+    ⚠ STAGING — Detta är en förhandsvisning. <a href="https://www.martinmellstrom.com/audrig.html">→ Live-sidan</a>
   </div>
 
   <nav>
-    <a href="staging_index.html" class="nav-logo">Martin Mellström</a>
-    <a href="staging_index.html">← Back to site</a>
+    <a href="https://martinmellstrom.com/index.html" class="nav-logo">Martin Mellström</a>
+    <a href="https://martinmellstrom.com/index.html">← Back to site</a>
   </nav>
 
   <!-- HERO -->
   <div class="hero">
     <p class="hero-eyebrow">iOS App · Dropbox</p>
-    <h1>Audrig</h1>
-    <p class="hero-sub">Your files. Your player. A native iOS music player built for critical listening.</p>
+    <h1>AudRig</h1>
+    <p class="hero-sub">A native iOS music player built for critical listening.</p>
     <div class="hero-actions">
       <a href="#" class="btn-primary">Coming to App Store</a>
       <a href="#features" class="btn-secondary">See Features</a>
@@ -606,9 +876,12 @@
     <p class="section-label">The Idea</p>
     <h2 class="section-heading">Built because <em>nothing else fit</em></h2>
     <div class="story-text">
-      <p>I'm a composer. My work lives in Dropbox - demos, mixes, stems, reference tracks, things I'm not done with. Dropbox's own player works, but it doesn't have the tools I needed. And every other app I tried was either too limited or built for something else entirely.</p>
-      <p>So I built the thing I wanted: a proper listening environment for your own audio, with the controls that actually matter for critical listening.</p>
-      <p>Audrig connects directly to your Dropbox, respects your folder structure, and stays out of the way.</p>
+      <p>I'm a composer. My work lives in Dropbox - demos, mixes, stems, reference tracks, things I'm not done with.
+        Dropbox's own player works, but it doesn't have the tools I needed. And every other app I tried was either too
+        limited or built for something else entirely.</p>
+      <p>So I built the thing I wanted: a proper listening environment for your own audio, with the controls that
+        actually matter for critical listening.</p>
+      <p>AudRig connects directly to your Dropbox, respects your folder structure, and stays out of the way.</p>
     </div>
   </section>
 
@@ -620,22 +893,26 @@
       <div class="audience-card primary">
         <p class="card-tag">Primary</p>
         <h3>Composers & producers</h3>
-        <p>Game audio, film, library, pop - if you're bouncing stems and comparing mixes in the field, Audrig gives you the reference tools to do it properly on your phone.</p>
+        <p>Game audio, film, library, pop - if you're bouncing stems and comparing mixes in the field, AudRig gives you
+          the reference tools to do it properly on your phone.</p>
       </div>
       <div class="audience-card primary">
         <p class="card-tag">Primary</p>
         <h3>Mix engineers</h3>
-        <p>A/B two mix versions instantly, check mono compatibility, isolate a frequency band. The same critical listening habits you practice at the desk - on the go.</p>
+        <p>A/B up to three mix versions instantly, check mono compatibility, isolate a frequency band. The same critical
+          listening habits you practice at the desk - on the go.</p>
       </div>
       <div class="audience-card">
         <p class="card-tag secondary">Also</p>
         <h3>Sound designers</h3>
-        <p>Your sfx library is in Dropbox. Browse folders as playlists, loop a sample, scrub to a specific moment - without pulling out your laptop.</p>
+        <p>Your sfx library is in Dropbox. Browse folders as playlists, loop a sample, scrub to a specific moment -
+          without pulling out your laptop.</p>
       </div>
       <div class="audience-card">
         <p class="card-tag secondary">Also</p>
         <h3>Anyone with audio files</h3>
-        <p>Recordings, podcasts, voice memos, field recordings - if you have audio in Dropbox that isn't on any streaming service, Audrig can play it the way it deserves.</p>
+        <p>Recordings, podcasts, voice memos, field recordings - if you have audio in Dropbox that isn't on any
+          streaming service, Audrig can play it the way it deserves.</p>
       </div>
     </div>
   </section>
@@ -643,13 +920,13 @@
   <!-- FEATURES -->
   <section id="features">
     <p class="section-label">Features</p>
-    <h2 class="section-heading">Free and <em>Audrig All</em></h2>
+    <h2 class="section-heading">Free and <em>AudRig All</em></h2>
     <div class="features-layout">
 
       <div class="feature-tier">
         <div class="tier-header">
           <p class="tier-name">Free</p>
-          <p class="tier-price">Included with every download</p>
+          <p class="tier-price">Included in the free version</p>
         </div>
         <ul class="tier-items">
           <li>
@@ -673,7 +950,7 @@
           <li>
             <span>
               <span class="feature-name">Folders as playlists</span>
-              <span class="feature-desc">Your structure, respected - no import or reorganisation needed</span>
+              <span class="feature-desc">Your folder structure, respected - no import or reorganisation needed</span>
             </span>
           </li>
           <li>
@@ -702,20 +979,21 @@
 
       <div class="feature-tier premium">
         <div class="tier-header">
-          <p class="tier-name">Audrig All</p>
-          <p class="tier-price"><strong>~$9.99</strong> · One-time · No subscription, ever</p>
+          <p class="tier-name">AudRig All</p>
+          <p class="tier-price"><strong>$9.99</strong> · One-time · No subscription, ever</p>
         </div>
         <ul class="tier-items">
           <li>
             <span>
               <span class="feature-name">A/B Mode</span>
-              <span class="feature-desc">Load two tracks, switch instantly at zero latency. ±6 dB gain per slot.</span>
+              <span class="feature-desc">Load up to three tracks, switch between them instantly. ±6 dB gain per
+                slot.</span>
             </span>
           </li>
           <li>
             <span>
-              <span class="feature-name">Blind Test</span>
-              <span class="feature-desc">Shuffle A/B assignment, listen without bias, reveal with an animation</span>
+              <span class="feature-name">Trial Mode</span>
+              <span class="feature-desc">Shuffle A/B assignment, listen without bias.</span>
             </span>
           </li>
           <li>
@@ -768,18 +1046,21 @@
       <div class="step">
         <span class="step-num">01</span>
         <h3>Connect <em>Dropbox</em></h3>
-        <p>Sign in with your Dropbox account when you first open the app. Audrig reads your library and any folders you add - nothing else is touched.</p>
+        <p>Sign in with your Dropbox account when you first open the app. A dedicated folder is created for AudRig.
+          AudRig reads your library and any folders you add - nothing else is touched.</p>
       </div>
       <div class="step">
         <span class="step-num">02</span>
         <h3>Add your <em>files</em></h3>
-        <p>Put your audio files in Dropbox at the path below. Organise with subfolders - each folder becomes a playlist. Tap + in the app to add more folders or shared folders from anywhere in your Dropbox.</p>
+        <p>Put your audio files in Dropbox at the path below. Organise with subfolders - each folder becomes a playlist.
+          Tap + in the app to add more folders or shared folders from anywhere in your Dropbox.</p>
         <span class="path-display">Dropbox / AudRig /</span>
       </div>
       <div class="step">
         <span class="step-num">03</span>
         <h3>Listen</h3>
-        <p>Open the app and your library is there. Tap to play, download for offline, or open the professional listening tools. That's it.</p>
+        <p>Open the app and your library is there. Tap to play, download for offline, or open the professional listening
+          tools.</p>
       </div>
     </div>
   </section>
@@ -788,11 +1069,13 @@
   <div class="cta-section" id="download">
     <p class="section-label">Get the App</p>
     <h2 class="section-heading">Free to <em>download</em></h2>
-    <p class="cta-sub">Audrig is free to download with a fully functional base player. Audrig All unlocks the professional listening tools as a single one-time purchase.</p>
+    <p class="cta-sub">AudRig is free to download with a fully functional base player. AudRig All unlocks the
+      professional listening tools as a single one-time purchase.</p>
     <div class="hero-actions">
       <a href="#" class="btn-primary">Coming to App Store</a>
     </div>
-    <p class="cta-fine"><strong>Free</strong> to download · <strong>Audrig All</strong> ~$9.99 one-time · No subscription, ever<br>Requires iOS 17 or later · Dropbox account required</p>
+    <p class="cta-fine"><strong>Free</strong> to download · <strong>AudRig All</strong> $9.99 one-time · No
+      subscription, ever<br>Requires iOS 17 or later · Dropbox account required</p>
   </div>
 
   <!-- FAQ -->
@@ -807,7 +1090,10 @@
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-a">
-          No - the free version is a fully functional music player. You can browse your Dropbox library, play files, add folders and shared folders, download up to 10 files for offline use, and control playback from the Lock Screen. Audrig All ($9.99, one-time) unlocks the professional listening tools: A/B Mode, Waveform, Freq Mode, Loop Mode, Mono Mode, Speed Control and unlimited offline sync.
+          No - you can use the free version of AudRig as a fully functional music player. You can browse your Dropbox
+          library, play files, add folders and shared folders and download up to 10 files for offline use. AudRig All
+          ($9.99, one-time) unlocks the professional listening tools: A/B Mode, Waveform, Freq Mode,
+          Loop Mode, Mono Mode, Speed Control and unlimited offline sync.
         </div>
       </div>
 
@@ -817,7 +1103,10 @@
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-a">
-          Yes - version 1 of Audrig uses Dropbox as its cloud storage backend. A free Dropbox account is enough for most use cases. Audrig reads from its default folder (Dropbox/AudRig/) and any other folders you add via the + button - including Shared Folders. Google Drive support is planned for a future version.
+          Yes - the current version of AudRig uses Dropbox as its cloud storage backend. A free Dropbox account is
+          enough for most
+          use cases. AudRig reads from its default folder (Dropbox/AudRig/) and any other folders you add via the +
+          button - including Shared Folders. Other cloud storage integrations are planned for a future version.
         </div>
       </div>
 
@@ -827,7 +1116,12 @@
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-a">
-          Regular music players work with a streaming service or your local device library. Audrig is designed for your own audio files stored in Dropbox - demos, mixes, stems, recordings. On top of that, it includes professional listening tools like A/B comparison, frequency isolation and loop verification that no consumer music player offers.
+          Most regular music players work with a streaming service or a local device library. AudRig is designed for
+          your
+          own audio files stored in Dropbox - demos, mixes, stems, recordings. More importantly, it includes
+          professional
+          listening tools like A/B comparison, frequency isolation and loop verification to actually help you work with
+          your audio.
         </div>
       </div>
 
@@ -837,7 +1131,10 @@
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-a">
-          A/B Mode lets you load two audio files - say, two mixes of the same song - and switch between them instantly with zero latency. Both files are buffered in memory and play at the same position, so you hear the difference exactly where it matters. You can also run a Blind Test: shuffle the A/B assignment randomly and listen without knowing which is which, then reveal with an animation.
+          A/B Mode lets you load up to three audio files - say, three mixes of the same song - and switch between them
+          instantly. All files are loaded into memory and play at the same position, so you can hear the difference
+          exactly where it matters. You can also run a trial: shuffle the A/B assignment randomly and listen
+          without knowing which is which. All tools (freq mode, loop, speed control, mono mode) work in A/B mode.
         </div>
       </div>
 
@@ -847,7 +1144,8 @@
           <span class="faq-icon">+</span>
         </button>
         <div class="faq-a">
-          No. Audrig All is a one-time purchase. Pay once, own the features permanently. No recurring charges, no annual fees.
+          No. AudRig All is a one-time purchase. Pay once, own the features permanently. No recurring charges, no annual
+          fees.
         </div>
       </div>
 
@@ -860,19 +1158,31 @@
       <div class="contact-info">
         <p class="section-label">Get in Touch</p>
         <h2 class="section-heading">Have a <em>question?</em></h2>
-        <p class="contact-info-text">Feature requests, bug reports, or anything else — fill in the form and I'll get back to you within a day or two.</p>
+        <p class="contact-info-text">Feature requests, bug reports, or anything else - fill in the form and I'll get
+          back to you as soon as possible.</p>
       </div>
       <div class="contact-form-col">
         <form class="contact-form" id="contactForm">
           <div class="form-row">
-            <div class="form-group"><label for="fname">Name</label><input type="text" id="fname" name="name" placeholder="Your name" required></div>
-            <div class="form-group"><label for="femail">Email</label><input type="email" id="femail" name="email" placeholder="your@email.com" required></div>
+            <div class="form-group"><label for="fname">Name</label><input type="text" id="fname" name="name"
+                placeholder="Your name" required></div>
+            <div class="form-group"><label for="femail">Email</label><input type="email" id="femail" name="email"
+                placeholder="your@email.com" required></div>
           </div>
-          <div class="form-group"><label for="fsubject">Subject</label><select id="fsubject" name="subject"><option value="" disabled selected>Select a subject</option><option value="Feature request">Feature request</option><option value="Bug report">Bug report</option><option value="Other">Other</option></select></div>
-          <div class="form-group"><label for="fmessage">Message</label><textarea id="fmessage" name="message" rows="6" placeholder="Tell me about your request..." required></textarea></div>
-          <div style="position:absolute;left:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input type="text" id="fwebsite" name="website" tabindex="-1" autocomplete="off"></div>
+          <div class="form-group"><label for="fsubject">Subject</label><select id="fsubject" name="subject">
+              <option value="" disabled selected>Select a subject</option>
+              <option value="Feature request">Feature request</option>
+              <option value="Bug report">Bug report</option>
+              <option value="Other">Other</option>
+            </select></div>
+          <div class="form-group"><label for="fmessage">Message</label><textarea id="fmessage" name="message" rows="6"
+              placeholder="Tell me about your request..." required></textarea></div>
+          <div style="position:absolute;left:-9999px;opacity:0;pointer-events:none" aria-hidden="true"><input
+              type="text" id="fwebsite" name="website" tabindex="-1" autocomplete="off"></div>
           <div class="form-submit">
-            <button type="submit" class="btn-secondary" style="cursor:pointer; background: transparent; color: var(--gold); border-color: rgba(201,168,76,0.35);">Send Message</button>
+            <button type="submit" class="btn-secondary"
+              style="cursor:pointer; background: transparent; color: var(--gold); border-color: rgba(126,184,164,0.35);">Send
+              Message</button>
           </div>
           <div class="form-success" id="formSuccess">✓ &nbsp;Thank you — I'll be in touch soon!</div>
         </form>
@@ -882,9 +1192,8 @@
 
   <!-- FOOTER -->
   <footer>
-    <a href="staging_index.html" class="footer-brand">Martin Mellström</a>
     <div class="footer-links">
-      <a href="staging_index.html">martinmellstrom.com</a>
+      <a href="https://martinmellstrom.com/index.html">martinmellstrom.com</a>
       <a href="https://martinmellstrom.com/terms.html">Terms & Conditions</a>
       <a href="https://martinmellstrom.com/privacy.html">Privacy Policy</a>
     </div>
@@ -898,7 +1207,7 @@
     }
     const form = document.getElementById('contactForm');
     let lastSubmit = 0;
-    form.addEventListener('submit', async function(e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
       if (this.elements['website'].value) return;
       const now = Date.now();
@@ -909,11 +1218,12 @@
       btn.textContent = 'Sending...'; btn.disabled = true;
       try {
         const res = await fetch('https://formspree.io/f/xaqpopok', { method: 'POST', body: new FormData(this), headers: { 'Accept': 'application/json' } });
-        if (res.ok) { lastSubmit = Date.now(); this.reset(); document.getElementById('formSuccess').style.display='block'; btn.textContent='Sent!'; }
-        else { btn.textContent='Try again'; btn.disabled=false; }
-      } catch(err) { btn.textContent='Error — try again'; btn.disabled=false; }
+        if (res.ok) { lastSubmit = Date.now(); this.reset(); document.getElementById('formSuccess').style.display = 'block'; btn.textContent = 'Sent!'; }
+        else { btn.textContent = 'Try again'; btn.disabled = false; }
+      } catch (err) { btn.textContent = 'Error — try again'; btn.disabled = false; }
     });
   </script>
 
 </body>
+
 </html>
