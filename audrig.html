@@ -1138,7 +1138,7 @@
               style="cursor:pointer; background: transparent; color: var(--gold); border-color: rgba(126,184,164,0.35);">Send
               Message</button>
           </div>
-          <div class="form-success" id="formSuccess">✓ &nbsp;Thank you — I'll be in touch soon!</div>
+          <div class="form-success" id="formSuccess">✓ &nbsp;Thank you - I'll be in touch soon!</div>
         </form>
       </div>
     </div>
@@ -1174,7 +1174,7 @@
         const res = await fetch('https://formspree.io/f/xaqpopok', { method: 'POST', body: new FormData(this), headers: { 'Accept': 'application/json' } });
         if (res.ok) { lastSubmit = Date.now(); this.reset(); document.getElementById('formSuccess').style.display = 'block'; btn.textContent = 'Sent!'; }
         else { btn.textContent = 'Try again'; btn.disabled = false; }
-      } catch (err) { btn.textContent = 'Error — try again'; btn.disabled = false; }
+      } catch (err) { btn.textContent = 'Error - try again'; btn.disabled = false; }
     });
   </script>
 
