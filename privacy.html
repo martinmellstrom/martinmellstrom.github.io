@@ -351,7 +351,7 @@
       <li><a href="#s1">Overview</a></li>
       <li><a href="#s2">Data We Do Not Collect</a></li>
       <li><a href="#s3">Dropbox Integration</a></li>
-      <li><a href="#s4">Google Drive Integration</a></li>
+      <li><a href="#s4">iCloud Drive Integration</a></li>
       <li><a href="#s5">In-App Purchase and Apple</a></li>
       <li><a href="#s6">Data Stored on Your Device</a></li>
       <li><a href="#s7">Children's Privacy</a></li>
@@ -385,7 +385,7 @@
         <li>No advertising networks or third-party trackers are integrated.</li>
         <li>No account registration is required to use the App.</li>
       </ul>
-      <p>The only network communication the App performs is directly between your device and Dropbox's or Google's servers, using your own authorization.</p>
+      <p>The only network communication the App performs is directly between your device and Dropbox's servers (for Dropbox) or Apple's iCloud infrastructure (for iCloud Drive), using your own authorization.</p>
     </section>
 
     <section class="section" id="s3">
@@ -404,40 +404,38 @@
 
     <section class="section" id="s4">
       <span class="section-number">§ 4</span>
-      <h2>Google Drive Integration</h2>
-      <p>Audrig can optionally connect to your personal Google Drive account using Google's OAuth 2.0 authorization and the <code>https://www.googleapis.com/auth/drive</code> scope. Connecting Google Drive is entirely optional and only occurs if you choose to sign in.</p>
+      <h2>iCloud Drive Integration</h2>
+      <p>Audrig can optionally access audio files stored in your iCloud Drive. This integration uses Apple's standard file access APIs and does not require a separate login — the App uses your existing iCloud account as already configured on your device. Enabling iCloud Drive access is entirely optional.</p>
 
       <p><strong>What data the App accesses</strong></p>
       <ul>
-        <li>File metadata (names, sizes, modification dates) and audio file content within folders you have connected to the App. By default, the App uses a folder named <code>AudRig</code> at the root of your Google Drive. You can additionally link other folders from anywhere in your Drive using the + button in the App. The App only reads folders you have explicitly connected.</li>
-        <li>On first sign-in, the App checks whether an <code>AudRig</code> folder exists at your Drive root and creates it if not. This is the only write operation the App performs in your Drive.</li>
+        <li>File metadata (names, sizes, modification dates) and audio file content within folders you have explicitly selected or linked in the App. The App only reads folders you have chosen to connect — it does not browse or access your iCloud Drive broadly.</li>
+        <li>The App does not write to, modify, or delete any files in your iCloud Drive.</li>
       </ul>
 
       <p><strong>Why the App accesses this data</strong></p>
       <ul>
-        <li>To display the contents of your <code>AudRig</code> folder for in-app browsing.</li>
-        <li>To stream and temporarily cache audio files from that folder for local playback.</li>
-        <li>To optionally generate a public view link for a specific file (sets "anyone with link can view" on that individual file only, at your explicit request).</li>
+        <li>To display the contents of folders you have linked for in-app browsing.</li>
+        <li>To stream and temporarily cache audio files from those folders for local playback.</li>
       </ul>
 
       <p><strong>How your data is handled</strong></p>
       <ul>
-        <li>Your Google OAuth token and the <code>AudRig</code> folder ID are stored only in the iOS Keychain on your device. They are never transmitted to the developer or any third-party server.</li>
-        <li>Google user data is not shared with any third parties, used for advertising, or used for user profiling of any kind.</li>
-        <li>Audio files may be temporarily cached on your device for playback performance. This cache is cleared when you sign out.</li>
-        <li>Signing out of Google Drive in the App immediately clears all tokens and cached data from your device.</li>
+        <li>No iCloud credentials or tokens are handled by the App. File access is mediated entirely by iOS using your existing iCloud session — nothing related to your iCloud account is stored, transmitted, or processed by the developer.</li>
+        <li>Your audio files are never transmitted to the developer or any third-party server.</li>
+        <li>Audio files may be temporarily cached on your device for playback performance. This cache is stored in the App's local sandbox and is removed when you delete the App.</li>
       </ul>
 
       <p><strong>How to revoke access</strong></p>
       <ul>
-        <li>Sign out within the App — this clears all tokens and cached data from your device immediately.</li>
-        <li>You can also revoke the App's Google authorization at any time by visiting <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">myaccount.google.com/permissions</a> and removing Audrig from the list of connected apps.</li>
+        <li>You can remove any linked iCloud Drive folder from within the App at any time.</li>
+        <li>You can also revoke the App's access to iCloud Drive entirely in iOS Settings &rarr; Privacy &amp; Security &rarr; Files &amp; Folders, and removing Audrig from the list.</li>
       </ul>
 
-      <p>Google's own Privacy Policy governs how Google handles your data. You can review it at <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">policies.google.com/privacy</a>.</p>
+      <p>Apple's iCloud service and its privacy practices are governed by <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple's Privacy Policy</a>.</p>
 
       <div class="highlight-box">
-        <p>Audrig's use of Google Drive APIs is limited to accessing audio files within folders you have explicitly connected to the App, for browsing and playback purposes only. No Google user data is transferred to third parties, used for advertising, or used for profiling.</p>
+        <p>Audrig accesses iCloud Drive files only within folders you have explicitly selected, for browsing and playback purposes. No iCloud data is transmitted to the developer or any third party.</p>
       </div>
     </section>
 
@@ -458,7 +456,7 @@
       <p>Some information is stored locally on your device to provide a functional experience. This data never leaves your device to the developer's servers:</p>
       <ul>
         <li><strong>Dropbox OAuth token</strong> — stored in the iOS Keychain to maintain your Dropbox connection between sessions.</li>
-        <li><strong>Google OAuth token and folder ID</strong> — stored in the iOS Keychain to maintain your Google Drive connection between sessions. Cleared on sign-out.</li>
+        <li><strong>iCloud Drive folder references</strong> — bookmarks to folders you have linked are stored locally on your device. No iCloud credentials or tokens are stored by the App.</li>
         <li><strong>Audio file cache</strong> — audio files you choose to make available offline are stored locally on your device. You can remove them at any time from within the App.</li>
         <li><strong>Waveform and metadata cache</strong> — waveform visualizations and file metadata are cached locally to improve performance. This data is derived solely from your own files.</li>
         <li><strong>Playback preferences</strong> — settings such as EQ, playback speed, and loop preferences are stored locally using iOS standard storage (UserDefaults).</li>
@@ -477,8 +475,8 @@
       <h2>Third-Party Services</h2>
       <p>The App interacts with the following third-party services:</p>
       <ul>
-        <li><strong>Dropbox</strong> — for accessing your audio files. Their privacy practices are governed by <a href="https://www.dropbox.com/privacy" target="_blank" rel="noopener noreferrer">Dropbox's Privacy Policy</a>.</li>
-        <li><strong>Google Drive</strong> — optionally, for accessing audio files in your <code>AudRig</code> Drive folder. Their privacy practices are governed by <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google's Privacy Policy</a>.</li>
+        <li><strong>Dropbox</strong> — for accessing your audio files via Dropbox. Their privacy practices are governed by <a href="https://www.dropbox.com/privacy" target="_blank" rel="noopener noreferrer">Dropbox's Privacy Policy</a>.</li>
+        <li><strong>Apple iCloud Drive</strong> — optionally, for accessing audio files in folders you select. iCloud Drive is part of Apple's platform and is governed by <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple's Privacy Policy</a>.</li>
         <li><strong>Apple App Store / StoreKit</strong> — for processing in-app purchases. Their privacy practices are governed by <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener noreferrer">Apple's Privacy Policy</a>.</li>
       </ul>
       <p>No other third-party services, SDKs, or APIs are used in the App.</p>
@@ -488,7 +486,7 @@
       <span class="section-number">§ 9</span>
       <h2>Your Rights (GDPR)</h2>
       <p>As the App is developed in Sweden and subject to the laws of the European Union, the General Data Protection Regulation (GDPR) applies. Because the developer does not collect or process any personal data about you, there is no personal data held by the developer for you to access, correct, or request deletion of.</p>
-      <p>If you have questions about the data Dropbox, Google, or Apple holds about you, please refer to their respective privacy policies and contact them directly.</p>
+      <p>If you have questions about the data Dropbox or Apple holds about you, please refer to their respective privacy policies and contact them directly.</p>
       <p>If you have any concerns about your privacy in relation to the App, please contact us using the details below.</p>
     </section>
 

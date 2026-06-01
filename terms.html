@@ -346,7 +346,7 @@
       <li><a href="#s2">Description of the App</a></li>
       <li><a href="#s3">In-App Purchase</a></li>
       <li><a href="#s4">Dropbox Integration</a></li>
-      <li><a href="#s5">Google Drive Integration</a></li>
+      <li><a href="#s5">iCloud Drive Integration</a></li>
       <li><a href="#s6">Privacy</a></li>
       <li><a href="#s7">User Responsibilities</a></li>
       <li><a href="#s8">Intellectual Property</a></li>
@@ -369,7 +369,7 @@
     <section class="section" id="s2">
       <span class="section-number">§ 2</span>
       <h2>Description of the App</h2>
-      <p>The App is a music player for iOS that connects to your personal cloud storage accounts (Dropbox and/or Google Drive), allowing you to browse and play audio files stored there. The App does not host, distribute, or provide any music content itself.</p>
+      <p>The App is a music player for iOS that connects to your personal cloud storage (Dropbox and/or iCloud Drive), allowing you to browse and play audio files stored there. The App does not host, distribute, or provide any music content itself.</p>
     </section>
 
     <section class="section" id="s3">
@@ -398,30 +398,27 @@
 
     <section class="section" id="s5">
       <span class="section-number">§ 5</span>
-      <h2>Google Drive Integration</h2>
-      <p>The App can optionally connect to Google Drive using Google's OAuth 2.0 authorization. Connecting Google Drive is entirely optional. By choosing to connect your Google Drive account, you acknowledge the following:</p>
+      <h2>iCloud Drive Integration</h2>
+      <p>The App can optionally access audio files stored in your iCloud Drive. This integration uses Apple's standard file access APIs and requires no separate login — the App uses the iCloud account already configured on your device. By choosing to link iCloud Drive folders, you acknowledge the following:</p>
       <ul>
-        <li>By default, the App uses a folder named <code>AudRig</code> at the root of your Google Drive. You can additionally link other folders from anywhere in your Drive using the + button in the App. The App reads file metadata and audio file content only within folders you have explicitly connected, for in-app browsing and playback. The App never accesses, reads, or modifies files outside the folders you have linked.</li>
-        <li>On first sign-in, the App will create the <code>AudRig</code> folder if it does not already exist. This is the only write operation performed in your Drive.</li>
-        <li>At your explicit request, the App can set a specific file to be viewable by anyone with a link. This permission change applies only to that individual file.</li>
-        <li>The App does not transmit your Google credentials or any Google user data to the developer or any third party. Your OAuth token is stored only in the iOS Keychain on your device.</li>
-        <li>Google user data is not used for advertising or profiling of any kind.</li>
-        <li>You can revoke the App's Google authorization at any time by signing out in the App, or by visiting <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">myaccount.google.com/permissions</a> and removing Audrig. Signing out clears all tokens and cached data from your device.</li>
-        <li>Your use of Google Drive is subject to Google's own Terms of Service and Privacy Policy.</li>
+        <li>The App accesses only the folders you have explicitly selected or linked. It reads file metadata and audio file content within those folders for in-app browsing and playback. The App does not browse, access, read, or modify files outside the folders you have linked.</li>
+        <li>The App does not write to, modify, or delete any files in your iCloud Drive.</li>
+        <li>No iCloud credentials or tokens are handled or stored by the App. File access is mediated entirely by iOS using your existing iCloud session.</li>
+        <li>Your use of iCloud Drive is subject to Apple's own Terms of Service and Privacy Policy.</li>
       </ul>
     </section>
 
     <section class="section" id="s6">
       <span class="section-number">§ 6</span>
       <h2>Privacy</h2>
-      <p>The developer does not collect, store, process, or share any personal data about you. The App performs no analytics, crash reporting, or tracking of any kind. The only network communication is directly between your device and Dropbox's or Google's servers.</p>
+      <p>The developer does not collect, store, process, or share any personal data about you. The App performs no analytics, crash reporting, or tracking of any kind. The only external network communication is between your device and Dropbox's servers or Apple's iCloud infrastructure.</p>
       <p>For full details on how the App handles your data, including local storage, cloud service access, and your rights under GDPR, please read the <a href="/privacy.html">Privacy Policy</a>.</p>
     </section>
 
     <section class="section" id="s7">
       <span class="section-number">§ 7</span>
       <h2>User Responsibilities</h2>
-      <p>You are solely responsible for ensuring that you have the legal right to play and access the audio files in your Dropbox or Google Drive, complying with applicable copyright laws in your jurisdiction, and the content stored in your cloud accounts.</p>
+      <p>You are solely responsible for ensuring that you have the legal right to play and access the audio files in your Dropbox or iCloud Drive, complying with applicable copyright laws in your jurisdiction, and the content stored in your cloud accounts.</p>
       <p>The App is intended for personal, private use with audio files you have the right to access.</p>
     </section>
 
@@ -434,13 +431,13 @@
     <section class="section" id="s9">
       <span class="section-number">§ 9</span>
       <h2>Disclaimer of Warranties</h2>
-      <p>The App is provided "as is" without warranty of any kind, express or implied. The developer does not warrant that the App will be free from errors or interruptions, that it will be compatible with all iOS versions or devices, or that Dropbox or Google Drive API availability or behavior — which is outside the developer's control — will remain unchanged.</p>
+      <p>The App is provided "as is" without warranty of any kind, express or implied. The developer does not warrant that the App will be free from errors or interruptions, that it will be compatible with all iOS versions or devices, or that Dropbox or Apple's iCloud service availability — which is outside the developer's control — will remain unchanged.</p>
     </section>
 
     <section class="section" id="s10">
       <span class="section-number">§ 10</span>
       <h2>Limitation of Liability</h2>
-      <p>To the fullest extent permitted by applicable law, the developer shall not be liable for any indirect, incidental, or consequential damages arising from your use of the App, including but not limited to data loss, service interruptions, or issues arising from Dropbox's or Google's platforms.</p>
+      <p>To the fullest extent permitted by applicable law, the developer shall not be liable for any indirect, incidental, or consequential damages arising from your use of the App, including but not limited to data loss, service interruptions, or issues arising from Dropbox's or Apple's iCloud platform.</p>
     </section>
 
     <section class="section" id="s11">
